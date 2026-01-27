@@ -1,0 +1,41 @@
+experiment:
+  name: "covariance_evolution"
+  description: "Track ensemble covariance growth/decay across assimilation windows."
+  seeds: [42]
+
+model:
+  type: "lorenz96"
+  n: 40
+  F: 8.0
+  dt: 0.01
+  spinup_steps: 1500
+
+observations:
+  observe_every: 2
+  noise_std: 1.5
+  steps_per_obs: 10
+
+assimilation:
+  window_length: 5
+  n_windows: 60
+  ensemble_size: 15
+
+diagnostics:
+  store_full_covariance: true
+  store_anomalies: true
+  summary_metrics:
+    - total_variance
+    - ensemble_spread
+    - condition_number
+
+filters:
+  seq_enkf:
+    stabilize: false
+    inflation: 1.05
+  4d_enkf:
+    stabilize: true
+    inflation: 1.02
+
+output:
+  save_directory: "../results/diagnostics/covariance_evolution"
+  save_frequency: "every_window"

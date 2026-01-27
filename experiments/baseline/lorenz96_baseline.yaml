@@ -1,0 +1,110 @@
+experiment:
+  name: "lorenz96_baseline"
+  description: "Core comparison: Seq-EnKF vs 4D-EnKF vs QPCA-EnDCF"
+  seeds: [42, 123, 456, 789, 1011] # Multiple seeds for reproducibility and statistical testing
+
+model:
+  type: "lorenz96"
+  n: 40 # State dimension
+  F: 8.0 # Forcing parameter (chaotic regime)
+  dt: 0.01 # Integration time step
+  spinup_steps: 0 # Spin-up to attractor before generating truth
+
+observations:
+  m: 20 # Observation dimension (observe every other state)
+  observe_every: 2 # Observe states 0, 2, 4, ..., 38
+  noise_std: 1.5 # σ_obs - observation noise standard deviation
+  steps_per_obs: 10 # Observations every 10 integration steps (T_obs = 0.1)
+
+assimilation:
+  window_length: 5 # L - observations per assimilation window
+  n_windows: 50 # W - number of assimilation windows
+  total_observations: 250 # K = W * L = 250 total observation times
+  ensemble_size: 10 # N - number of ensemble members
+
+initial_ensemble:
+  method: "perturbed_truth" # Construct ensemble by perturbing truth
+  common_perturbation_weight: 0.5 # Weight for ξ_0 (shared component)
+  individual_perturbation_weight: 0.5 # Weight for ξ_j (individual component)
+
+filters:
+  - name: "seq_enkf"
+    description: "Sequential stochastic EnKF with perturbed observations"
+    params:
+      stabilize: true # Apply stabilization to innovation covariance
+      inflation: 1.0 # Multiplicative covariance inflation factor
+      stabilization_eps: 1.0e-10 # Regularization parameter for S
+
+  - name: "enkf_4d"
+    description: "4D stochastic EnKF with joint updates over window"
+    params:
+      stabilize: true
+      inflation: 1.0
+      stabilization_eps: 1.0e-10
+
+  - name: "qpca_endcf"
+    description: "QPCA Ensemble Data Consistency Filter with whitened residual filtering"
+    params:
+      k: 1 # κ - number of PCA modes to retain
+      stabilize: true # Apply stabilization to ensemble covariance
+      stabilization_eps: 1.0e-10
+
+metrics:
+  # State estimation accuracy
+  state:
+    - rmse # Root mean square error (primary metric)
+    - pattern_correlation # Spatial correlation with truth
+    - normalized_rmse # RMSE relative to climatological variance
+
+  # Data consistency
+  data:
+    - relative_misfit # ||R^(-1/2)(z - Hx)||_2 / ||R^(-1/2)z||_2
+    - innovation_consistency # χ² statistic for whitened innovations
+    - observation_space_rmse # Direct measure of fit to observations
+
+  # Ensemble statistics
+  ensemble:
+    - spread # √(tr(P_ensemble)/n)
+    - spread_skill_ratio # Ensemble spread / RMSE (target ≈ 1)
+    - rank_histogram # For calibration diagnostics
+    - effective_size # N_eff = (Σw_i)² / Σw_i²
+
+  # Filter stability
+  stability:
+    - condition_number # κ(S) where S is innovation covariance
+    - effective_rank # Number of eigenvalues > ε·λ_max
+    - covariance_determinant # Measure of information content
+
+  # Computational
+  computational:
+    - runtime_per_window # Wall-clock time per assimilation window
+    - memory_usage # Peak RAM consumption
+
+# Output configuration
+output:
+  save_trajectories: true # Save full state trajectories for visualization
+  save_metrics: true # Save computed metrics
+  save_ensembles: true # Save ensemble snapshots at each window
+  save_observations: true # Save synthetic observations for reproducibility
+  save_truth: true # Save truth trajectory
+  save_frequency: 1 # Save every N windows (1 = save all)
+  results_dir: "../results/baseline"
+
+# Plotting configuration (for notebook use)
+plotting:
+  trajectory_plot:
+    state_indices: [0, 10, 20, 30] # Which states to plot in trajectory view
+    plot_ensemble_members: false # Plot individual members or just mean
+
+  metric_plot:
+    metrics_to_plot: ["rmse", "relative_misfit", "spread"]
+    confidence_interval: 0.95 # For multi-seed aggregation
+
+# Analysis configuration
+analysis:
+  statistical_tests:
+    - paired_t_test # Compare QPCA vs Seq-EnKF, QPCA vs 4D-EnKF
+    - bootstrap_ci # 95% CI on mean RMSE difference
+  n_bootstrap: 1000
+
+  significance_level: 0.05 # α for hypothesis test

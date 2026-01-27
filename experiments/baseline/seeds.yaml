@@ -1,0 +1,17 @@
+seed_sets:
+  default:
+    description: "Standard trio of seeds used for most baseline and sensitivity studies."
+    values: [42, 123, 456]
+
+  diagnostics:
+    description: "Single-seed runs for qualitative diagnostics (faster turn-around)."
+    values: [42]
+
+  stress_test:
+    description: "Extended set for robustness checks when additional statistics are required."
+    values: [11, 23, 37, 61, 89]
+
+notes:
+  - "Use the `default` set unless a notebook explicitly requests another group."
+  - "Diagnostics leverage a single seed to emphasize structural behavior over statistics."
+  - "Stress tests trade runtime for improved confidence intervals."

@@ -64,10 +64,11 @@
 \maketitle
 
 \begin{abstract}
-Ensemble Kalman filtering in chaotic, partially observed systems is routinely performed with ensembles far smaller than the state dimension, where sampling noise and rank deficiency degrade both accuracy and probabilistic calibration. We develop a unified theoretical framework connecting spectral regularization in observation space to calibrated uncertainty quantification, and we analyze a deterministic alternative to stochastic observation perturbations: the Quantity-of-Interest Principal Component Analysis Ensemble Data Covariance Filter (QPCA-EnDCF). The method whitens forecast--observation residuals, identifies dominant mismatch modes via an empirical eigen-decomposition, and applies a rank-$\kappa$ truncated correction that leaves orthogonal noise-dominated directions unchanged, avoiding perturbation-induced variance injection. Our analysis separates population and finite-ensemble objects and combines covariance concentration with eigenspace perturbation bounds to obtain a bias--variance decomposition for the analysis mean. The results show that stochastic EnKF variants incur an irreducible variance term from perturbed observations that scales inversely with ensemble size, whereas QPCA-EnDCF replaces this with projector-estimation error controlled by spectral gaps and scales with retained rank rather than observation dimension. Numerical experiments on the Lorenz--96 system under severe undersampling (state dimension exceeding observation dimension exceeding ensemble size, with multi-step assimilation windows) confirm the theory: QPCA-EnDCF achieves near-ideal spread--skill ratios and strong temporal tracking between spread and error, while sequential and 4D stochastic EnKF remain strongly underdispersed despite inflation. The method simultaneously reduces RMSE, mitigates tuning requirements, and remains robust under non-ideal observation error assumptions, suggesting deterministic spectral regularization as a practical route to reliable uncertainty quantification in resource-constrained data assimilation.
+Ensemble Kalman filtering in chaotic, partially observed systems is routinely performed with ensembles far smaller than the state dimension, where sampling noise and rank deficiency degrade both accuracy and probabilistic calibration. We develop a unified theoretical framework connecting spectral regularization in observation space to calibrated uncertainty quantification, and we analyze a deterministic alternative to stochastic observation perturbations: the Quantity-of-Interest Principal Component Analysis Ensemble Data Consistent Filter (QPCA-EnDCF). The method whitens forecast--observation residuals, identifies dominant mismatch modes via an empirical eigen-decomposition, and applies a rank-$\kappa$ truncated correction that leaves orthogonal noise-dominated directions unchanged, avoiding perturbation-induced variance injection. Our analysis separates population and finite-ensemble objects and combines covariance concentration with eigenspace perturbation bounds to obtain a bias--variance decomposition for the analysis mean.
+The results show that stochastic EnKF variants incur an irreducible variance term from perturbed observations that scales inversely with ensemble size, whereas QPCA-EnDCF replaces this with projector-estimation error controlled by spectral gaps and scales with retained rank rather than observation dimension. Numerical experiments on the Lorenz--96 system under severe undersampling (state dimension exceeding observation dimension exceeding ensemble size, with multi-step assimilation windows) confirm the theory: QPCA-EnDCF achieves near-ideal spread--skill ratios and strong temporal tracking between spread and error, while sequential and 4D stochastic EnKF remain strongly underdispersed despite inflation. The method simultaneously reduces RMSE, mitigates tuning requirements, and remains robust under non-ideal observation error assumptions, suggesting deterministic spectral regularization as a practical route to reliable uncertainty quantification in resource-constrained data assimilation.
 \end{abstract}
 
-\noindent\textbf{Keywords}: ensemble data assimilation, uncertainty quantification, spectral regularization, probabilistic calibration, chaotic dynamical systems
+\noindent\textbf{Keywords}: data assimilation, uncertainty quantification, probabilistic calibration,dynamical systems
 
 
 
@@ -81,7 +82,7 @@ Ensemble Kalman filtering in chaotic, partially observed systems is routinely pe
 
 Ensemble Kalman filtering provides a practical route to Bayesian state estimation in high-dimensional dynamical systems, but its uncertainty quantification can deteriorate sharply when ensemble sizes are far smaller than the state dimension. In chaotic, partially observed settings, sampling noise and rank deficiency can drive variance collapse and produce underdispersed ensembles, compromising probabilistic calibration even when point estimates remain competitive. This paper studies the interplay between regularization and calibration in ensemble data assimilation, and develops a unified theoretical and empirical account of deterministic spectral regularization in observation space.
 
-We focus on the Quantity-of-Interest Principal Component Analysis Ensemble Data Covariance Filter (QPCA-EnDCF), a deterministic alternative to perturbed-observation stochastic EnKF variants. QPCA-EnDCF whitens forecast--observation residuals, identifies dominant mismatch modes through an empirical spectral decomposition, and applies a rank-$\kappa$ truncated correction. This construction confines updates to signal-dominated subspaces while leaving orthogonal directions unchanged, reducing perturbation-induced sampling variance and yielding a controlled bias--variance tradeoff governed by the retained spectral rank.
+We focus on the Quantity-of-Interest Principal Component Analysis Ensemble Data Consistent Filter (QPCA-EnDCF), a deterministic alternative to perturbed-observation stochastic EnKF variants. QPCA-EnDCF whitens forecast--observation residuals, identifies dominant mismatch modes through an empirical spectral decomposition, and applies a rank-$\kappa$ truncated correction. This construction confines updates to signal-dominated subspaces while leaving orthogonal directions unchanged, reducing perturbation-induced sampling variance and yielding a controlled bias--variance tradeoff governed by the retained spectral rank.
 
 Our evaluation emphasizes probabilistic calibration: ensembles should be reliable as distributions, not merely accurate as point estimators. We therefore assess spread--skill behavior, rank-based reliability diagnostics, and temporal tracking between ensemble spread and realized error. Controlled experiments on the Lorenz--96 system demonstrate that QPCA-EnDCF maintains near-calibrated uncertainty under severe undersampling, whereas conventional stochastic filters remain strongly underdispersed despite inflation.
 
@@ -104,7 +105,7 @@ This section establishes the mathematical framework within which we evaluate ens
 % ================================================================================
 
 \noindent\textbf{Indexing and dimension conventions.}
-Observation times are indexed by $k$, with $t_k=kT_{\mathrm{obs}}$ and corresponding states $\mathbf{x}_{t_k}$ (or $\mathbf{x}_k$ when the time dependence is implicit). For four-dimensional methods, we group $L$ consecutive observation times into windows indexed by $w$, and use $\ell\in\{1,\ldots,L\}$ for within-window indices. The state dimension is $n$, the number of observed components is $m$, and the stacked observation dimension is $d:=mL$. Superscripts $f$ and $a$ denote forecast and analysis quantities, respectively; for windowed methods we use subscripts $0$ and $L$ to distinguish window-initial and window-endpoint ensembles when needed (a precise convention is stated in Remark~\ref{rem:timing_convention}).
+Observation times are indexed by $k$, with $t_k=kT_{\mathrm{obs}}$ and corresponding states $\mathbf{x}_{t_k}$ (or $\mathbf{x}_k$ when the time dependence is implicit). For four-dimensional methods, we group $L$ consecutive observation times into windows indexed by $w$, and use $\ell\in\{1,\ldots,L\}$ for within-window indices. The state dimension is $n$, the number of observed components is $m$, the stacked observation dimension is $d:=mL$, the ensemble size is $N$, and the spectral truncation rank is $\kappa$. Superscripts $f$ and $a$ denote forecast and analysis quantities, respectively; for windowed methods we use subscripts $0$ and $L$ to distinguish window-initial and window-endpoint ensembles when needed (a precise convention is stated in Remark~\ref{rem:timing_convention}).
 
 \subsection{Lorenz--96 Dynamical System}
 \label{subsec:lorenz96_problem}
@@ -113,13 +114,13 @@ We use the Lorenz--96 model \citep{lorenz1996predictability} as the canonical te
 
 The model consists of $n=40$ state variables $\mathbf{x}=(x_1,\ldots,x_{40})^\top\in\mathbb{R}^{40}$ governed by
 \begin{equation}
-\frac{\mathrm{d}x_k}{\mathrm{d}t}
+\frac{\mathrm{d}x_i}{\mathrm{d}t}
 =
-(x_{k+1}-x_{k-2})x_{k-1}-x_k+F,
-\qquad k=1,\ldots,40,
+(x_{i+1}-x_{i-2})x_{i-1}-x_i+F,
+\qquad i=1,\ldots,40,
 \label{eq:lorenz96}
 \end{equation}
-with periodic indexing modulo $40$ and constant forcing $F=8.0$. The dynamics reflect the interaction of three components: a quadratic advection term $(x_{k+1}-x_{k-2})x_{k-1}$ that transfers energy across scales and induces strong nonlinearity, linear damping $-x_k$ that prevents unbounded growth, and constant forcing that maintains a statistically stationary, nonequilibrium regime.
+with periodic indexing modulo $40$ and constant forcing $F=8.0$. The dynamics reflect the interaction of three components: a quadratic advection term $(x_{i+1}-x_{i-2})x_{i-1}$ that transfers energy across scales and induces strong nonlinearity, linear damping $-x_i$ that prevents unbounded growth, and constant forcing that maintains a statistically stationary, nonequilibrium regime.
 
 % At $F=8.0$, the system is strongly chaotic, with approximately $13$ positive Lyapunov exponents. The largest exponent, $\lambda_{\max}\approx 1.68$, governs exponential error growth along the most unstable direction:
 % \[
@@ -176,14 +177,14 @@ To exploit temporal correlations, four-dimensional methods condition jointly on 
 \vdots\\
 \mathbf{z}_{wL}
 \end{bmatrix}
-\in\mathbb{R}^{mL},
+\in\mathbb{R}^{d},
 \label{eq:stacked_obs}
 \end{equation}
 where $w$ indexes the window and $(w-1)L+1,\ldots,wL$ denote the global observation time indices within that window. Assuming temporally independent observation errors, the augmented covariance is block diagonal, $\mathbf{R}^{(L)}=\mathbf{I}_L\otimes\mathbf{R}$. When the window length $LT_{\mathrm{obs}}$ is shorter than the Lyapunov timescale $\tau_{\mathrm{Lyap}}$, forecast ensembles retain substantial temporal correlation, allowing later observations within the window to inform the update of earlier or initial states through the joint conditioning. This smoothing-like capability is the principal advantage of four-dimensional formulations over purely sequential filters, which propagate information strictly forward in time.
 
 In four-dimensional formulations it is convenient to view $\mathbf{z}^{(w)}$ as an element of a stacked observation space of dimension $d=mL$, and to define a corresponding stacked observation operator $\mathbf{H}^{(L)}$ mapping a window-initial state to predicted stacked observations; a tangent-linear version of this operator is introduced in Definition~\ref{def:data_space}.
 
-Windowed assimilation also amplifies sampling effects in stochastic ensemble methods. Observation perturbations must be drawn in the higher-dimensional space $\mathbb{R}^{mL}$. Under the assumption that perturbations $\{\boldsymbol{\epsilon}_w^{(j)}\}_{j=1}^N$ are i.i.d.\ with $\boldsymbol{\epsilon}_w^{(j)}\sim\mathcal{N}(\mathbf{0},\mathbf{R}^{(L)})$ and $\mathbf{R}^{(L)}=\sigma_{\mathrm{obs}}^2\mathbf{I}_{mL}$, consider the (unbiased) sample covariance
+Windowed assimilation also amplifies sampling effects in stochastic ensemble methods. Observation perturbations must be drawn in the higher-dimensional space $\mathbb{R}^{d}$. Under the assumption that perturbations $\{\boldsymbol{\epsilon}_w^{(j)}\}_{j=1}^N$ are i.i.d.\ with $\boldsymbol{\epsilon}_w^{(j)}\sim\mathcal{N}(\mathbf{0},\mathbf{R}^{(L)})$ and $\mathbf{R}^{(L)}=\sigma_{\mathrm{obs}}^2\mathbf{I}_{d}$, consider the (unbiased) sample covariance
 \[
 \widehat{\mathbf{R}}^{(L)}
 :=
@@ -199,10 +200,10 @@ Then, with $d=mL$, one has (under finite fourth moments, and with explicit const
 =
 \mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\sqrt{\frac{d}{N-1}}\right)
 =
-\mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\sqrt{\frac{mL}{N}}\right),
+\mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\sqrt{\frac{d}{N}}\right),
 \]
 and hence, by Jensen's inequality,
-$\mathbb{E}\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_F=\mathcal{O}(\sigma_{\mathrm{obs}}^2\sqrt{mL/N})$. Relative to the sequential case ($d=m$), the prefactor grows like $\sqrt{L}$, so for moderate ensemble sizes this $\sqrt{L}$ amplification can offset gains from temporal coupling. Quantifying and mitigating this tradeoff between information gain and sampling noise motivates the comparative numerical analysis that follows.
+$\mathbb{E}\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_F=\mathcal{O}(\sigma_{\mathrm{obs}}^2\sqrt{d/N})$. Relative to the sequential case ($d=m$), the prefactor grows like $\sqrt{L}$, so for moderate ensemble sizes this $\sqrt{L}$ amplification can offset gains from temporal coupling. Quantifying and mitigating this tradeoff between information gain and sampling noise motivates the comparative numerical analysis that follows.
 
 
 
@@ -282,7 +283,7 @@ Observation perturbations play a dual role in the stochastic EnKF. First, they e
 \[
 \mathbb{E}_{\boldsymbol{\epsilon}}[\widehat{\mathbf{P}}^{\,a}]=(\mathbf{I}-\mathbf{K}_k\mathbf{H})\widehat{\mathbf{P}}^{\,f}(\mathbf{I}-\mathbf{K}_k\mathbf{H})^\top + \mathbf{K}_k\mathbf{R}\mathbf{K}_k^\top
 \]
-in agreement with the Kalman update formula, where $\widehat{\mathbf{P}}^{\,a}$ denotes the sample covariance of the analysis ensemble. Second, by presenting each ensemble member with a distinct realization of the observation, the perturbations prevent collapse of the ensemble onto a single point when the same observation is assimilated repeatedly. These benefits, however, come at the cost of additional sampling variability. The perturbation-induced contribution to the ensemble mean error has expected squared norm $\mathcal{O}(\|\mathbf{K}_k\mathbf{R}\|_F^2/N)$, which scales with the gain magnitude and observation error covariance. This sampling noise can substantially degrade both point estimates and uncertainty quantification for small ensemble sizes (see Section~\ref{subsec:spread_skill}).
+in agreement with the Kalman update formula, where $\widehat{\mathbf{P}}^{\,a}$ denotes the sample covariance of the analysis ensemble. Second, by presenting each ensemble member with a distinct realization of the observation, the perturbations prevent collapse of the ensemble onto a single point when the same observation is assimilated repeatedly. These benefits, however, come at the cost of additional sampling variability. The perturbation-induced contribution to the ensemble mean error has expected squared norm $\mathcal{O}(\|\mathbf{K}_k\mathbf{R}^{1/2}\|_F^2/N)$, which scales with the gain magnitude and observation error covariance. This sampling noise can substantially degrade both point estimates and uncertainty quantification for small ensemble sizes (see Section~\ref{subsec:spread_skill}).
 
 Regularization in the stochastic EnKF arises implicitly through the additive observation covariance $\mathbf{R}$ in the innovation term. This mechanism inflates all eigenvalues of $\mathbf{H}\mathbf{P}^f\mathbf{H}^\top$ uniformly by $\sigma_{\mathrm{obs}}^2$, stabilizing the inversion but failing to distinguish between signal-dominated and noise-dominated subspaces. The resulting regularization is robust but conservative, prioritizing numerical stability over adaptivity.
 
@@ -297,17 +298,17 @@ The four-dimensional stochastic ensemble Kalman filter (4D-EnKF) \citep{hunt2004
 \boldsymbol{\epsilon}_{w}^{(j)}\sim\mathcal{N}(\mathbf{0},\mathbf{R}^{(L)}),
 \label{eq:4d_perturb}
 \end{equation}
-where $\mathbf{z}^{(w)}$ is the stacked observation vector defined in \eqref{eq:stacked_obs} and $\mathbf{R}^{(L)}$ is the corresponding block-diagonal covariance. The Kalman gain is computed analogously to the sequential case, but now in the augmented observation space $\mathbb{R}^{mL}$, relating the window-final state to the stacked observations through cross-covariances computed from the ensemble of forecasts at all $L$ times.
+where $\mathbf{z}^{(w)}$ is the stacked observation vector defined in \eqref{eq:stacked_obs} and $\mathbf{R}^{(L)}$ is the corresponding block-diagonal covariance. The Kalman gain is computed analogously to the sequential case, but now in the augmented observation space $\mathbb{R}^{d}$, relating the window-final state to the stacked observations through cross-covariances computed from the ensemble of forecasts at all $L$ times.
 
 The principal advantage of four-dimensional formulations is their ability to exploit temporal correlations. Observations acquired later in the window can inform earlier states through the dynamical model, effectively smoothing the trajectory and indirectly constraining unobserved components. However, the increase in observation-space dimensionality amplifies sampling variance; the net benefit depends on the interplay between improved conditioning and increased sampling noise (see Section~\ref{subsec:operational_window_length} for detailed analysis).
 
 \subsubsection{Spectral Regularization Through QPCA-EnDCF}
 
-The Quantity-of-Interest Principal Component Analysis Ensemble Data Covariance Filter (QPCA-EnDCF) adopts a fundamentally different strategy, eliminating observation perturbations altogether in favor of deterministic, spectrally regularized corrections. The method proceeds through three stages: whitening of forecast--observation residuals, spectral identification of dominant mismatch modes, and construction of truncated corrections.
+The Quantity-of-Interest Principal Component Analysis Ensemble Data Consistent Filter (QPCA-EnDCF) adopts a fundamentally different strategy, eliminating observation perturbations altogether in favor of deterministic, spectrally regularized corrections. The method proceeds through three stages: whitening of forecast--observation residuals, spectral identification of dominant mismatch modes, and construction of truncated corrections.
 
-For clarity, we describe the construction here at the algorithmic level; the corresponding population and sample objects (forecast law, stacked QoI map, whitened residual covariances, spectral projectors, and empirical gains) are defined precisely in Section~\ref{sec:theoretical_framework}.
+For clarity, we describe the construction here at the algorithmic level; the corresponding population and sample objects (forecast distribution, stacked QoI map, whitened residual covariances, spectral projectors, and empirical gains) are defined precisely in Section~\ref{sec:theoretical_framework}.
 
-In the first stage, residuals are normalized by observation uncertainty to obtain whitened mismatches. For the stacked four-dimensional observation framework with diagonal observation error covariance $\mathbf{R}^{(L)}=\sigma_{\mathrm{obs}}^2\mathbf{I}_{mL}$, this takes the form
+In the first stage, residuals are normalized by observation uncertainty to obtain whitened mismatches. For the stacked four-dimensional observation framework with diagonal observation error covariance $\mathbf{R}^{(L)}=\sigma_{\mathrm{obs}}^2\mathbf{I}_{d}$, this takes the form
 \begin{equation}
 \mathbf{E}
 =
@@ -318,7 +319,7 @@ In the first stage, residuals are normalized by observation uncertainty to obtai
 \bigl(\mathbf{Y}_{\mathrm{stack}}-\mathbf{z}^{(w)}\mathbf{1}^\top\bigr),
 \label{eq:whitening_problem}
 \end{equation}
-where $\mathbf{Y}_{\mathrm{stack}}\in\mathbb{R}^{mL\times N}$ contains the stacked forecast observations for all ensemble members. The scalar form $\sigma_{\mathrm{obs}}^{-1}$ is used when $\mathbf{R}^{(L)}$ is diagonal; implementation details for non-diagonal covariances are provided in Section~\ref{subsec:correlated_errors}.
+where $\mathbf{Y}_{\mathrm{stack}}\in\mathbb{R}^{d\times N}$ contains the stacked forecast observations for all ensemble members. The scalar form $\sigma_{\mathrm{obs}}^{-1}$ is used when $\mathbf{R}^{(L)}$ is diagonal; implementation details for non-diagonal covariances are provided in Section~\ref{subsec:correlated_errors}.
 
 In the second stage, the covariance of the centered whitened residuals is decomposed spectrally,
 \begin{equation}
@@ -329,7 +330,7 @@ In the second stage, the covariance of the centered whitened residuals is decomp
 \sum_{i=1}^{r}\hat{\lambda}_i\hat{\mathbf{v}}_i\hat{\mathbf{v}}_i^\top,
 \label{eq:spectral_decomp_problem}
 \end{equation}
-where $r=\min(mL,N-1)$ denotes the maximum possible rank of $\mathbf{C}_E$, and $\mathbf{E}_c:=\mathbf{E}-\bar{\mathbf{e}}\mathbf{1}^\top$ denotes the centered whitened residual matrix, with $\mathbf{E}=[\mathbf{e}^{(1)},\ldots,\mathbf{e}^{(N)}]\in\mathbb{R}^{d\times N}$ and $\bar{\mathbf{e}}=\frac{1}{N}\sum_{j=1}^N\mathbf{e}^{(j)}$. The eigenvalues satisfy $\hat{\lambda}_1\geq\hat{\lambda}_2\geq\cdots\geq\hat{\lambda}_r\geq 0$, where the actual rank of $\mathbf{C}_E$ may be less than $r$ if some eigenvalues are zero (e.g., due to collinear ensemble members or degenerate configurations). In practice, the positive eigenvalues quantify the variance of forecast--observation mismatch along orthogonal directions $\hat{\mathbf{v}}_i$. Large eigenvalues correspond to coherent, dynamically meaningful discrepancies, whereas small (but nonzero) eigenvalues primarily reflect sampling and measurement noise.
+where $r=\min(d,N-1)$ denotes the maximum possible rank of $\mathbf{C}_E$, and $\mathbf{E}_c:=\mathbf{E}-\bar{\mathbf{e}}\mathbf{1}^\top$ denotes the centered whitened residual matrix, with $\mathbf{E}=[\mathbf{e}^{(1)},\ldots,\mathbf{e}^{(N)}]\in\mathbb{R}^{d\times N}$ and $\bar{\mathbf{e}}=\frac{1}{N}\sum_{j=1}^N\mathbf{e}^{(j)}$. The eigenvalues satisfy $\hat{\lambda}_1\geq\hat{\lambda}_2\geq\cdots\geq\hat{\lambda}_r\geq 0$, where the actual rank of $\mathbf{C}_E$ may be less than $r$ if some eigenvalues are zero (e.g., due to collinear ensemble members or degenerate configurations). In practice, the positive eigenvalues quantify the variance of forecast--observation mismatch along orthogonal directions $\hat{\mathbf{v}}_i$. Large eigenvalues correspond to coherent, dynamically meaningful discrepancies, whereas small (but nonzero) eigenvalues primarily reflect sampling and measurement noise.
 
 In the final stage, corrections are constructed by projecting onto the leading $\kappa$ eigenmodes,
 \begin{equation}
@@ -338,9 +339,9 @@ In the final stage, corrections are constructed by projecting onto the leading $
 -\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top\mathbf{E},
 \label{eq:qpca_correction}
 \end{equation}
-where $\hat{\mathbf{V}}_\kappa=[\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa]$ and $\kappa\ll\min(mL,N-1)$. Note that eigenvectors $\hat{\mathbf{v}}_i$ are computed from the centered residuals $\mathbf{E}_c$ (characterizing covariance structure), but the projection is applied to the uncentered residuals $\mathbf{E}$ (containing both mean mismatch and fluctuations). This allows correction of both systematic bias (captured by $\bar{\mathbf{e}}$) and random fluctuations about the mean, but \emph{only to the extent that these components lie in the retained $\kappa$-dimensional eigenspace}. Components of the mean mismatch orthogonal to $\{\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa\}$ are not corrected, which can introduce bias if the mean mismatch does not align well with the leading covariance directions. This truncation implements hard spectral regularization in observation space, retaining dominant mismatch directions while suppressing noise-dominated components. The resulting observation-space corrections are then mapped back to state space via the empirical cross-covariance gain matrix $\mathbf{K}^{\mathrm{EnDCF}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$, which projects the observation-space innovations onto the state-space ensemble covariance structure, and the resulting state-space increments are applied deterministically to the ensemble (see Definition~\ref{def:endcf_gain_ensemble} and Algorithm~\ref{alg:qpca_endcf} for details).
+where $\hat{\mathbf{V}}_\kappa=[\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa]$ and $\kappa\ll\min(d,N-1)$. Note that eigenvectors $\hat{\mathbf{v}}_i$ are computed from the centered residuals $\mathbf{E}_c$ (characterizing covariance structure), but the projection is applied to the uncentered residuals $\mathbf{E}$ (containing both mean mismatch and fluctuations). This allows correction of both systematic bias (captured by $\bar{\mathbf{e}}$) and random fluctuations about the mean, but only to the extent that these components lie in the retained $\kappa$-dimensional eigenspace. Components of the mean mismatch orthogonal to $\{\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa\}$ are not corrected, which can introduce bias if the mean mismatch does not align well with the leading covariance directions. This truncation implements hard spectral regularization in observation space, retaining dominant mismatch directions while suppressing noise-dominated components. The resulting observation-space corrections are then mapped back to state space via the empirical cross-covariance gain matrix $\mathbf{K}^{\mathrm{DC}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$, which projects the observation-space innovations onto the state-space ensemble covariance structure, and the resulting state-space increments are applied deterministically to the ensemble (see Definition~\ref{def:endcf_gain_ensemble} and Algorithm~\ref{alg:qpca_endcf} for details).
 
-Because the update is deterministic, it introduces no additional sampling noise from perturbed observations. Each ensemble member is corrected by a deterministic function of its whitened residual, and the correction acts only in the $\kappa$-dimensional subspace spanned by the leading empirical eigenmodes, leaving the complementary $(mL-\kappa)$-dimensional subspace unchanged. In typical configurations, this implies that the vast majority of observation-space directions remain unaffected by the update, concentrating corrections on the dominant mismatch mode while avoiding noise-dominated directions. This stands in sharp contrast to stochastic filters, in which random perturbations can distort ensemble geometry in directions unrelated to posterior uncertainty. The adaptive nature of the spectral truncation is central to the method’s regularization properties. By selecting modes based on the realized eigenvalue spectrum, QPCA-EnDCF balances data fidelity against noise suppression without introducing fixed inflation or localization parameters. Although the truncation level $\kappa$ must be chosen, we show in subsequent sections that performance is relatively insensitive to its precise value over a broad range, and that simple spectral heuristics provide effective guidance. The theoretical analysis that follows formalizes these geometric and statistical considerations, establishing rigorous results on variance preservation, sampling-error reduction, and asymptotic calibration for spectrally regularized ensemble methods.
+Because the update is deterministic, it introduces no additional sampling noise from perturbed observations. Each ensemble member is corrected by a deterministic function of its whitened residual, and the correction acts only in the $\kappa$-dimensional subspace spanned by the leading empirical eigenmodes, leaving the complementary $(d-\kappa)$-dimensional subspace unchanged. In typical configurations, this implies that the vast majority of observation-space directions remain unaffected by the update, concentrating corrections on the dominant mismatch mode while avoiding noise-dominated directions. This stands in sharp contrast to stochastic filters, in which random perturbations can distort ensemble geometry in directions unrelated to posterior uncertainty. The adaptive nature of the spectral truncation is central to the method’s regularization properties. By selecting modes based on the realized eigenvalue spectrum, QPCA-EnDCF balances data fidelity against noise suppression without introducing fixed inflation or localization parameters. Although the truncation level $\kappa$ must be chosen, we show in subsequent sections that performance is relatively insensitive to its precise value over a broad range, and that simple spectral heuristics provide effective guidance. The theoretical analysis that follows formalizes these geometric and statistical considerations, establishing rigorous results on variance preservation, sampling-error reduction, and asymptotic calibration for spectrally regularized ensemble methods.
 
 \FloatBarrier
 
@@ -355,17 +356,17 @@ Because the update is deterministic, it introduces no additional sampling noise 
 \label{sec:theoretical_framework}
 
 
-This section introduces the mathematical framework and notation underlying the analysis of QPCA-EnDCF. We distinguish between \emph{population} objects—deterministic quantities defined with respect to the forecast law—and \emph{sample} objects computed from a finite ensemble and therefore inherently random. Population quantities represent the idealized limit of an infinite ensemble; sample quantities fluctuate around their population analogues due to finite-$N$ sampling effects. A primary goal of the theoretical results developed later is to quantify this discrepancy by establishing concentration bounds. All random quantities are defined on an underlying probability space $(\Omega,\mathcal{F},\mathbb{P})$, and all expectations are taken with respect to $\mathbb{P}$ unless otherwise stated. In the small-ensemble regime, the empirical observation-space covariance is necessarily singular, requiring a stabilized inverse (see Remark~\ref{rem:pyy_pinv_default}). We proceed by formalizing the forecast and observation spaces and the stacked QoI map, then defining whitened residual covariances and their spectra, and finally introducing the empirical EnDCF gain and QPCA projectors used by the algorithm. We denote by $n$ the state dimension and by $m$ the observed dimension per time. The assimilation window length is given by $L$, yielding a stacked observation dimension $d = mL$. Finally, $N$ denotes the ensemble size and $\kappa$ the spectral truncation rank. We use $k$ for the global observation-time index, $w$ for the window index, and $\ell\in\{1,\ldots,L\}$ for within-window indices. For windowed methods, we distinguish window-initial forecast ensembles $\mathbf{X}_0$ from window-endpoint forecast ensembles $\mathbf{X}_L$, and we write $\mathbf{Y}_{\mathrm{stack}}$ for stacked forecast observations.
+This section introduces the mathematical framework and notation underlying the analysis of QPCA-EnDCF. We distinguish between population objects—deterministic quantities defined with respect to the forecast distribution—and sample objects computed from a finite ensemble and therefore inherently random. Population quantities represent the idealized limit of an infinite ensemble; sample quantities fluctuate around their population analogues due to finite-$N$ sampling effects. A primary goal of the theoretical results developed later is to quantify this discrepancy by establishing concentration bounds. All random quantities are defined on an underlying probability space $(\Omega,\mathcal{F},\mathbb{P})$, and all expectations are taken with respect to $\mathbb{P}$ unless otherwise stated. In the small-ensemble regime, the empirical observation-space covariance is necessarily singular, requiring a stabilized inverse (see Remark~\ref{rem:pyy_pinv_default}). We proceed by formalizing the forecast and observation spaces and the stacked QoI map, then defining whitened residual covariances and their spectra, and finally introducing the empirical EnDCF gain and QPCA projectors used by the algorithm.
 
-\begin{remark}[Timing convention for four-dimensional assimilation]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Timing convention for four-dimensional assimilation).}
 \label{rem:timing_convention}
 In four-dimensional methods, two distinct time indices within a window must be distinguished:
 \begin{enumerate}[label=(\roman*),nosep]
 \item \textbf{Window-initial states} $\mathbf{x}_0^{(j),f}$: These are the forecast states at the beginning of a window ($\ell=0$). The stacked observation operator $\mathbf{H}^{(L)}$ (Definition~\ref{def:data_space}) is applied to $\mathbf{x}_0^{(j),f}$ to produce predicted observations at times $\ell=1,\ldots,L$ via the tangent-linear propagation. The whitened residuals $\mathbf{e}^{(j)}$ are functions of these window-initial states.
-\item \textbf{Window-endpoint states} $\mathbf{x}_L^{(j),f}$: These are the forecast states at the end of the window ($\ell=L$), obtained by propagating $\mathbf{x}_0^{(j),f}$ through $L$ model steps. The EnDCF gain $\mathbf{K}^{\mathrm{EnDCF}}$ (Definition~\ref{def:endcf_gain_ensemble}) maps observation-space corrections to state-space increments that are applied to $\mathbf{x}_L^{(j),f}$ to produce the analysis $\mathbf{x}_L^{(j),a}$.
+\item \textbf{Window-endpoint states} $\mathbf{x}_L^{(j),f}$: These are the forecast states at the end of the window ($\ell=L$), obtained by propagating $\mathbf{x}_0^{(j),f}$ through $L$ applications of $\mathcal{M}$ (i.e., over $L$ observation intervals of length $T_{\mathrm{obs}}$). The EnDCF gain $\mathbf{K}^{\mathrm{DC}}$ (Definition~\ref{def:endcf_gain_ensemble}) maps observation-space corrections to state-space increments that are applied to $\mathbf{x}_L^{(j),f}$ to produce the analysis $\mathbf{x}_L^{(j),a}$.
 \end{enumerate}
 Throughout this paper, we use the subscript convention explicitly: $\mathbf{x}_0^{(j),f}$ always denotes the window-initial state (used for residual and $\mathbf{Y}_{\mathrm{stack}}$ computation), while $\mathbf{x}_L^{(j),f}$ denotes the window-endpoint state (to which the gain is applied). When $\mathbf{x}^{(j),f}$ appears without a time subscript in theoretical statements, it refers to the window-initial state unless the gain matrix $\mathbf{K}$ appears in the same expression, in which case it refers to the window-endpoint state.
-\end{remark}
+\par\smallskip
 
 
 % -----------------------------------------------------------------------------
@@ -394,11 +395,11 @@ P_{\mathcal{X}}(A)
 A forecast ensemble $\{\mathbf{x}^{(j),f}\}_{j=1}^N$ is assumed to consist of independent and identically distributed draws from $P_{\mathcal{X}}$.
 \end{definition}
 
-\begin{remark}[Interpretation of the forecast law]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Interpretation of the forecast distribution).}
 In practice, $P_{\mathcal{X}}$ represents the algorithmic forecast distribution (e.g., the Gaussian approximation constructed by the assimilation method) rather than the true invariant measure of the Lorenz-96 attractor, which is singular with respect to Lebesgue measure. The i.i.d.\ sampling assumption is an idealization: in sequential filtering, ensemble members become statistically dependent through repeated cycling. The assumption is invoked here to enable tractable analysis of sampling error and is understood as an approximation valid when ensemble diversity is actively maintained (e.g., through inflation or spectral regularization).
-\end{remark}
+\par\smallskip
 
-\begin{assumption}[Gaussian forecast model (when invoked)]
+\begin{assumption}[Gaussian forecast model]
 \label{ass:gaussian_forecast}
 When explicit covariance and higher-moment identities are required, we specialize to the Gaussian case and assume
 \[
@@ -410,7 +411,7 @@ This assumption is invoked only when necessary and does not otherwise restrict t
 
 \begin{definition}[Observation space and quantity-of-interest map]
 \label{def:data_space}
-Let $\mathcal{D}=\mathbb{R}^{d}$ with $d:=mL$ denote the stacked observation space, equipped with its Borel $\sigma$-algebra $\mathcal{B}_{\mathcal{D}}$ and Lebesgue measure $\mu_{\mathcal{D}}$. The stacked observation vector $\mathbf{z}^{(w)}$ defined in \eqref{eq:stacked_obs} is an element of $\mathcal{D}$. A quantity-of-interest (QoI) map is any measurable function $Q:\mathcal{X}\to\mathcal{D}$. Throughout the theoretical analysis, we work with a \emph{tangent-linear approximation} of $Q$, represented by a stacked observation operator $\mathbf{H}^{(L)}\in\mathbb{R}^{d\times n}$:
+Let $\mathcal{D}=\mathbb{R}^{d}$ with $d:=mL$ denote the stacked observation space, equipped with its Borel $\sigma$-algebra $\mathcal{B}_{\mathcal{D}}$ and Lebesgue measure $\mu_{\mathcal{D}}$. The stacked observation vector $\mathbf{z}^{(w)}$ defined in \eqref{eq:stacked_obs} is an element of $\mathcal{D}$. A quantity-of-interest (QoI) map is any measurable function $Q:\mathcal{X}\to\mathcal{D}$. Throughout the theoretical analysis, we work with a tangent-linear approximation of $Q$, represented by a stacked observation operator $\mathbf{H}^{(L)}\in\mathbb{R}^{d\times n}$:
 \[
 Q(\mathbf{x}_0)\approx\mathbf{H}^{(L)}\mathbf{x}_0
 =
@@ -421,12 +422,12 @@ Q(\mathbf{x}_0)\approx\mathbf{H}^{(L)}\mathbf{x}_0
 \mathbf{H}\mathbf{M}_L
 \end{bmatrix}
 \mathbf{x}_0
-\in\mathbb{R}^{mL},
+\in\mathbb{R}^{d},
 \]
 where $\mathbf{M}_\ell\in\mathbb{R}^{n\times n}$ is the tangent linear model (TLM) obtained by linearizing the nonlinear dynamics $\mathcal{M}$ about a reference trajectory $\{\bar{\mathbf{x}}_\ell\}_{\ell=0}^{L}$ (typically the ensemble mean trajectory), so that $\mathbf{M}_\ell := \frac{\partial}{\partial\mathbf{x}_0}\mathcal{M}^{(\ell)}(\mathbf{x}_0)\big|_{\mathbf{x}_0=\bar{\mathbf{x}}_0}$ maps perturbations at the window-initial time to perturbations at time $\ell$. This tangent-linear formulation permits closed-form expressions for population covariance propagation and underpins the spectral analysis in Sections~\ref{sec:theoretical_framework}--\ref{sec:convergence_analysis}. The approximation is exact for linear dynamics and linear observation operators; for nonlinear dynamics, it is valid to first order in perturbations about the reference trajectory. The numerical experiments (Section~\ref{sec:framework}) propagate the full nonlinear model $\mathcal{M}$ and then apply the linear observation operator $\mathbf{H}$; the theoretical results thus characterize algorithm behavior in the tangent-linear regime, which provides a useful approximation when ensemble spread is small relative to the scale of nonlinearity.
 \end{definition}
 
-\begin{remark}[Convergence of approximate QoI maps]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Convergence of approximate QoI maps).}
 \label{rem:map_convergence}
 A sequence of measurable maps $\{Q_s\}_{s\ge 1}$, with $Q_s:\mathcal{X}\to\mathcal{D}$, is said to converge to $Q$ in $L^2(P_{\mathcal{X}})$ if
 \begin{align*}
@@ -440,12 +441,12 @@ A sequence of measurable maps $\{Q_s\}_{s\ge 1}$, with $Q_s:\mathcal{X}\to\mathc
 \quad\text{as } s\to\infty.
 \end{align*}
 This notion of convergence will be used to formalize consistency of approximate observation operators and surrogate models. The index $s$ (for ``surrogate'' or ``approximation stage'') is distinct from the within-window time index $\ell\in\{1,\ldots,L\}$ used elsewhere in this paper.
-\end{remark}
+\par\smallskip
 
-\begin{remark}[Notation correspondence with prior work]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Notation correspondence with prior work).}
 \label{rem:notation_correspondence}
 The state space $\mathcal{X}$ and observation space $\mathcal{D}$ correspond to the parameter space $\Lambda$ and data space $D$, respectively, in~\cite{ButlerWildeyZhang2020}. Likewise, the forecast density $\pi_{\mathcal{X}}^{f}$ corresponds to $\pi_{\Lambda}$ in that notation, and the maps $Q_s:\mathcal{X}\to\mathcal{D}$ play the role of the parameter-to-QoI maps considered therein.
-\end{remark}
+\par\smallskip
 
 
 % -----------------------------------------------------------------------------
@@ -468,7 +469,7 @@ Let $\mathbf{R}^{(L)}\in\mathbb{R}^{d\times d}$ be symmetric positive definite. 
 \in\mathbb{R}^{d},
 \]
 where $\mathbf{H}^{(L)}$ is the linear stacked observation operator from Definition~\ref{def:data_space}.
-The corresponding population mean and covariance, \emph{conditional on the realized observations $\mathbf{z}^{(w)}$}, are given by
+The corresponding population mean and covariance, conditional on the realized observations $\mathbf{z}^{(w)}$, are given by
 \begin{align*}
 \boldsymbol{\mu}_E
 &:=
@@ -500,14 +501,14 @@ Given a finite ensemble $\{\mathbf{e}^{(j)}\}_{j=1}^N$, we define the sample mea
 \]
 \end{definition}
 
-\begin{remark}[Conditioning convention]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Conditioning convention).}
 \label{rem:conditioning_convention}
-In the theoretical development that follows, we work \emph{conditionally} on the realized observation vector $\mathbf{z}^{(w)}$ (equivalently, we treat $\mathbf{z}^{(w)}$ as fixed and take expectations only over ensemble sampling and any algorithmic randomness). To reduce notation, we typically suppress the explicit conditioning ``$\mid\mathbf{z}^{(w)}$'' in expressions such as $\mathbb{E}[\cdot]$ and $\mathrm{Cov}(\cdot)$, except where it is needed for clarity.
-\end{remark}
+In the theoretical development that follows, we work conditionally on the realized observation vector $\mathbf{z}^{(w)}$ (equivalently, we treat $\mathbf{z}^{(w)}$ as fixed and take expectations only over ensemble sampling and any algorithmic randomness). To reduce notation, we typically suppress the explicit conditioning ``$\mid\mathbf{z}^{(w)}$'' in expressions such as $\mathbb{E}[\cdot]$ and $\mathrm{Cov}(\cdot)$, except where it is needed for clarity.
+\par\smallskip
 
-\begin{remark}[Role of whitening]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Role of whitening).}
 The transformation $(\mathbf{R}^{(L)})^{-1/2}$ rescales the observation space so that, in whitened coordinates, the (stacked) observation errors are isotropic with unit covariance. This normalization is standard in data assimilation and greatly simplifies both the geometric interpretation of residuals and the derivation of moment and concentration bounds for sample covariance operators.
-\end{remark}
+\par\smallskip
 
 \begin{definition}[Population and sample spectral decompositions]
 \label{def:spectral_decompositions}
@@ -539,7 +540,7 @@ These truncated operators play a central role in the construction and analysis o
 
 % ================================================================================
 
-\subsection{Empirical EnDCF Covariances and Gain (Pseudoinverse Form)}
+\subsection{Empirical EnDCF Covariances and Gain}
 \label{subsec:endcf_gain}
 
 We now define the empirical covariance operators and gain matrix used by EnDCF in practice. These quantities are computed directly from finite ensembles and are therefore random. Particular care is required in the small-ensemble regime, where observation-space covariances are singular and classical inverses are not available.
@@ -592,9 +593,9 @@ The empirical cross-covariance and observation-space covariance are defined by
 \frac{1}{N-1}\mathbf{A}_y\mathbf{A}_y^\top
 \in\mathbb{R}^{d\times d}.
 \]
-The EnDCF gain used in implementation is the \emph{empirical} gain
+The EnDCF gain used in implementation is the empirical gain
 \begin{equation}
-\mathbf{K}^{\mathrm{EnDCF}}
+\mathbf{K}^{\mathrm{DC}}
 :=
 \mathbf{P}_{xy}\,\mathbf{P}_{yy}^{\dagger}
 \in\mathbb{R}^{n\times d},
@@ -603,24 +604,21 @@ The EnDCF gain used in implementation is the \emph{empirical} gain
 where $(\cdot)^{\dagger}$ denotes the Moore--Penrose pseudoinverse.
 \end{definition}
 
-\begin{remark}[Why the pseudoinverse is the appropriate default]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Why the pseudoinverse is the appropriate default).}
 \label{rem:pyy_pinv_default}
 The matrix $\mathbf{P}_{yy}$ has rank at most $\min(d,N-1)$ and is therefore singular whenever $N-1<d$, which is the regime of primary interest in this work. In such cases, the gain \eqref{eq:endcf_gain_pinv} remains well defined, whereas the inverse $\mathbf{P}_{yy}^{-1}$ does not exist. More generally, one may replace $\mathbf{P}_{yy}^{\dagger}$ with a stabilized inverse, such as Tikhonov regularization $(\mathbf{P}_{yy}+\varepsilon\mathbf{I})^{-1}$. All subsequent arguments remain valid provided the resulting gain is uniformly bounded in operator norm, as formalized below.
-\end{remark}
+\par\smallskip
 
 \begin{assumption}[Moment control for the empirical gain]
 \label{ass:gain_moment}
 Whenever expectations involve the random empirical gain, we assume that
 \[
-\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{EnDCF}}\|_2^{2}\right]<\infty.
+\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^{2}\right]<\infty.
 \]
 This moment condition is mild in practice: when a stabilized inverse such as $(\mathbf{P}_{yy}+\varepsilon\mathbf{I})^{-1}$ is used, the inverse is uniformly bounded, and the condition follows from standard moment bounds on the ensemble anomalies (e.g., if the forecast distribution has exponential or sub-exponential tails, as in the Gaussian case). The pseudoinverse satisfies the condition under similar regularity conditions on the forecast distribution. This is the only property of the gain required to pass from conditional to unconditional mean-square bounds in the analysis.
 \end{assumption}
 
-\begin{remark}[Scope of the pseudoinverse formulation]
-\label{rem:pinv_in_main_results}
-All results in this section are stated for the pseudoinverse-based gain $\mathbf{K}^{\mathrm{EnDCF}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$ introduced in Definition~\ref{def:endcf_gain_ensemble}. The same proofs apply verbatim to any stabilized inverse (e.g.\ ridge regularization) provided the resulting gain satisfies Assumption~\ref{ass:gain_moment}.
-\end{remark}
+All results in this section are stated for the pseudoinverse-based gain $\mathbf{K}^{\mathrm{DC}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$ introduced in Definition~\ref{def:endcf_gain_ensemble}. The same proofs apply verbatim to any stabilized inverse (e.g.\ ridge regularization) provided the resulting gain satisfies Assumption~\ref{ass:gain_moment}.
 
 
 % -----------------------------------------------------------------------------
@@ -644,14 +642,14 @@ Let $\mathbf{C}\in\mathbb{R}^{d\times d}$ be a symmetric matrix with orthonormal
 When $\mathbf{C}=\boldsymbol{\Sigma}_E$ we write $\mathbf{P}_\kappa:=\mathbf{P}_\kappa(\boldsymbol{\Sigma}_E)$, and when $\mathbf{C}=\mathbf{C}_E$ we write $\hat{\mathbf{P}}_\kappa:=\mathbf{P}_\kappa(\mathbf{C}_E)$. In QPCA-EnDCF, the empirical projector $\hat{\mathbf{P}}_\kappa$ is used to restrict observation-space increments to a low-dimensional subspace spanned by the leading empirical eigenmodes.
 \end{definition}
 
-\begin{remark}[Nonuniqueness under eigenvalue multiplicity]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Nonuniqueness under eigenvalue multiplicity).}
 \label{rem:projector_nonuniqueness}
-If $\mathbf{C}$ has repeated eigenvalues at or near the cutoff (e.g., $\lambda_\kappa=\lambda_{\kappa+1}$), the ordered eigenvectors are not unique, so the rank-$\kappa$ subspace may be nonunique. In such cases, $\mathbf{P}_\kappa(\mathbf{C})$ is understood as an orthogonal projector onto \emph{some} $\kappa$-dimensional invariant subspace associated with the $\kappa$ largest eigenvalues; any orthonormal basis for that subspace yields the same projector. In the main results, we impose a cutoff gap $\lambda_\kappa-\lambda_{\kappa+1}\ge \delta_\kappa>0$ (Theorem~\ref{thm:bias_variance}), which ensures the leading $\kappa$-dimensional invariant subspace—and hence $\mathbf{P}_\kappa$ and $\hat{\mathbf{P}}_\kappa$—is well defined and stable under perturbations.
-\end{remark}
+If $\mathbf{C}$ has repeated eigenvalues at or near the cutoff (e.g., $\lambda_\kappa=\lambda_{\kappa+1}$), the ordered eigenvectors are not unique, so the rank-$\kappa$ subspace may be nonunique. In such cases, $\mathbf{P}_\kappa(\mathbf{C})$ is understood as an orthogonal projector onto some $\kappa$-dimensional invariant subspace associated with the $\kappa$ largest eigenvalues; any orthonormal basis for that subspace yields the same projector. In the main results, we impose a cutoff gap $\lambda_\kappa-\lambda_{\kappa+1}\ge \delta_\kappa>0$ (Theorem~\ref{thm:bias_variance}), which ensures the leading $\kappa$-dimensional invariant subspace—and hence $\mathbf{P}_\kappa$ and $\hat{\mathbf{P}}_\kappa$—is well defined and stable under perturbations.
+\par\smallskip
 
-\begin{remark}[Truncation and mean--innovation alignment]
-The effect of spectral truncation depends critically on the alignment between the \emph{mean whitened innovation} and the retained subspace. Quantities such as $\|(\mathbf{I}-\mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2$ (or their analogues for approximate maps $Q_s$) measure the component of the mean innovation discarded by truncation. In general, this error cannot be controlled solely by an eigenvalue-tail bound of the form $\sum_{i>\kappa}\lambda_i$ without additional structural assumptions linking the mean $\boldsymbol{\mu}_E$ to the covariance $\boldsymbol{\Sigma}_E$. This distinction plays an important role in the theoretical analysis of truncation bias presented in later sections.
-\end{remark}
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Truncation and mean--innovation alignment).}
+The effect of spectral truncation depends critically on the alignment between the mean whitened innovation and the retained subspace. Quantities such as $\|(\mathbf{I}-\mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2$ (or their analogues for approximate maps $Q_s$) measure the component of the mean innovation discarded by truncation. In general, this error cannot be controlled solely by an eigenvalue-tail bound of the form $\sum_{i>\kappa}\lambda_i$ without additional structural assumptions linking the mean $\boldsymbol{\mu}_E$ to the covariance $\boldsymbol{\Sigma}_E$. This distinction plays an important role in the theoretical analysis of truncation bias presented in later sections.
+\par\smallskip
 
 
 
@@ -685,7 +683,7 @@ We collect here the regularity conditions required for the convergence analysis 
 \label{ass:regularity_bias_variance}
 Let $d:=mL$. We assume the following:
 \begin{enumerate}[label=(\roman*)]
-\item The forecast law $P_{\mathcal{X}}$ has a finite second moment, that is,
+\item The forecast distribution $P_{\mathcal{X}}$ has a finite second moment, that is,
 \[
 \mathbb{E}\|\mathbf{x}\|^{2}<\infty .
 \]
@@ -711,12 +709,12 @@ or, equivalently, $\mathbb{E}\|\mathbf{e}^{(1)}-\boldsymbol{\mu}_E\|^{4}<\infty$
 \end{assumption}
 
 \noindent
-Assumption~\ref{ass:regularity_bias_variance}(i) ensures that all first- and second-moment quantities appearing in the filter are well defined. Assumption~\ref{ass:regularity_bias_variance}(ii) guarantees that the whitening transformation is well posed. Assumption~\ref{ass:regularity_bias_variance}(iii) provides the probabilistic input for the covariance concentration estimates developed below; it is strictly weaker than Gaussianity and suffices for mean-square convergence results, while sharper fluctuation bounds may require stronger distributional assumptions. Finally, Assumption~\ref{ass:regularity_bias_variance}(iv) fixes notation for the population spectrum; no spectral gap or decay condition is imposed unless explicitly stated in later results.
+Assumption~\ref{ass:regularity_bias_variance}(i) ensures that all first and second-moment quantities appearing in the filter are well defined. Assumption~\ref{ass:regularity_bias_variance}(ii) guarantees that the whitening transformation is well posed. Assumption~\ref{ass:regularity_bias_variance}(iii) provides the probabilistic input for the covariance concentration estimates developed below; it is strictly weaker than Gaussianity and suffices for mean-square convergence results, while sharper fluctuation bounds may require stronger distributional assumptions. Finally, Assumption~\ref{ass:regularity_bias_variance}(iv) fixes notation for the population spectrum; no spectral gap or decay condition is imposed unless explicitly stated in later results.
 
-\begin{remark}[Scope of the i.i.d.\ assumption]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Scope of the i.i.d.\ assumption).}
 \label{rem:iid_scope}
 The i.i.d.\ sampling assumption in (iii) is a mathematical idealization adopted for deriving the convergence bounds and concentration estimates in Sections~\ref{subsec:fundamental_concentration}--\ref{subsec:main_bv}. In practical cycling experiments (Sections~\ref{sec:calibration}--\ref{sec:operational}), the analysis ensemble from window $w$ becomes the forecast ensemble for window $w+1$, inducing temporal dependence that violates strict i.i.d.\ conditions. Nonetheless, the theoretical results provide qualitative guidance: under ergodic dynamics and sufficient mixing, consecutive windows become approximately independent in distribution, and the main conclusions---that sampling variance scales as $\mathcal{O}(1/N)$ and is controlled by $\kappa$ rather than $d$---remain empirically valid. The experiments demonstrate that the predicted performance advantages persist under cycling, even though the formal assumptions are satisfied only asymptotically or approximately.
-\end{remark}
+\par\smallskip
 
 
 
@@ -820,9 +818,6 @@ together with
 we obtain $\mathbb{E}[\mathbf{C}_E]=\boldsymbol{\Sigma}_E$.
 \end{proof}
 
-\begin{remark}[Role of Bessel's correction]
-The normalization by $(N-1)$ compensates for the loss of one degree of freedom incurred by centering with the sample mean, ensuring unbiasedness of the covariance estimator for all $N\ge 2$.
-\end{remark}
 
 \begin{lemma}[Mean-square Frobenius deviation of the sample covariance]
 \label{lem:frobenius_concentration}
@@ -881,9 +876,9 @@ Applying the inequality $(a+b)^2\le 2a^2+2b^2$, using independence of the sample
 	and the standardized fourth-moment control implicit in the constant $C_{\mathrm{cov}}$ ensures that $\mathbb{E}\|\tilde{\mathbf{e}}^{(1)}\|^4$ is bounded by a dimension-dependent multiple of $\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$. Absorbing this ratio into $C_{\mathrm{cov}}$ yields the stated bound.
 \end{proof}
 
-\begin{remark}[Optional Gaussian specialization]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Optional Gaussian case).}
 If, in addition, $\tilde{\mathbf{e}}^{(1)}$ is Gaussian, one may take an explicit constant $C_{\mathrm{cov}}=8(d+2)$ via Isserlis' theorem, recovering the familiar Wishart-rate bound.
-\end{remark}
+\par\smallskip
 
 \begin{lemma}[Fourth-moment bound for the sample mean]
 \label{lem:sample_mean_fourth_moment}
@@ -943,16 +938,14 @@ We next convert matrix-level covariance deviations into spectral stability estim
 \label{lem:covariance_concentration}
 Let $\boldsymbol{\Sigma}_E$, $\mathbf{C}_E$, and their eigendecompositions be as in Definition~\ref{def:spectral_decompositions}. Then:
 \begin{enumerate}[label=(\roman*)]
-\item \textbf{Eigenvalue perturbation (Weyl).}
-For each $i=1,\ldots,d$,
+\item For each $i=1,\ldots,d$,
 \[
 |\hat{\lambda}_i-\lambda_i|
 \le
 \|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2 .
 \]
 
-\item \textbf{One-dimensional eigenspace perturbation (Davis--Kahan).}
-Fix $i\in\{1,\ldots,d\}$ and assume that $\lambda_i$ is isolated, i.e.,
+\item Fix $i\in\{1,\ldots,d\}$ and assume that $\lambda_i$ is isolated, i.e.,
 \[
 \mathrm{gap}_i
 :=
@@ -975,8 +968,7 @@ Choose the sign of $\hat{\mathbf{v}}_i$ so that $\langle \hat{\mathbf{v}}_i,\mat
 \frac{4\,\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2}{\delta_i}.
 \]
 
-\item \textbf{Projector perturbation under a cutoff gap.}
-Fix $\kappa\in\{1,\ldots,d\}$ and assume a cutoff gap
+\item Fix $\kappa\in\{1,\ldots,d\}$ and assume a cutoff gap
 \[
 \lambda_\kappa-\lambda_{\kappa+1}\ge \delta_\kappa>0,
 \qquad (\lambda_{d+1}:=0).
@@ -1000,8 +992,8 @@ Then
 \|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F.
 \]
 
-\item \textbf{Truncated covariance error (projector-based form).}
-With $\boldsymbol{\Sigma}_E^\kappa:=\mathbf{P}_\kappa\boldsymbol{\Sigma}_E\mathbf{P}_\kappa$
+
+\item With $\boldsymbol{\Sigma}_E^\kappa:=\mathbf{P}_\kappa\boldsymbol{\Sigma}_E\mathbf{P}_\kappa$
 and $\mathbf{C}_E^\kappa:=\hat{\mathbf{P}}_\kappa\mathbf{C}_E\hat{\mathbf{P}}_\kappa$, one has
 \[
 \|\mathbf{C}_E^\kappa-\boldsymbol{\Sigma}_E^\kappa\|_F
@@ -1019,8 +1011,7 @@ and $\mathbf{C}_E^\kappa:=\hat{\mathbf{P}}_\kappa\mathbf{C}_E\hat{\mathbf{P}}_\k
 The statements follow from standard deterministic perturbation results for symmetric matrices.
 
 \smallskip
-\noindent\emph{Step 1: Eigenvalue perturbation (Weyl).}
-Weyl's inequality yields
+\noindent Weyl's inequality yields
 \[
 |\lambda_i(\mathbf{C}_E)-\lambda_i(\boldsymbol{\Sigma}_E)|
 \le
@@ -1030,8 +1021,7 @@ Weyl's inequality yields
 proving (i).
 
 \smallskip
-\noindent\emph{Step 2: Eigenspace perturbation (Davis--Kahan).}
-Fix $i$ and assume the separation condition in (ii). The Davis--Kahan $\sin\Theta$ theorem gives
+\noindent Fix $i$ and assume the separation condition in (ii). The Davis--Kahan $\sin\Theta$ theorem gives
 \[
 \sin\angle(\hat{\mathbf{v}}_i,\mathbf{v}_i)
 =
@@ -1043,8 +1033,7 @@ Choosing the sign of $\hat{\mathbf{v}}_i$ so that $\langle \hat{\mathbf{v}}_i,\m
 $\|\hat{\mathbf{v}}_i-\mathbf{v}_i\|_2\le 2\sin\angle(\hat{\mathbf{v}}_i,\mathbf{v}_i)$ yields the Euclidean bound in (ii).
 
 \smallskip
-\noindent\emph{Step 3: Cutoff-gap projector perturbation.}
-Under the cutoff-gap condition in (iii), Davis--Kahan in projector form yields
+\noindent Under the cutoff-gap condition in (iii), Davis--Kahan in projector form yields
 \[
 \|\hat{\mathbf{P}}_\kappa-\mathbf{P}_\kappa\|_F
 \le
@@ -1054,8 +1043,7 @@ Under the cutoff-gap condition in (iii), Davis--Kahan in projector form yields
 and the final inequality follows from $\|\cdot\|_2\le \|\cdot\|_F$.
 
 \smallskip
-\noindent\emph{Step 4: Truncated covariance error.}
-Using $\boldsymbol{\Sigma}_E^\kappa=\mathbf{P}_\kappa\boldsymbol{\Sigma}_E\mathbf{P}_\kappa$ and
+\noindent Using $\boldsymbol{\Sigma}_E^\kappa=\mathbf{P}_\kappa\boldsymbol{\Sigma}_E\mathbf{P}_\kappa$ and
 $\mathbf{C}_E^\kappa=\hat{\mathbf{P}}_\kappa\mathbf{C}_E\hat{\mathbf{P}}_\kappa$, insert and subtract
 $\mathbf{P}_\kappa\mathbf{C}_E\mathbf{P}_\kappa$ to obtain
 \[
@@ -1115,8 +1103,7 @@ $\mathbf{J}_N:=\mathbf{I}_N-\frac{1}{N}\mathbf{1}\mathbf{1}^\top$ be the centeri
 \]
 
 \smallskip
-\noindent\emph{Step 1: Reduction to a central Wishart form.}
-Since $\mathbf{J}_N$ is an orthogonal projector of rank $N-1$, there exists an orthogonal matrix
+\noindent Since $\mathbf{J}_N$ is an orthogonal projector of rank $N-1$, there exists an orthogonal matrix
 $\mathbf{U}\in\mathbb{R}^{N\times N}$ such that
 \[
 \mathbf{J}_N
@@ -1136,12 +1123,7 @@ Let $\mathbf{U}_{1:(N-1)}\in\mathbb{R}^{N\times (N-1)}$ denote the first $N-1$ c
 \bigl(\mathbf{A}\mathbf{U}_{1:(N-1)}\bigr)^\top.
 \]
 
-The key point is that right multiplication by an orthogonal matrix preserves the law of a Gaussian data matrix. Indeed, since the columns of $\mathbf{A}$ are i.i.d.\ $\mathcal{N}(\mathbf{0},\boldsymbol{\Sigma}_E)$, we have
-\[
-\mathbf{A}\sim MN_{d\times N}\!\left(\mathbf{0},\,\boldsymbol{\Sigma}_E,\,\mathbf{I}_N\right),
-\]
-equivalently $\mathrm{vec}(\mathbf{A})\sim \mathcal{N}\!\left(\mathbf{0},\,\mathbf{I}_N\otimes \boldsymbol{\Sigma}_E\right)$.
-For any orthogonal $\mathbf{U}$,
+The key point is that right multiplication by an orthogonal matrix preserves the distribution of a Gaussian data matrix. Indeed, since the columns of $\mathbf{A}$ are i.i.d.\ $\mathcal{N}(\mathbf{0},\boldsymbol{\Sigma}_E)$, for any orthogonal $\mathbf{U}$,
 \[
 \mathrm{vec}(\mathbf{A}\mathbf{U})
 =
@@ -1149,7 +1131,7 @@ For any orthogonal $\mathbf{U}$,
 \sim
 \mathcal{N}\!\left(\mathbf{0},\,\mathbf{I}_N\otimes \boldsymbol{\Sigma}_E\right),
 \]
-so $\mathbf{A}\mathbf{U}\stackrel{d}{=}\mathbf{A}$. In particular, the columns of $\mathbf{A}\mathbf{U}$ are again i.i.d.\ $\mathcal{N}(\mathbf{0},\boldsymbol{\Sigma}_E)$, and thus the first $N-1$ columns
+so $\mathbf{A}\mathbf{U}$ and $\mathbf{A}$ are identically distributed. In particular, the columns of $\mathbf{A}\mathbf{U}$ are again i.i.d.\ $\mathcal{N}(\mathbf{0},\boldsymbol{\Sigma}_E)$, and thus the first $N-1$ columns
 \[
 \mathbf{B}:=\mathbf{A}\mathbf{U}_{1:(N-1)}\in\mathbb{R}^{d\times (N-1)}
 \]
@@ -1160,8 +1142,7 @@ are i.i.d.\ $\mathcal{N}(\mathbf{0},\boldsymbol{\Sigma}_E)$. Therefore
 is a central Wishart random matrix with $N-1$ degrees of freedom and scale $\boldsymbol{\Sigma}_E$.
 
 \smallskip
-\noindent\emph{Step 2: Wishart fourth-moment bound.}
-Standard fourth-moment bounds for the Wishart distribution imply that there exists a constant $C_{\mathrm{W}}>0$, depending only on $d$, such that
+\noindent Standard fourth-moment bounds for the Wishart distribution imply that there exists a constant $C_{\mathrm{W}}>0$, depending only on $d$, such that
 \[
 \mathbb{E}\!\left[\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F^4\right]
 \le
@@ -1170,9 +1151,9 @@ Standard fourth-moment bounds for the Wishart distribution imply that there exis
 which is \eqref{eq:cov_fourth_moment_bound}. Taking square roots yields the stated $\mathcal{O}(N^{-1})$ rate.
 \end{proof}
 
-\begin{remark}[Role of spectral gaps]
-Spectral separation is intrinsic to eigenspace stability: when eigenvalues are repeated or nearly repeated, arbitrarily small perturbations may induce large rotations within the associated invariant subspace even though eigenvalues remain stable. For QPCA-EnDCF, stability of the \emph{rank-$\kappa$ projector} is therefore strongest when the cutoff gap $\lambda_\kappa-\lambda_{\kappa+1}$ is well separated.
-\end{remark}
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Role of spectral gaps).}
+Spectral separation is intrinsic to eigenspace stability: when eigenvalues are repeated or nearly repeated, arbitrarily small perturbations may induce large rotations within the associated invariant subspace even though eigenvalues remain stable. For QPCA-EnDCF, stability of the rank-$\kappa$ projector is therefore strongest when the cutoff gap $\lambda_\kappa-\lambda_{\kappa+1}$ is well separated.
+\par\smallskip
 
 
 % -----------------------------------------------------------------------------
@@ -1204,7 +1185,7 @@ Let $\mathbf{P}_\kappa^{\,s}:=\mathbf{P}_\kappa(\boldsymbol{\Sigma}_E^{\,s})$ an
 \begin{theorem}[Bias--variance decomposition with spectral truncation]
 \label{thm:bias_variance}
 Consider QPCA-EnDCF with truncation level $\kappa$ and empirical gain
-$\mathbf{K}^{\mathrm{EnDCF}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$ as in Definition~\ref{def:endcf_gain_ensemble}. Let
+$\mathbf{K}^{\mathrm{DC}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$ as in Definition~\ref{def:endcf_gain_ensemble}. Let
 \(
 \bar{\mathbf{x}}^{a,s}=\frac{1}{N}\sum_{j=1}^N\mathbf{x}^{(j),a,s}
 \)
@@ -1232,21 +1213,21 @@ Moreover, the bias satisfies
 \begin{align}
 \mathrm{Bias}^2(\kappa,s)
 &\le
-2\,\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{EnDCF}}\|_2^2\right]\,
+2\,\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
 \|\mathbf{R}^{(L)}\|_2\,
 \bigl\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\bigr\|^2
 \;+\;
-C_{\mathrm{map}}\,
+C_{\mathrm{m}}\,
 \|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2
 \nonumber\\
 &\hspace{3.2em}
 +\;
-C_{\mathrm{proj}}\,
+C_{\mathrm{p}}\,
 \frac{\kappa}{\delta_\kappa^2}\,
 \mathbb{E}\!\left[\|\mathbf{C}_E^{\,s}-\boldsymbol{\Sigma}_E^{\,s}\|_F^2\right],
 \label{eq:bias_bound_fixed_main}
 \end{align}
-for constants $C_{\mathrm{map}},C_{\mathrm{proj}}>0$ independent of $N$.
+for constants $C_{\mathrm{m}},C_{\mathrm{p}}>0$ independent of $N$.
 
 The variance satisfies
 \begin{align}
@@ -1255,13 +1236,13 @@ The variance satisfies
 \frac{2}{N}\,\mathbb{E}\!\left[\|\mathbf{x}^{(1),f}-\boldsymbol{\mu}^f\|^2\right]
 +
 \frac{2\|\mathbf{R}^{(L)}\|_2}{N}\,
-\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{EnDCF}}\|_2^2\right]\,
+\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
 \mathrm{tr}\!\bigl(\boldsymbol{\Sigma}_E^{\,s}\bigr)
 \nonumber\\
 &\hspace{3.2em}
 +\;
 2\|\mathbf{R}^{(L)}\|_2\,
-\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{EnDCF}}\|_2^2\,
+\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,
 \|(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\|^2\right],
 \label{eq:var_bound_fixed_main_raw}
 \end{align}
@@ -1284,14 +1265,13 @@ In particular, by Cauchy--Schwarz and Lemma~\ref{lem:covariance_concentration}(i
 The exact decomposition follows directly from Lemma~\ref{lem:mean_error_decomp}. It remains to express the analysis mean in a form amenable to truncation and projector perturbation bounds and then to estimate the resulting bias and variance contributions.
 
 \smallskip
-\noindent\emph{Step 1: Projector form of the mean update.}
-By the QPCA-EnDCF construction (Definition~\ref{def:endcf_gain_ensemble} and Definition~\ref{def:projectors_truncation}), the analysis update acts on the whitened residuals through the empirical rank-$\kappa$ projector:
+\noindent By the QPCA-EnDCF construction (Definition~\ref{def:endcf_gain_ensemble} and Definition~\ref{def:projectors_truncation}), the analysis update acts on the whitened residuals through the empirical rank-$\kappa$ projector:
 \[
 \mathbf{x}^{(j),a,s}
 =
 \mathbf{x}^{(j),f}
 -
-\mathbf{K}^{\mathrm{EnDCF}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,\mathbf{e}^{(j),s}.
+\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,\mathbf{e}^{(j),s}.
 \]
 Averaging over $j$ gives the corresponding relation for the analysis mean,
 \begin{equation}
@@ -1300,34 +1280,33 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 =
 \bar{\mathbf{x}}^{f}
 -
-\mathbf{K}^{\mathrm{EnDCF}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,\bar{\mathbf{e}}^{\,s}.
+\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,\bar{\mathbf{e}}^{\,s}.
 \end{equation}
 
 \smallskip
-\noindent\emph{Step 2: Bias bound.}
-Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main}, take expectations, and use $\mathbb{E}[\bar{\mathbf{e}}^{\,s}]=\boldsymbol{\mu}_E^{\,s}$ to obtain
+\noindent Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main}, take expectations, and use $\mathbb{E}[\bar{\mathbf{e}}^{\,s}]=\boldsymbol{\mu}_E^{\,s}$ to obtain
 \[
 \mathbb{E}[\bar{\mathbf{x}}^{a,s}]
 =
 \boldsymbol{\mu}^f
 -
-\mathbb{E}\!\left[\mathbf{K}^{\mathrm{EnDCF}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]
 -
-\mathbb{E}\!\left[\mathbf{K}^{\mathrm{EnDCF}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right].
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right].
 \]
-The truncation remainder relative to the full population correction is governed by $(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}$. Using $\|ABc\|\le \|A\|_2\|B\|_2\|c\|$ and Cauchy--Schwarz yields
+The truncation remainder relative to the full population correction is governed by $(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}$. By Jensen's inequality and submultiplicativity of the spectral norm,
 \[
-\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{EnDCF}}(\mathbf{R}^{(L)})^{1/2}(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
+\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
 \le
-\mathbb{E}\|\mathbf{K}^{\mathrm{EnDCF}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2,
+\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2,
 \]
 which yields the leading truncation term in \eqref{eq:bias_bound_fixed_main} after a factor-$2$ slack to accommodate the remaining contributions.
 
 The projector-estimation term is bounded similarly:
 \[
-\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{EnDCF}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
+\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
 \le
-\mathbb{E}\|\mathbf{K}^{\mathrm{EnDCF}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,
+\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,
 \mathbb{E}\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F^2\,\|\boldsymbol{\mu}_E^{\,s}\|^2.
 \]
 Invoking Lemma~\ref{lem:covariance_concentration}(iii) gives
@@ -1338,11 +1317,10 @@ Invoking Lemma~\ref{lem:covariance_concentration}(iii) gives
 \)
 and absorbing $\|\boldsymbol{\mu}_E^{\,s}\|^2$ into the constant yields the third term in \eqref{eq:bias_bound_fixed_main}.
 
-Finally, the map-approximation term $C_{\mathrm{map}}\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2$ follows from stability of the mean update with respect to $Q_s\to Q$ in $L^2(P_{\mathcal{X}})$ (cf.\ the continuity framework in~\cite{ButlerWildeyZhang2020}); we record it separately because it is orthogonal to the sampling and truncation mechanisms.
+Finally, the map-approximation term $C_{\mathrm{m}}\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2$ follows from stability of the mean update with respect to $Q_s\to Q$ in $L^2(P_{\mathcal{X}})$ (cf.\ the continuity framework in~\cite{ButlerWildeyZhang2020}); we record it separately because it is orthogonal to the sampling and truncation mechanisms.
 
 \smallskip
-\noindent\emph{Step 3: Variance bound.}
-Subtract $\mathbb{E}[\bar{\mathbf{x}}^{a,s}]$ from \eqref{eq:mean_update_projector_main} and apply $\|u+v\|^2\le 2\|u\|^2+2\|v\|^2$ to separate (i) the fluctuation of the forecast mean and (ii) the fluctuation of the projected residual term. Using the standard identities
+\noindent Subtract $\mathbb{E}[\bar{\mathbf{x}}^{a,s}]$ from \eqref{eq:mean_update_projector_main} and apply Young's inequality (i.e., $2ab\le a^2+b^2$) to separate (i) the fluctuation of the forecast mean and (ii) the fluctuation of the projected residual term. Using the standard identities
 \[
 \mathbb{E}\|\bar{\mathbf{x}}^f-\boldsymbol{\mu}^f\|^2=\frac{1}{N}\mathbb{E}\|\mathbf{x}^{(1),f}-\boldsymbol{\mu}^f\|^2,
 \qquad
@@ -1351,22 +1329,22 @@ Subtract $\mathbb{E}[\bar{\mathbf{x}}^{a,s}]$ from \eqref{eq:mean_update_project
 we obtain \eqref{eq:var_bound_fixed_main_raw}. The remaining projector term reflects the fact that $\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}$ and $\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}$ are generally dependent, since both are computed from the same ensemble. The estimate \eqref{eq:var_projector_term_bound_main} follows by applying Cauchy--Schwarz to fourth moments and then invoking Lemma~\ref{lem:covariance_concentration}(iii) applied to $(\boldsymbol{\Sigma}_E^{\,s},\mathbf{C}_E^{\,s})$.
 \end{proof}
 
-\begin{remark}[When can truncation bias be controlled by an eigenvalue tail?]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (When can truncation bias be controlled by an eigenvalue tail?).}
 \label{rem:truncation_bias_tail}
 The leading truncation contribution in \eqref{eq:bias_bound_fixed_main} depends on
 \(
 \|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2,
 \)
-that is, on the component of the \emph{mean whitened innovation} discarded by truncation. Bounds of the form
+that is, on the component of the mean whitened innovation discarded by truncation. Bounds of the form
 \(
 \|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2\lesssim \sum_{i>\kappa}\lambda_i^{\,s}
 \)
 do not hold in general; they require additional structure linking $\boldsymbol{\mu}_E^{\,s}$ to $\boldsymbol{\Sigma}_E^{\,s}$, for example a source/RKHS-type condition such as $\|(\boldsymbol{\Sigma}_E^{\,s})^{-1/2}\boldsymbol{\mu}_E^{\,s}\|<\infty$.
-\end{remark}
+\par\smallskip
 
-\begin{remark}[Interpretation]
-Theorem~\ref{thm:bias_variance} decomposes the mean-squared error into: (i) truncation bias from restricting the \emph{population} correction to a $\kappa$-dimensional subspace; (ii) approximation error from using $Q_s$ in place of $Q$; and (iii) sampling variability, including the stability factor $\kappa/\delta_\kappa^2$ associated with estimating a rank-$\kappa$ projector from $N$ samples. The pseudoinverse gain is essential in the small-ensemble regime $N-1<d$, and Assumption~\ref{ass:gain_moment} is the only probabilistic requirement needed to justify the gain-dependent mean-square bounds.
-\end{remark}
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Interpretation).}
+Theorem~\ref{thm:bias_variance} decomposes the mean-squared error into: (i) truncation bias from restricting the population correction to a $\kappa$-dimensional subspace; (ii) approximation error from using $Q_s$ in place of $Q$; and (iii) sampling variability, including the stability factor $\kappa/\delta_\kappa^2$ associated with estimating a rank-$\kappa$ projector from $N$ samples. The pseudoinverse gain is essential in the small-ensemble regime $N-1<d$, and Assumption~\ref{ass:gain_moment} is the only probabilistic requirement needed to justify the gain-dependent mean-square bounds.
+\par\smallskip
 
 \FloatBarrier
 
@@ -1388,14 +1366,14 @@ Assume the hypotheses of Theorem~\ref{thm:bias_variance}. In addition, assume th
 \mathbf{e}^{(j),s}-\boldsymbol{\mu}_E^{\,s}\stackrel{\mathrm{i.i.d.}}{\sim}\mathcal{N}(\mathbf{0},\boldsymbol{\Sigma}_E^{\,s}).
 \]
 Then there exists a constant $C>0$, depending only on the observation-space dimension $d=mL$, such that
-\[
+\begin{multline*}
 \mathbb{E}\!\left[\|(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\|^2\right]
 \le
 \frac{C\,\kappa}{\delta_\kappa^2}\,
 \frac{1}{N(N-1)}\,
-\mathrm{tr}\!\bigl((\boldsymbol{\Sigma}_E^{\,s})^2\bigr)\,
-\left(\mathbb{E}\|\mathbf{e}^{(1),s}-\boldsymbol{\mu}_E^{\,s}\|^4+\bigl(\mathbb{E}\|\mathbf{e}^{(1),s}-\boldsymbol{\mu}_E^{\,s}\|^2\bigr)^2\right)^{1/2}.
-\]
+\mathrm{tr}\!\bigl((\boldsymbol{\Sigma}_E^{\,s})^2\bigr)\\
+\times\left(\mathbb{E}\|\mathbf{e}^{(1),s}-\boldsymbol{\mu}_E^{\,s}\|^4+\bigl(\mathbb{E}\|\mathbf{e}^{(1),s}-\boldsymbol{\mu}_E^{\,s}\|^2\bigr)^2\right)^{1/2}.
+\end{multline*}
 In particular, for fixed $d$ this term is $\mathcal{O}(\kappa/(\delta_\kappa^2N^2))$.
 \end{corollary}
 
@@ -1447,8 +1425,8 @@ In particular,
 \frac{\|\mathbf{K}^{(w)}\|_2^2\,\mathrm{tr}(\mathbf{R}^{(L)})}{N}.
 \end{split}
 \end{equation}
-If $\mathbf{R}^{(L)}=\bar r\,\mathbf{I}$, then $\mathrm{tr}(\mathbf{R}^{(L)})=mL\,\bar r$ and the injected variance scales as
-$\mathcal{O}(mL/N)$.
+If $\mathbf{R}^{(L)}=\bar r\,\mathbf{I}$, then $\mathrm{tr}(\mathbf{R}^{(L)})=d\,\bar r$ and the injected variance scales as
+$\mathcal{O}(d/N)$.
 
 By contrast, QPCA-EnDCF avoids this perturbation-induced variance source and instead satisfies
 $\mathrm{Var}(N,\kappa,s)=\mathcal{O}(1/N)$ (for fixed approximation stage $s$), with an additional stability factor $\kappa/\delta_\kappa^2$ arising from estimation of the rank-$\kappa$ projector (cf.~\eqref{eq:var_projector_term_bound_main}).
@@ -1464,9 +1442,9 @@ The identity for $\bar{\mathbf{x}}^{a}_{\mathrm{stoch}}$ follows by averaging th
 The final comparison for QPCA-EnDCF is a direct restatement of Theorem~\ref{thm:bias_variance} together with \eqref{eq:var_projector_term_bound_main}.
 \end{proof}
 
-\begin{remark}[Interpreting Corollary~\ref{cor:stochastic_comparison_new}]
-Equation~\eqref{eq:stoch_var_bound_new} isolates an \emph{irreducible} $\mathcal{O}(N^{-1})$ contribution to the variance of the stochastic analysis mean arising solely from observation perturbations. QPCA-EnDCF eliminates this specific source of sampling noise, but introduces variability through estimation of the low-rank projector; the latter contribution is controlled by the cutoff gap $\delta_\kappa$ and by the covariance concentration rate.
-\end{remark}
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Interpreting Corollary~\ref{cor:stochastic_comparison_new}).}
+Equation~\eqref{eq:stoch_var_bound_new} isolates an irreducible $\mathcal{O}(N^{-1})$ contribution to the variance of the stochastic analysis mean arising solely from observation perturbations. QPCA-EnDCF eliminates this specific source of sampling noise, but introduces variability through estimation of the low-rank projector; the latter contribution is controlled by the cutoff gap $\delta_\kappa$ and by the covariance concentration rate.
+\par\smallskip
 
 %--------------------------------------------------------------------
 \begin{corollary}[Principled selection of the truncation level]
@@ -1483,7 +1461,7 @@ and let $\delta_\kappa=\lambda_\kappa^{\,s}-\lambda_{\kappa+1}^{\,s}$ denote the
 \begin{split}
 \kappa^\ast
 &\in
-\argmin_{1\le \kappa<\min(mL,N-1)}
+\argmin_{1\le \kappa<\min(d,N-1)}
 \Bigl\{
 C_{\mathrm{bias},1}\,\mathcal{T}_\kappa^{\,s}
 +
@@ -1493,14 +1471,14 @@ C_{\mathrm{bias},2}\,\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2\\
 \frac{C_{\mathrm{var}}}{N}\,
 \mathrm{tr}\!\bigl(\boldsymbol{\Sigma}_E^{\,s}\bigr)
 +
-C_{\mathrm{proj}}\,
+C_{\mathrm{p}}\,
 \frac{\kappa}{\delta_\kappa^2}\,
 \Bigl(\mathbb{E}\|\mathbf{C}_E^{\,s}-\boldsymbol{\Sigma}_E^{\,s}\|_F^4\Bigr)^{1/2}
 \Bigl(\mathbb{E}\|\mathbf{e}^{(1),s}-\boldsymbol{\mu}_E^{\,s}\|^4\Bigr)^{1/2}
 \Bigr\}.
 \end{split}
 \end{equation}
-Here $C_{\mathrm{bias},1},C_{\mathrm{bias},2},C_{\mathrm{var}},C_{\mathrm{proj}}>0$ depend only on $\|\mathbf{K}^{\mathrm{EnDCF}}\|_2$ and $\|\mathbf{R}^{(L)}\|_2$ (and the inverse-stability constant from~\cite{ButlerWildeyZhang2020}), but are independent of $N$. Under Gaussian sampling, the projector-estimation contribution in \eqref{eq:kappa_proxy_objective} scales as $\mathcal{O}(1/N)$.
+Here $C_{\mathrm{bias},1},C_{\mathrm{bias},2},C_{\mathrm{var}},C_{\mathrm{p}}>0$ depend only on $\|\mathbf{K}^{\mathrm{DC}}\|_2$ and $\|\mathbf{R}^{(L)}\|_2$ (and the inverse-stability constant from~\cite{ButlerWildeyZhang2020}), but are independent of $N$. Under Gaussian sampling, the projector-estimation contribution in \eqref{eq:kappa_proxy_objective} scales as $\mathcal{O}(1/N)$.
 \end{corollary}
 
 \begin{proof}
@@ -1515,10 +1493,7 @@ by Lemma~\ref{lem:cov_frob_fourth_moment}, and finiteness of
 yields the stated scaling for the projector-estimation term.
 \end{proof}
 
-\begin{remark}[Why an eigenvalue tail does not appear by default]
-In Theorem~\ref{thm:bias_variance}, truncation bias is governed by
-$\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2$, that is, by the projection of the \emph{mean innovation} onto the discarded subspace. Eigenvalue-tail quantities such as $\sum_{i>\kappa}\lambda_i^{\,s}$ enter only under additional structural assumptions linking $\boldsymbol{\mu}_E^{\,s}$ to $\boldsymbol{\Sigma}_E^{\,s}$ (or after introducing an additional averaging mechanism).
-\end{remark}
+
 
 \FloatBarrier
 
@@ -1549,10 +1524,10 @@ where $\mathbf{H}\in\mathbb{R}^{m\times n}$ extracts every second state componen
 
 Four-dimensional methods assimilate windows of $L=5$ consecutive observations, spanning $LT_{\mathrm{obs}}=0.5$ time units. This corresponds to approximately $0.83\,\tau_{\mathrm{Lyap}}$ with $\tau_{\mathrm{Lyap}}\approx0.6$, yielding a temporal autocorrelation of state variables at lag $0.5$ of approximately $0.61$ (computed under the Lorenz-96 invariant measure at $F=8$). We perform $W=50$ windows, for a total of $K=WL=250$ observation times.
 
-\begin{remark}[Metrics evaluation convention]
+\par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Metrics evaluation convention).}
 \label{rem:metrics_convention}
-For four-dimensional methods, analysis updates occur once per window (at window endpoints), yielding $W=50$ analysis states. For sequential methods, updates occur at every observation time, yielding $K=WL=250$ analysis states. To enable fair comparison, all performance metrics (spread, RMSE, rank histograms) are computed at \emph{window endpoints only}. We index these evaluation times by $w\in\{1,\ldots,W\}$, corresponding to global observation-time indices $k_w:=wL\in\{L,2L,\ldots,WL\}=\{5,10,\ldots,250\}$. Equations~\eqref{eq:spread_framework}--\eqref{eq:rmse_framework} therefore aggregate over $w=1,\ldots,W$. This convention ensures that (i) 4D methods are evaluated at the times when their analysis is actually computed, and (ii) sequential methods are evaluated at comparable temporal spacing, avoiding artifacts from dense versus sparse evaluation.
-\end{remark}
+For four-dimensional methods, analysis updates occur once per window (at window endpoints), yielding $W=50$ analysis states. For sequential methods, updates occur at every observation time, yielding $K=WL=250$ analysis states. To enable fair comparison of time-series calibration, spread and RMSE are evaluated at window endpoints only. We index these evaluation times by $w\in\{1,\ldots,W\}$, corresponding to global observation-time indices $k_w:=wL\in\{L,2L,\ldots,WL\}=\{5,10,\ldots,250\}$. Equations~\eqref{eq:spread_framework}--\eqref{eq:rmse_framework} therefore aggregate over $w=1,\ldots,W$. This convention ensures that (i) 4D methods are evaluated at the times when their analysis is actually computed, and (ii) sequential methods are evaluated at comparable temporal spacing, avoiding artifacts from dense versus sparse evaluation.
+\par\smallskip
 
 Algorithm-specific parameters are fixed across experiments. QPCA-EnDCF uses truncation level $\kappa=1$ (retaining only the leading eigenmode) and no multiplicative inflation ($\lambda_{\mathrm{infl}}=1.00$), consistent with eigenvalue spectra in which the dominant mode captures $60$--$80\%$ of residual variance. Stochastic methods employ multiplicative inflation $\lambda_{\mathrm{infl}}=1.05$ and perturbed observations drawn from $\mathcal{N}(\mathbf{0},\mathbf{R})$ for sequential updates or $\mathcal{N}(\mathbf{0},\mathbf{R}^{(L)})$ for four-dimensional updates.
 
@@ -1578,7 +1553,7 @@ All experiments reported in this section employ five independent Monte Carlo rea
 
 \subsection{Spread--Skill Relationships}\label{subsec:spread_skill}
 
-Spread--skill diagnostics assess whether ensemble-estimated uncertainty is consistent with actual estimation error. A calibrated ensemble should satisfy two criteria: its spread should match the RMSE in magnitude (scale consistency) and covary with it over time (dynamic tracking).
+Spread--skill diagnostics assess whether ensemble-estimated uncertainty is consistent with actual estimation error. A calibrated ensemble should satisfy two criteria: its spread should match the RMSE in magnitude (scale consistency) and moves together with it over time (dynamic tracking).
 
 We quantify posterior uncertainty by the time-averaged ensemble spread
 \begin{equation}
@@ -1639,7 +1614,7 @@ Temporal behavior is illustrated in Figure~\ref{fig:temporal_calibration}, which
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig04a_spread_vs_rmse_temporal.png}
-\caption{Temporal evolution of ensemble spread (solid) and RMSE (dashed) over the 50-window sequence; shaded regions denote interquartile ranges across five trials. QPCA-EnDCF exhibits coherent covariation between spread and RMSE throughout. Sequential EnKF shows persistently low spread with no tracking of RMSE, while 4D-EnKF displays weak positive correlation but remains underdispersed.}
+\caption{Temporal evolution of ensemble spread (solid) and RMSE (dashed) over the 50-window sequence; shaded regions denote the 25th--75th percentile range (IQR band) across five trials. QPCA-EnDCF exhibits coherent covariation between spread and RMSE throughout. Sequential EnKF shows persistently low spread with no tracking of RMSE, while 4D-EnKF displays weak positive correlation but remains underdispersed.}
 \label{fig:temporal_calibration}
 \end{figure}
 
@@ -1654,7 +1629,7 @@ Figure~\ref{fig:reliability} provides complementary calibration diagnostics.
 \label{fig:reliability}
 \end{figure}
 
-QPCA-EnDCF clusters near the identity line across RMSE values $2$--$5$, confirming accurate uncertainty quantification over varying error regimes. Sequential EnKF exhibits horizontal banding at $\sigma_{\mathrm{ens}}\approx0.3$, consistent with near-zero correlation. The 4D-EnKF shows a weak positive slope but systematic displacement below the diagonal.
+QPCA-EnDCF clusters near the identity line across RMSE values $2$--$5$, confirming accurate uncertainty quantification over varying error regimes. Sequential EnKF exhibits near-vertical clustering at $\sigma_{\mathrm{ens}}\approx0.3$, consistent with near-zero spread--skill correlation. The 4D-EnKF shows slightly larger spreads with weak positive association, but remains systematically above the diagonal (underdispersed).
 
 The spread--skill analysis demonstrates that QPCA-EnDCF yields ensembles whose second moments are well calibrated in both magnitude and temporal dynamics, while stochastic methods exhibit order-of-magnitude underdispersion stemming from fundamental design limitations: observation perturbations introduce additional noise, while sampling error is distributed across all degrees of freedom rather than concentrated in dynamically dominant modes.
 
@@ -1674,7 +1649,7 @@ r_{k,i}
 \left|\{j : x_{k,i}^{(j),a} < x_{k,i}^{\mathrm{true}}\}\right| + 1,
 \label{eq:rank}
 \end{equation}
-where $x_{k,i}^{(j),a}$ is the $i$th component of analysis ensemble member $j$. Ties (which occur with probability zero under continuous distributions and are empirically rare) are broken randomly. Under perfect calibration, ranks are uniformly distributed on $\{1,\ldots,N+1\}$ with probability $1/(N+1)$. Systematic departures indicate miscalibration: U-shaped histograms reflect overdispersion, dome-shaped histograms indicate underdispersion, and asymmetry signals bias.
+where $x_{k,i}^{(j),a}$ is the $i$th component of analysis ensemble member $j$. Ties (which occur with probability zero under continuous distributions and are empirically rare) are broken randomly. Under perfect calibration, ranks are uniformly distributed on $\{1,\ldots,N+1\}$ with probability $1/(N+1)$. Systematic departures indicate miscalibration: dome-shaped histograms reflect overdispersion, U-shaped histograms indicate underdispersion, and asymmetry signals bias.
 
 Uniformity is assessed using a chi-squared goodness-of-fit statistic,
 \begin{equation}
@@ -1688,18 +1663,18 @@ where $O_b$ denotes the observed count in bin $b$ and $E_b = M_{\mathrm{rank}}/(
 \end{equation}
 where $f_b = O_b / M_{\mathrm{rank}}$ is the observed frequency of bin $b$ and $\bar{f} = 1/(N+1)$ is the expected uniform frequency. This normalized standard deviation quantifies the practical magnitude of nonuniformity: perfectly uniform histograms yield Flatness $= 0$, while severe departures produce values $\gg 1$.
 
-Consistent with Remark~\ref{rem:metrics_convention}, ranks are computed at window endpoints only. Aggregating across all state components ($n=40$), windows ($W=50$), and trials (5) yields $M_{\mathrm{rank}}=n \times W \times 5 = 10{,}000$ rank samples per algorithm. For $N=10$, there are $N+1=11$ bins, yielding an expected count of $E_b = 10{,}000/11 \approx 909$ per bin.
+Ranks are computed at each algorithm's analysis times. Aggregating across all state components ($n=40$) and trials (5) yields $M_{\mathrm{rank}}=n \times K \times 5 = 50{,}000$ rank samples for the Sequential EnKF (evaluated at all $K=WL=250$ observation times), and $M_{\mathrm{rank}}=n \times W \times 5 = 10{,}000$ samples for the windowed methods (evaluated at the $W=50$ window endpoints). For $N=10$, there are $N+1=11$ bins, yielding an expected count of $E_b=M_{\mathrm{rank}}/11$ per bin under uniformity.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig04d_rank_histograms.png}
-\caption{Rank histogram analysis aggregated over all components, windows, and trials ($10{,}000$ samples per algorithm). The dashed line indicates the uniform frequency $1/11$, and the shaded band denotes the 95\% confidence interval under the uniformity null. Left: QPCA-EnDCF shows near-uniformity ($\chi^2=396.8$, flatness $0.199$). Center: Sequential EnKF exhibits severe dome-shaped distortion ($\chi^2=173{,}195$, flatness $1.861$). Right: 4D-EnKF shows substantial but reduced departure from uniformity ($\chi^2=32{,}269$, flatness $1.796$).}
+\caption{Rank histogram analysis aggregated over all state components, analysis times, and trials. The dashed line indicates the expected uniform count $E_b=M_{\mathrm{rank}}/(N+1)$ in each panel (here $E_b\approx 4545$ for Seq-EnKF and $E_b\approx 909$ for 4D-EnKF and QPCA-EnDCF, corresponding to uniform relative frequency $1/11$), and the shaded band denotes the 95\% confidence interval under the uniformity null. Left: Sequential EnKF exhibits severe U-shaped distortion ($\chi^2=173{,}195$, flatness $1.861$). Center: 4D-EnKF shows substantial but reduced departure from uniformity ($\chi^2=32{,}269$, flatness $1.796$). Right: QPCA-EnDCF shows near-uniformity ($\chi^2=396.8$, flatness $0.199$).}
 \label{fig:rank_histograms}
 \end{figure}
 
 QPCA-EnDCF provides the closest approximation to uniformity, with a flatness metric of $0.199$ and rank frequencies fluctuating mildly around the expected value. Although $\chi^2=396.8$ formally rejects uniformity ($p<0.001$), this reflects the extreme power of the test with $10{,}000$ samples. In relative terms, the departure is nearly two orders of magnitude smaller than for 4D-EnKF and three orders of magnitude smaller than for the Sequential EnKF, indicating near-distributional consistency in practice.
 
-Sequential EnKF is strongly miscalibrated ($\chi^2=173{,}195$, flatness $1.861$), with a pronounced dome shape: central ranks occur far more frequently than expected, while extreme ranks are depleted. This is the canonical signature of severe underdispersion caused by ensemble collapse. The 4D-EnKF shows improvement ($\chi^2=32{,}269$, flatness $1.796$) but retains a dome-shaped structure, indicating persistent underdispersion despite temporal coupling. Increasing the effective dimension from $m=20$ to $mL=100$ without increasing ensemble size exacerbates this limitation.
+Sequential EnKF is strongly miscalibrated ($\chi^2=173{,}195$, flatness $1.861$), with a pronounced U shape: central ranks occur far more frequently than expected, while extreme ranks are depleted. This is the canonical signature of severe underdispersion caused by ensemble collapse. The 4D-EnKF shows improvement ($\chi^2=32{,}269$, flatness $1.796$) but retains a U-shaped structure, indicating persistent underdispersion despite temporal coupling. Increasing the effective dimension from $m=20$ to $mL=100$ without increasing ensemble size exacerbates this limitation.
 
 Overall, the rank histogram analysis demonstrates that QPCA-EnDCF substantially improves distributional calibration beyond variance matching alone. Its flatness metric—an order of magnitude smaller than those of the EnKF variants—indicates that the truth is placed appropriately across the ensemble support. While not perfectly uniform, deviations are minor relative to the severe systematic distortions observed in stochastic methods. The improvement is attributable to the deterministic update and spectral regularization of QPCA-EnDCF, which avoid observation perturbation noise and concentrate corrections into dynamically dominant modes, preserving ensemble diversity and yielding a more faithful approximation of the posterior distribution.
 \FloatBarrier
@@ -1711,7 +1686,7 @@ Overall, the rank histogram analysis demonstrates that QPCA-EnDCF substantially 
 % ================================================================================
 \section{Bias--Variance Tradeoff}\label{sec:bias_variance_results}
 
-The calibration diagnostics in Section~\ref{sec:calibration} established that QPCA-EnDCF yields well-calibrated uncertainty, as measured by spread--skill relationships and rank histograms. These results, however, do not explain \emph{why} calibration improves. We address this question by decomposing the mean squared error (MSE) into bias and variance components. Theory predicts that spectral truncation reduces sampling variance without a commensurate increase in bias, in contrast to classical regularization strategies. Here we provide empirical validation and quantify the relative contributions of bias and variance.
+The calibration diagnostics in Section~\ref{sec:calibration} established that QPCA-EnDCF yields well-calibrated uncertainty, as measured by spread--skill relationships and rank histograms. These results, however, do not explain why calibration improves. We address this question by decomposing the mean squared error (MSE) into bias and variance components. Theory predicts that spectral truncation reduces sampling variance, while any induced truncation bias is governed by the discarded component $\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|$ and can remain small when the mean innovation is well aligned with the leading modes; this contrasts with classical regularization strategies, where variance reduction typically comes with a more direct bias penalty. Here we provide empirical validation and quantify the relative contributions of bias and variance.
 
 For an estimator $\bar{\mathbf{x}}^a$ of the true state $\mathbf{x}^{\mathrm{true}}$ at a fixed assimilation time, the MSE decomposes as
 \begin{equation}
@@ -1728,9 +1703,9 @@ captures systematic error, while
 $\mathrm{Variance}=\mathbb{E}[\|\bar{\mathbf{x}}^a-\mathbb{E}[\bar{\mathbf{x}}^a]\|^2]$
 quantifies sampling-induced fluctuations. Bias reflects deterministic algorithmic limitations; variance is stochastic and constrained by ensemble size.
 
-In the sequential setting where truth and observations evolve over many assimilation cycles, the decomposition \eqref{eq:mse_decomposition_empirical} applies at each assimilation time (here, at each window endpoint). We therefore estimate bias and variance \emph{as functions of window index} and then time-average over windows to obtain representative values for a method.
+In the sequential setting where truth and observations evolve over many assimilation cycles, the decomposition \eqref{eq:mse_decomposition_empirical} applies at each assimilation time (here, at each window endpoint). We therefore estimate bias and variance as functions of window index and then time-average over windows to obtain representative values for a method.
 
-For QPCA-EnDCF, theory shows variance scaling as $\mathcal{O}(\kappa/N)$, where $\kappa$ is the truncation level. The bias contribution is governed by $\|(\mathbf{I}-\mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2$, the component of the mean whitened innovation orthogonal to the retained eigenspace (see Theorem~\ref{thm:bias_variance} and Remark~\ref{rem:truncation_bias_tail}). Importantly, this \emph{cannot} be bounded simply by the discarded spectral tail $\sum_{i>\kappa}\lambda_i$ without additional structure linking $\boldsymbol{\mu}_E$ to $\boldsymbol{\Sigma}_E$ (e.g., a source condition). However, when the mean mismatch is well-aligned with the leading covariance directions—as occurs empirically when the dominant eigenmode captures systematic forecast--observation discrepancy—aggressive truncation ($\kappa=1$) achieves $\mathcal{O}(1/N)$ variance with minimal bias penalty. By contrast, standard ensemble updates exhibit variance scaling as $\mathcal{O}(r/N)$, where $r$ approaches the effective rank of the update.
+For QPCA-EnDCF, theory shows variance scaling as $\mathcal{O}(\kappa/N)$, where $\kappa$ is the truncation level. The bias contribution is governed by $\|(\mathbf{I}-\mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2$, the component of the mean whitened innovation orthogonal to the retained eigenspace (see Theorem~\ref{thm:bias_variance} and Remark~\ref{rem:truncation_bias_tail}). Importantly, this cannot be bounded simply by the discarded spectral tail $\sum_{i>\kappa}\lambda_i$ without additional structure linking $\boldsymbol{\mu}_E$ to $\boldsymbol{\Sigma}_E$ (e.g., a source condition). However, when the mean mismatch is well-aligned with the leading covariance directions—as occurs empirically when the dominant eigenmode captures systematic forecast--observation discrepancy—aggressive truncation ($\kappa=1$) achieves $\mathcal{O}(1/N)$ variance with minimal bias penalty. By contrast, standard ensemble updates exhibit variance scaling as $\mathcal{O}(r/N)$, where $r$ approaches the effective rank of the update.
 
 We estimate bias and variance empirically using $N_{\mathrm{trial}}=10$ independent ensemble realizations per algorithm, differing only in initial ensemble draws. (Note: $N_{\mathrm{trial}}$ denotes the number of Monte Carlo trials, distinct from the ensemble size $N=10$ and the total rank samples $M_{\mathrm{rank}}$ used in Section~\ref{subsec:rank_histograms}.) Let $\bar{\mathbf{x}}_{t,w}^a$ denote the analysis ensemble mean at the end of window $w$ in trial $t$, and let $\mathbf{x}_{w}^{\mathrm{true}}$ denote the corresponding true state (both evaluated at window endpoints). For each window $w$, define the across-trial mean
 \[
@@ -1760,18 +1735,18 @@ with $\widehat{\mathrm{MSE}}_{w}=\widehat{\mathrm{Bias}}_{w}^2+\widehat{\mathrm{
 \widehat{\mathrm{MSE}}:=\frac{1}{W}\sum_{w=1}^{W}\widehat{\mathrm{MSE}}_{w}.
 \]
 
-Figure~\ref{fig:bias_variance_evolution} shows the temporal evolution of the window-wise quantities $\widehat{\mathrm{MSE}}_{w}$, $\widehat{\mathrm{Bias}}_{w}^2$, $\widehat{\mathrm{Variance}}_{w}$, and the ratio $\widehat{\mathrm{Bias}}_{w}^2/\widehat{\mathrm{MSE}}_{w}$ across the 50-window sequence. Curves are computed from $N_{\mathrm{trial}}=10$ independent realizations; shaded bands indicate trial-to-trial variability.
+Figure~\ref{fig:bias_variance_evolution} shows the window-wise bias--variance decomposition across the 50-window sequence for Sequential EnKF, 4D-EnKF, and QPCA-EnDCF. For each window $w$, the stacked areas depict $\widehat{\mathrm{Bias}}_{w}^2$ (solid) and $\widehat{\mathrm{Variance}}_{w}$ (hatched), whose sum equals $\widehat{\mathrm{MSE}}_{w}$. Estimates are computed from $N_{\mathrm{trial}}=10$ independent realizations.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig07a_bias_variance_evolution.png}
-\caption{Temporal bias--variance decomposition over 50 assimilation windows. \textbf{(A)} Total MSE. \textbf{(B)} Squared bias. \textbf{(C)} Variance. \textbf{(D)} Bias$^2$/MSE ratio. QPCA-EnDCF achieves substantially lower MSE via dramatic variance reduction, without increased bias.}
+\caption{Window-wise bias--variance decomposition over 50 assimilation windows (left to right: Sequential EnKF, 4D-EnKF, QPCA-EnDCF). Solid fill shows $\widehat{\mathrm{Bias}}_{w}^2$ and hatched fill shows $\widehat{\mathrm{Variance}}_{w}$; the total height is $\widehat{\mathrm{MSE}}_{w}=\widehat{\mathrm{Bias}}_{w}^2+\widehat{\mathrm{Variance}}_{w}$. Estimates use $N_{\mathrm{trial}}=10$ independent initial-ensemble realizations.}
 \label{fig:bias_variance_evolution}
 \end{figure}
 
 QPCA-EnDCF attains MSE $\approx13$, compared to $\approx22$ for Sequential EnKF and $\approx21$ for 4D-EnKF. The decomposition reveals the mechanism: squared bias is comparable across methods (Bias$^2\approx10$), while variance differs sharply. QPCA-EnDCF exhibits variance $\approx2.3$, an $\sim80\%$ reduction relative to stochastic methods (variance $\approx11.6$). Thus, aggressive truncation removes variance-dominated modes while retaining the leading mode capturing systematic mismatch.
 
-The Bias$^2$/MSE ratio further clarifies this distinction. For QPCA-EnDCF, the ratio stabilizes near $82\%$, indicating error dominated by systematic bias rather than sampling noise. In contrast, stochastic methods show ratios near $45$--$47\%$, implying that roughly half of their error arises from irreducible sampling variance at fixed ensemble size.
+The time-averaged Bias$^2$/MSE ratio (computed from the same window-wise estimates) further clarifies this distinction. For QPCA-EnDCF, the ratio is about $82\%$, indicating error dominated by systematic bias rather than sampling noise. In contrast, stochastic methods show ratios near $45$--$47\%$, implying that roughly half of their error arises from sampling variance at fixed ensemble size.
 
 Figure~\ref{fig:mse_decomposition_bars} summarizes these results via stacked bar charts.
 
@@ -1786,7 +1761,7 @@ QPCA-EnDCF achieves MSE $=12.97$ (Bias$^2=10.67$, Variance$=2.29$), while Sequen
 
 These findings validate the theoretical predictions and explain QPCA-EnDCF’s superior calibration. Variance reduction arises from two effects: (i) the deterministic update avoids observation-perturbation noise, whose contribution scales as $C_{\mathrm{pert}}L\,\mathrm{tr}(\mathbf{R})/N$ and is substantial under baseline parameters; and (ii) spectral truncation ($\kappa=1$) concentrates updates in the dominant eigenmode, avoiding estimation of noise-dominated directions. With variance scaling as $\mathcal{O}(\kappa/N)$ rather than $\mathcal{O}(r/N)$, the observed order-of-magnitude reduction follows directly.
 
-Crucially, this variance reduction occurs \emph{without} a bias penalty. Unlike classical penalty-based regularization, which trades variance for increased bias, QPCA-EnDCF maintains bias comparable to or lower than that of stochastic methods while sharply reducing variance. This favorable regime is enabled by rapid spectral decay, whereby leading modes encode signal and higher modes primarily represent sampling noise.
+Crucially, this variance reduction occurs without a bias penalty. Unlike classical penalty-based regularization, which trades variance for increased bias, QPCA-EnDCF maintains bias comparable to or lower than that of stochastic methods while sharply reducing variance. This favorable regime is enabled by rapid spectral decay, whereby leading modes encode signal and higher modes primarily represent sampling noise.
 
 Together with the calibration diagnostics, the bias--variance analysis completes the mechanistic picture. QPCA-EnDCF’s near-ideal spread--skill ratio arises because variance is suppressed without inflating bias, allowing ensemble spread to reflect true error. Stochastic methods suffer from both inflated variance and collapsed spread, yielding severe miscalibration. The dominance of systematic bias in QPCA-EnDCF suggests that further gains are attainable through model or operator improvements, whereas stochastic methods face fundamental variance limits at fixed ensemble size.
 \FloatBarrier
@@ -1823,7 +1798,7 @@ This bias compounds in sequential assimilation. Each analysis step reduces varia
 
 Covariance inflation counteracts this variance loss by artificially augmenting ensemble spread. Two strategies dominate operational practice.
 
-\emph{Multiplicative inflation} rescales anomalies by a factor $\lambda_{\mathrm{infl}} \ge 1$,
+Multiplicative inflation rescales anomalies by a factor $\lambda_{\mathrm{infl}} \ge 1$,
 \[
 \mathbf{X}^f_{\lambda_{\mathrm{infl}}}
 =
@@ -1835,7 +1810,7 @@ where $\bar{\mathbf{x}}^f$ is the ensemble mean. The resulting covariance satisf
 $\widehat{\mathbf{P}}^{\,f}_{\lambda_{\mathrm{infl}}}=\lambda_{\mathrm{infl}}^2\widehat{\mathbf{P}}^{\,f}$,
 uniformly amplifying all eigenvalues while preserving eigenvectors. Geometrically, this is a uniform dilation of the ensemble ellipsoid. Multiplicative inflation is inexpensive and preserves correlation structure, but it cannot address rank deficiency: the null space is unchanged.
 
-\emph{Additive inflation} perturbs each ensemble member with independent noise,
+Additive inflation perturbs each ensemble member with independent noise,
 \[
 \mathbf{x}^{(j)}_{\alpha_{\mathrm{add}}}
 =
@@ -1858,14 +1833,14 @@ Optimal inflation parameters depend sensitively on ensemble size, observation de
 \subsection{Empirical Investigation of Inflation Requirements}
 \label{subsec:inflation_free}
 
-We perform a systematic parametric study to quantify inflation requirements across ensemble sizes and filtering methods. Ensemble size is varied over $N \in \{5,10,25,50\}$, multiplicative inflation over $\lambda_{\mathrm{infl}} \in \{1.0,1.05,1.10,1.15,1.20,1.25\}$, and additive inflation over $\alpha_{\mathrm{add}} \in \{0.0,0.01,0.05,0.10,0.15,0.20\}$, with all other parameters fixed at the baseline values of Section~\ref{sec:framework}. For additive inflation we use the standard isotropic choice $\mathbf{Q}=\mathbf{I}_n$. Each configuration is repeated with three independent random seeds. Performance is assessed by time-averaged RMSE over the final 50 assimilation windows, after transients have decayed.
+We perform a systematic parametric study to quantify inflation requirements across ensemble sizes and filtering methods. Ensemble size is varied over $N \in \{5,10,25,50\}$, multiplicative inflation over $\lambda_{\mathrm{infl}} \in \{1.0,1.05,1.10,1.15,1.20,1.25\}$, and additive inflation over $\alpha_{\mathrm{add}} \in \{0.0,0.01,0.05,0.10,0.15,0.20\}$, with all other parameters fixed at the baseline values of Section~\ref{sec:framework}. For additive inflation we use the standard isotropic choice $\mathbf{Q}_{\mathrm{add}}=\mathbf{I}_n$. Each configuration is repeated with three independent random seeds. Performance is assessed by time-averaged RMSE over the final 50 assimilation windows, after transients have decayed.
 
 Figure~\ref{fig:mult_inflation} reports RMSE as a function of the multiplicative inflation factor $\lambda_{\mathrm{infl}}$ for representative ensemble sizes $N \in \{5,10,25\}$. Each panel compares Sequential EnKF, 4D-EnKF, and QPCA-EnDCF; curves show mean RMSE and shaded bands denote $\pm1$ standard deviation across trials.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_inflation_multiplicative.png}
-\caption{Sensitivity of RMSE to multiplicative inflation. Time-averaged RMSE versus inflation factor $\lambda_{\mathrm{infl}}$ for Sequential EnKF (blue circles), 4D-EnKF (orange squares), and QPCA-EnDCF (green triangles). Panels correspond to $N \in \{5,10,25\}$. Means are averaged over 50 assimilation windows and three trials; shading indicates $\pm1$ standard deviation. QPCA-EnDCF is optimal at $\lambda_{\mathrm{infl}}=1.0$ across all $N$, whereas stochastic methods require $\lambda_{\mathrm{infl}}\approx1.10$ for $N\le10$ and $\lambda_{\mathrm{infl}}\approx1.05$ for larger ensembles.}
+\caption{Sensitivity of RMSE to multiplicative inflation. Time-averaged RMSE versus inflation factor $\lambda_{\mathrm{infl}}$ for Sequential EnKF (blue circles), 4D-EnKF (orange squares), and QPCA-EnDCF (green triangles). Panels correspond to $N \in \{5,10,25\}$. Means are averaged over 50 assimilation windows and three trials; shading indicates $\pm1$ standard deviation across trials.}
 \label{fig:mult_inflation}
 \end{figure}
 
@@ -1880,7 +1855,7 @@ Figure~\ref{fig:add_inflation} shows the corresponding results for additive infl
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_inflation_additive.png}
-\caption{Sensitivity of RMSE to additive inflation. Time-averaged RMSE versus additive magnitude $\alpha_{\mathrm{add}}$ for Sequential EnKF, 4D-EnKF, and QPCA-EnDCF, with panels for $N \in \{5,10,25\}$. Plotting conventions match Figure~\ref{fig:mult_inflation}. QPCA-EnDCF is optimal at $\alpha_{\mathrm{add}}=0$ for all $N$. Stochastic methods show mild improvement for $\alpha_{\mathrm{add}}\approx0.05$ when $N\le10$ and $\alpha_{\mathrm{add}}\approx0.01$ for larger ensembles, but remain inferior to multiplicative inflation by 5--10\%.}
+\caption{Sensitivity of RMSE to additive inflation. Time-averaged RMSE versus additive inflation magnitude $\alpha_{\mathrm{add}}$ for Sequential EnKF, 4D-EnKF, and QPCA-EnDCF, with panels for $N \in \{5,10,25\}$. Plotting conventions match Figure~\ref{fig:mult_inflation}; shading indicates $\pm1$ standard deviation across three trials.}
 \label{fig:add_inflation}
 \end{figure}
 
@@ -1888,39 +1863,39 @@ QPCA-EnDCF again achieves its minimum RMSE at $\alpha_{\mathrm{add}}=0$, with mo
 
 For stochastic methods, additive inflation provides limited improvement relative to no inflation, but consistently underperforms multiplicative inflation by 5--10\%. This deficit reflects the difficulty of specifying an appropriate perturbation structure: isotropic noise introduces variance in dynamically irrelevant directions. More structured choices of $\mathbf{Q}_{\mathrm{add}}$ could improve performance but at the cost of additional modeling effort.
 
-Table~\ref{tab:optimal_inflation} summarizes optimal inflation parameters and corresponding RMSE values for all ensemble sizes and methods.
+% Table~\ref{tab:optimal_inflation} summarizes optimal inflation parameters and corresponding RMSE values for all ensemble sizes and methods.
 
-\begin{table}[htbp]
-\centering
-\caption{Optimal inflation parameters and RMSE. For each method and ensemble size $N \in \{5,10,25,50\}$, we report the multiplicative factor $\lambda_{\mathrm{opt}}$ and additive magnitude $\alpha_{\mathrm{opt}}$ minimizing mean RMSE. Errors are reported as mean $\pm$ standard deviation over three trials, each averaged over 50 assimilation windows.}
-\label{tab:optimal_inflation}
-\small
-\begin{tabular}{llcccc}
-\toprule
-\textbf{Method} & \textbf{$N$} & \textbf{$\lambda_{\mathrm{opt}}$} & \textbf{$\alpha_{\mathrm{opt}}$} & \textbf{RMSE (mult.)} & \textbf{RMSE (add.)} \\
-\midrule
-\multirow{4}{*}{Seq-EnKF}
-& 5  & 1.10 & 0.05 & $2.15 \pm 0.18$ & $2.28 \pm 0.20$ \\
-& 10 & 1.10 & 0.05 & $1.42 \pm 0.09$ & $1.52 \pm 0.10$ \\
-& 25 & 1.05 & 0.01 & $1.18 \pm 0.06$ & $1.24 \pm 0.07$ \\
-& 50 & 1.05 & 0.01 & $1.11 \pm 0.05$ & $1.15 \pm 0.06$ \\
-\midrule
-\multirow{4}{*}{4D-EnKF}
-& 5  & 1.10 & 0.05 & $2.03 \pm 0.16$ & $2.19 \pm 0.18$ \\
-& 10 & 1.10 & 0.05 & $1.38 \pm 0.08$ & $1.47 \pm 0.09$ \\
-& 25 & 1.05 & 0.01 & $1.15 \pm 0.05$ & $1.20 \pm 0.06$ \\
-& 50 & 1.05 & 0.01 & $1.09 \pm 0.04$ & $1.13 \pm 0.05$ \\
-\midrule
-\multirow{4}{*}{QPCA-EnDCF}
-& 5  & 1.00 & 0.00 & $1.68 \pm 0.12$ & $1.68 \pm 0.12$ \\
-& 10 & 1.00 & 0.00 & $1.23 \pm 0.05$ & $1.25 \pm 0.06$ \\
-& 25 & 1.00 & 0.00 & $1.08 \pm 0.04$ & $1.08 \pm 0.04$ \\
-& 50 & 1.00 & 0.00 & $1.02 \pm 0.03$ & $1.02 \pm 0.03$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+% \begin{table}[htbp]
+% \centering
+% \caption{Optimal inflation parameters and RMSE. For each method and ensemble size $N \in \{5,10,25,50\}$, we report the multiplicative factor $\lambda_{\mathrm{opt}}$ and additive magnitude $\alpha_{\mathrm{opt}}$ minimizing mean RMSE. Errors are reported as mean $\pm$ standard deviation over three trials, each averaged over 50 assimilation windows.}
+% \label{tab:optimal_inflation}
+% \small
+% \begin{tabular}{llcccc}
+% \toprule
+% \textbf{Method} & \textbf{$N$} & \textbf{$\lambda_{\mathrm{opt}}$} & \textbf{$\alpha_{\mathrm{opt}}$} & \textbf{RMSE (mult.)} & \textbf{RMSE (add.)} \\
+% \midrule
+% \multirow{4}{*}{Seq-EnKF}
+% & 5  & 1.10 & 0.05 & $2.15 \pm 0.18$ & $2.28 \pm 0.20$ \\
+% & 10 & 1.10 & 0.05 & $1.42 \pm 0.09$ & $1.52 \pm 0.10$ \\
+% & 25 & 1.05 & 0.01 & $1.18 \pm 0.06$ & $1.24 \pm 0.07$ \\
+% & 50 & 1.05 & 0.01 & $1.11 \pm 0.05$ & $1.15 \pm 0.06$ \\
+% \midrule
+% \multirow{4}{*}{4D-EnKF}
+% & 5  & 1.10 & 0.05 & $2.03 \pm 0.16$ & $2.19 \pm 0.18$ \\
+% & 10 & 1.10 & 0.05 & $1.38 \pm 0.08$ & $1.47 \pm 0.09$ \\
+% & 25 & 1.05 & 0.01 & $1.15 \pm 0.05$ & $1.20 \pm 0.06$ \\
+% & 50 & 1.05 & 0.01 & $1.09 \pm 0.04$ & $1.13 \pm 0.05$ \\
+% \midrule
+% \multirow{4}{*}{QPCA-EnDCF}
+% & 5  & 1.00 & 0.00 & $1.68 \pm 0.12$ & $1.68 \pm 0.12$ \\
+% & 10 & 1.00 & 0.00 & $1.23 \pm 0.05$ & $1.25 \pm 0.06$ \\
+% & 25 & 1.00 & 0.00 & $1.08 \pm 0.04$ & $1.08 \pm 0.04$ \\
+% & 50 & 1.00 & 0.00 & $1.02 \pm 0.03$ & $1.02 \pm 0.03$ \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
 
-The defining feature of Table~\ref{tab:optimal_inflation} is the invariance of QPCA-EnDCF's optimal parameters: $(\lambda_{\mathrm{opt}},\alpha_{\mathrm{opt}})=(1.0,0.0)$ for all $N$. This eliminates the need for manual tuning or adaptive inflation schemes. In contrast, stochastic methods require ensemble-size-dependent inflation, with $\lambda_{\mathrm{opt}}$ decreasing toward unity as $N$ increases. The persistent inferiority of additive inflation relative to multiplicative inflation across all methods and ensemble sizes (visible in the consistently higher RMSE (add.) values) confirms that variance control through ensemble-wide rescaling is more effective than introducing isotropic random perturbations, which lack dynamical structure and contaminate correlations.
+The defining feature of Figure~\ref{fig:mult_inflation} and Figure~\ref{fig:add_inflation} is the invariance of QPCA-EnDCF's optimal parameters: $(\lambda_{\mathrm{opt}},\alpha_{\mathrm{opt}})=(1.0,0.0)$ for all $N$. This eliminates the need for manual tuning or adaptive inflation schemes. In contrast, stochastic methods require ensemble-size-dependent inflation, with $\lambda_{\mathrm{opt}}$ decreasing toward unity as $N$ increases. The persistent inferiority of additive inflation relative to multiplicative inflation across all methods and ensemble sizes (visible in the consistently higher RMSE (add.) values) confirms that variance control through ensemble-wide rescaling is more effective than introducing isotropic random perturbations, which lack dynamical structure and contaminate correlations.
 
 
 % ================================================================================
@@ -1933,7 +1908,7 @@ The defining feature of Table~\ref{tab:optimal_inflation} is the invariance of Q
 
 Previous sections evaluate performance under idealized observational assumptions: Gaussian errors with known diagonal covariance. These assumptions simplify analysis and isolate algorithmic effects, but they are routinely violated in practice. Real observing systems may exhibit outliers (heavy tails), saturation or retrieval nonlinearities (skewness), and shared contamination or systematic biases (spatial correlations), all of which undermine the classical modeling assumptions. The operational question is whether QPCA-EnDCF’s gains persist under such non-idealities, or whether they are specific to the Gaussian/diagonal setting.
 
-We probe robustness by varying observation error characteristics along two axes that isolate distinct failure modes. Section~\ref{subsec:nongaussian} studies \emph{distributional} departures by testing nine error laws spanning symmetric heavy-tailed, right-skewed, and Gaussian cases while keeping the second-moment structure correctly specified. Section~\ref{subsec:correlated_errors} studies \emph{structural} departures by introducing spatial correlations with condition numbers spanning five orders of magnitude, again under correctly specified covariances. Together, these experiments distinguish sensitivity to higher-order distributional features (skewness, kurtosis, tail behavior) from sensitivity to correlation structure.
+We probe robustness by varying observation error characteristics along two axes that isolate distinct failure modes. Section~\ref{subsec:nongaussian} studies distributional departures by testing nine error distributions spanning symmetric heavy-tailed, right-skewed, and Gaussian cases while keeping the second-moment structure correctly specified. Section~\ref{subsec:correlated_errors} studies structural departures by introducing spatial correlations with condition numbers spanning five orders of magnitude, again under correctly specified covariances. Together, these experiments distinguish sensitivity to higher-order distributional features (skewness, kurtosis, tail behavior) from sensitivity to correlation structure.
 
 Unless otherwise stated, all experiments use the baseline configuration of Section~\ref{sec:framework} ($N=10$, $L=5$, $n=40$), modifying only the targeted observation model component.
 
@@ -1943,7 +1918,7 @@ Unless otherwise stated, all experiments use the baseline configuration of Secti
 
 Observation errors often depart from Gaussianity due to outliers, saturation, and nonlinear retrieval maps. Although Kalman-type derivations assume Gaussian noise, ensemble methods are frequently argued to be more robust because uncertainty is represented by samples rather than a parametric likelihood.
 
-Here we test whether the performance advantages observed under Gaussian errors persist under non-Gaussian noise. The design isolates \emph{shape} effects from covariance misspecification: every distribution is standardized to mean zero and variance $\sigma_{\mathrm{obs}}^2=2.25$, and all methods are supplied the correct covariance $\mathbf{R}=2.25\mathbf{I}_m$. Thus any performance changes reflect higher-order properties rather than incorrect second-moment information.
+Here we test whether the performance advantages observed under Gaussian errors persist under non-Gaussian noise. The design isolates shape effects from covariance misspecification: every distribution is standardized to mean zero and variance $\sigma_{\mathrm{obs}}^2=2.25$, and all methods are supplied the correct covariance $\mathbf{R}=2.25\mathbf{I}_m$. Thus any performance changes reflect higher-order properties rather than incorrect second-moment information.
 
 We consider nine distributions. The Gaussian $\mathcal{N}(0,\sigma_{\mathrm{obs}}^2)$ serves as a reference. Symmetric heavy-tailed cases include Student-$t$ with $\nu\in\{3,5,10\}$ degrees of freedom and Laplace with scale $b=\sigma_{\mathrm{obs}}/\sqrt{2}$, each centered at zero and rescaled to variance $\sigma_{\mathrm{obs}}^2$. Right-skewed cases include Gamma($k,\theta$) with shape $k\in\{2,5\}$ and Log-normal($\mu,\sigma_{\mathrm{LN}}$) with parameters $\sigma_{\mathrm{LN}}\in\{0.5,0.8\}$. These positive-valued distributions are shifted (by subtracting their mean) and rescaled to achieve mean zero and variance $\sigma_{\mathrm{obs}}^2$ while preserving their characteristic tail behavior and asymmetry. Thus, we use shifted and rescaled Gamma/Log-normal errors rather than the original positive-valued distributions.
 
@@ -1952,7 +1927,7 @@ Figure~\ref{fig:noise_distributions} illustrates representative samples. Despite
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/noise_distributions.png}
-\caption{Representative non-Gaussian observation error distributions used in the robustness study (Gaussian reference shown as a red dashed curve). Student-$t$ and Laplace errors are symmetric and heavy-tailed; Gamma and Log-normal errors are right-skewed with increasingly heavy upper tails. All distributions are standardized to mean zero and variance $\sigma_{\mathrm{obs}}^2=2.25$, so comparisons isolate sensitivity to distributional shape.}
+\caption{Representative non-Gaussian observation error distributions used in the robustness study (Gaussian reference shown as a dashed curve). Student-$t$ and Laplace errors are symmetric and heavy-tailed; Gamma and Log-normal errors are right-skewed with increasingly heavy upper tails. All distributions are standardized to mean zero and variance $\sigma_{\mathrm{obs}}^2=2.25$, so comparisons isolate sensitivity to distributional shape.}
 \label{fig:noise_distributions}
 \end{figure}
 
@@ -1987,7 +1962,7 @@ Cross-distribution std. & & $\mathbf{0.052}$ & $0.092$ & $0.131$ & --- & --- \\
 \end{tabular}
 \end{table}
 
-QPCA-EnDCF is essentially insensitive to distributional shape: RMSE remains in the narrow band 3.51--3.69 across all nine laws, from extreme heavy tails (Student-$t$, $\nu=3$) to strong right skew (Log-normal, $\sigma_{\mathrm{LN}}=0.8$). The cross-distribution standard deviation is $0.052$ (coefficient of variation $\approx 1.4\%$), indicating near-constant accuracy despite substantial changes in skewness and kurtosis. In contrast, the stochastic methods are both less accurate and more variable across distributions (cross-distribution standard deviations $0.092$ for Sequential EnKF and $0.131$ for 4D-EnKF).
+QPCA-EnDCF is essentially insensitive to distributional shape: RMSE remains in the narrow band 3.51--3.69 across all nine distributions, from extreme heavy tails (Student-$t$, $\nu=3$) to strong right skew (Log-normal, $\sigma_{\mathrm{LN}}=0.8$). The cross-distribution standard deviation is $0.052$ (coefficient of variation $\approx 1.4\%$), indicating near-constant accuracy despite substantial changes in skewness and kurtosis. In contrast, the stochastic methods are both less accurate and more variable across distributions (cross-distribution standard deviations $0.092$ for Sequential EnKF and $0.131$ for 4D-EnKF).
 
 Across all distributions, QPCA-EnDCF improves RMSE by 18.3--24.5\% relative to Sequential EnKF (mean 20.4\%) and by 17.3--22.7\% relative to 4D-EnKF (mean 19.8\%). Figure~\ref{fig:mean_rmse_comparison} summarizes these gains and highlights the comparatively tight spread of QPCA-EnDCF across distributional families.
 
@@ -2003,11 +1978,11 @@ Temporal behavior is equally consistent. Figure~\ref{fig:rmse_trajectories} show
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/rmse_trajectories_nongaussian.png}
-\caption{RMSE evolution over 50 assimilation windows (after 10-window initialization) under each non-Gaussian error law (curves: mean; shading: 95\% confidence intervals across $n=3$ trials). QPCA-EnDCF maintains consistently lower RMSE than both stochastic methods across all distributions and time steps.}
+\caption{RMSE evolution over 50 assimilation windows (after 10-window initialization) under each non-Gaussian error distribution (curves: mean; shading: 95\% confidence intervals across $n=3$ trials). QPCA-EnDCF maintains consistently lower RMSE than both stochastic methods across all distributions and time steps.}
 \label{fig:rmse_trajectories}
 \end{figure}
 
-These results are consistent with the fact that QPCA-EnDCF is driven by second-moment structure. The whitening transform depends only on $\mathbf{R}$, which is identical and correctly specified in all experiments, and the subsequent spectral truncation is performed on an empirical covariance of whitened residuals. In contrast, stochastic EnKF variants rely on sampling perturbed observations from an assumed noise law, so changes in tail behavior or asymmetry can propagate through the update and increase variability. The deterministic, covariance-based update in QPCA-EnDCF avoids this mechanism, yielding the observed distributional robustness.
+These results are consistent with the fact that QPCA-EnDCF is driven by second-moment structure. The whitening transform depends only on $\mathbf{R}$, which is identical and correctly specified in all experiments, and the subsequent spectral truncation is performed on an empirical covariance of whitened residuals. In contrast, stochastic EnKF variants rely on sampling perturbed observations from an assumed noise distribution, so changes in tail behavior or asymmetry can propagate through the update and increase variability. The deterministic, covariance-based update in QPCA-EnDCF avoids this mechanism, yielding the observed distributional robustness.
 
 
 
@@ -2022,7 +1997,7 @@ These results are consistent with the fact that QPCA-EnDCF is driven by second-m
 
 Observation errors in operational systems are rarely independent. Spatial correlations arise, for example, in satellite retrievals through shared atmospheric-path contamination and algorithmic dependencies; temporal correlations occur in ground networks through drift and common environmental forcing; and cross-channel correlations appear through shared calibration. When such correlations are ignored, the effective information content of the observations is overstated and posterior uncertainty becomes overconfident: highly correlated measurements contribute less independent information, yet a diagonal model treats them as additive evidence. Since optimal weighting depends on $\mathbf{R}$, correlation structure can materially affect both estimation and uncertainty quantification.
 
-This subsection tests whether QPCA-EnDCF's whitening step provides robustness to correlated observation errors, and whether its advantages persist as correlation strength and conditioning increase. Importantly, we avoid substantial covariance misspecification: in every experiment, the filter is provided a covariance matrix $\mathbf{R}$ that matches the true error correlation structure. For severely ill-conditioned cases, a small diagonal regularization is applied to ensure numerical stability (see below), which represents a minor departure from exact specification rather than a modeling assumption. The question is therefore algorithmic: \emph{given known correlations, does whitening effectively decorrelate the errors and recover performance close to the diagonal baseline?}
+This subsection tests whether QPCA-EnDCF's whitening step provides robustness to correlated observation errors, and whether its advantages persist as correlation strength and conditioning increase. Importantly, we avoid substantial covariance misspecification: in every experiment, the filter is provided a covariance matrix $\mathbf{R}$ that matches the true error correlation structure. For severely ill-conditioned cases, a small diagonal regularization is applied to ensure numerical stability (see below), which represents a minor departure from exact specification rather than a modeling assumption. The question is therefore algorithmic: given known correlations, does whitening effectively decorrelate the errors and recover performance close to the diagonal baseline?
 
 For non-diagonal $\mathbf{R}$, whitening uses
 \[
@@ -2047,7 +2022,7 @@ with $\ell_{\mathrm{corr}}=4$ is severely ill-conditioned, $\mathrm{cond}(\mathb
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/correlation_structures.png}
-\caption{Observation error covariance structures used in the correlation robustness study. Left: diagonal baseline ($\mathrm{cond}(\mathbf{R})=1$). Middle: exponential correlation with $\ell_{\mathrm{corr}}=4$ ($\mathrm{cond}(\mathbf{R})=649$). Right: Gaussian correlation with $\ell_{\mathrm{corr}}=4$ ($\mathrm{cond}(\mathbf{R})\approx 3.7\times10^5$), exhibiting strong near-diagonal correlations and severe ill-conditioning. Periodic distances are used to avoid boundary effects.}
+\caption{Representative observation error covariance structures $\mathbf{R}$ used in the correlation robustness study (left to right: exponential correlation, Gaussian correlation, and AR(1) correlation), constructed using periodic index distances to avoid boundary effects. All cases share the same marginal variance $\sigma_{\mathrm{obs}}^2=2.25$; colors indicate covariance magnitude.}
 \label{fig:correlation_structures}
 \end{figure}
 
@@ -2086,7 +2061,7 @@ QPCA-EnDCF is robust across condition numbers spanning five orders of magnitude.
 
 The two whitening implementations are numerically indistinguishable at the level relevant for filtering: both yield the same RMSE to two decimal places in every case (maximum difference $<0.005$). Given this equivalence and the favorable constant factors of Cholesky, Cholesky whitening is the natural default when $\mathbf{R}$ is positive definite.
 
-By contrast, 4D-EnKF exhibits substantially larger degradation as correlations strengthen, particularly in the severely ill-conditioned Gaussian case (RMSE 4.64 $\to$ 5.35, $+15.3\%$). Consequently, QPCA-EnDCF's advantage \emph{increases} with correlation strength: the reduction relative to 4D-EnKF is 25.2\% (diagonal), 24.7\% (exponential), and 31.9\% (Gaussian). Thus the whitening-based deterministic update is most beneficial precisely in regimes where correlations reduce the effective independent information content and stochastic perturbations become less efficient.
+By contrast, 4D-EnKF exhibits substantially larger degradation as correlations strengthen, particularly in the severely ill-conditioned Gaussian case (RMSE 4.64 $\to$ 5.35, $+15.3\%$). Consequently, QPCA-EnDCF's advantage increases with correlation strength: the reduction relative to 4D-EnKF is 25.2\% (diagonal), 24.7\% (exponential), and 31.9\% (Gaussian). Thus the whitening-based deterministic update is most beneficial precisely in regimes where correlations reduce the effective independent information content and stochastic perturbations become less efficient.
 
 \FloatBarrier
 
@@ -2168,7 +2143,7 @@ Reconstruction accuracy alone is not sufficient for deployment; reliable uncerta
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_ensemble_size_spread_skill.png}
-\caption{Spread--skill ratio $\bar{\gamma}$ versus ensemble size $N \in \{5,10,15,20,30,50\}$. Points show means over five trials; error bars denote $\pm1$ standard deviation. The dashed line marks the ideal target $\bar{\gamma}=1$. QPCA-EnDCF improves monotonically with $N$ (from 0.38 at $N=5$ to 0.95 at $N=50$), while Sequential EnKF and 4D-EnKF remain strongly underdispersed across all $N$ (below 0.15 even at $N=50$).}
+\caption{Spread--skill ratio $\bar{\gamma}$ versus ensemble size $N \in \{5,10,15,20,30,50,100\}$. The dashed line marks the ideal target $\bar{\gamma}=1$. QPCA-EnDCF approaches ideal calibration as $N$ increases and is substantially closer to $\bar{\gamma}=1$ than the stochastic baselines at small and moderate ensemble sizes.}
 \label{fig:ensemble_calibration}
 \end{figure}
 
@@ -2185,9 +2160,9 @@ In summary, ensemble-size scaling shows that QPCA-EnDCF (i) maintains lower RMSE
 \subsection{Window Length}
 \label{subsec:operational_window_length}
 
-Window length $L$ controls how many observation times are assimilated jointly, and therefore trades information content against computational and modeling costs. As $L$ grows, the number of assimilated observations increases linearly ($mL$), which can improve estimation by exploiting temporal constraints. The costs are also clear: matrix sizes grow from $m\times m$ at $L=1$ to $mL\times mL$ for $L>1$, with dense linear algebra scaling as $\mathcal{O}(m^3L^3)$. Longer windows also propagate forecasts further, increasing susceptibility to accumulated model error, and—once $L$ exceeds the decorrelation time—additional observations become largely redundant, yielding diminishing returns.
+Window length $L$ controls how many observation times are assimilated jointly, and therefore trades information content against computational and modeling costs. As $L$ grows, the number of assimilated observations increases linearly ($d$), which can improve estimation by exploiting temporal constraints. The costs are also clear: matrix sizes grow from $m\times m$ at $L=1$ to $d\times d$ for $L>1$, with dense linear algebra scaling as $\mathcal{O}(d^3)$. Longer windows also propagate forecasts further, increasing susceptibility to accumulated model error, and—once $L$ exceeds the decorrelation time—additional observations become largely redundant, yielding diminishing returns.
 
-For QPCA-EnDCF, $L$ directly changes the dimension of the whitened residual covariance $\mathbf{C}_E\in\mathbb{R}^{mL\times mL}$. Increasing $L$ provides a richer temporal residual structure from which principal modes can be identified, but gains should saturate beyond the decorrelation scale and may degrade if extra observations primarily contribute noise. In stochastic 4D-EnKF, longer windows can help through improved conditioning, but the impact is tempered by the accumulation of perturbation noise across multiple observation times.
+For QPCA-EnDCF, $L$ directly changes the dimension of the whitened residual covariance $\mathbf{C}_E\in\mathbb{R}^{d\times d}$. Increasing $L$ provides a richer temporal residual structure from which principal modes can be identified, but gains should saturate beyond the decorrelation scale and may degrade if extra observations primarily contribute noise. In stochastic 4D-EnKF, longer windows can help through improved conditioning, but the impact is tempered by the accumulation of perturbation noise across multiple observation times.
 
 We vary $L\in\{1,3,5,7,10,15\}$ and adjust the number of windows $W$ so that the total number of assimilated observations satisfies $LW\approx 400$. This keeps the overall information budget approximately fixed, so differences reflect algorithmic response to temporal coupling rather than increased sample size. Each configuration uses three independent trials.
 
@@ -2196,7 +2171,7 @@ Figure~\ref{fig:rmse_vs_L} reports reconstruction accuracy and the relative adva
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/combined_window_rmse_analysis.png}
-\caption{Window-length sensitivity for $L\in\{1,3,5,7,10,15\}$ with $LW\approx 400$ held approximately constant. Error bars denote $\pm1$ standard deviation across three trials. \textbf{(a)} RMSE versus $L$ for Sequential EnKF (blue), 4D-EnKF (green), and QPCA-EnDCF (red). QPCA-EnDCF improves sharply from $L=1$ to $L=3$ and then plateaus for $L\ge 5$. \textbf{(b)} Percent improvement of QPCA-EnDCF relative to 4D-EnKF versus $L$. QPCA-EnDCF underperforms slightly at $L=1$ but achieves substantial improvements for all $L\ge 3$.}
+\caption{Window-length sensitivity for $L\in\{1,3,5,7,10,15\}$ with $LW\approx 400$ held approximately constant. Shading denotes $\pm1$ standard deviation across three trials. \textbf{(a)} RMSE versus $L$ for Sequential EnKF (blue circles), 4D-EnKF (purple squares), and QPCA-EnDCF (orange triangles). \textbf{(b)} Percent RMSE improvement of QPCA-EnDCF relative to Sequential EnKF (green bars) and 4D-EnKF (orange bars) versus $L$.}
 \label{fig:rmse_vs_L}
 \end{figure}
 
@@ -2230,7 +2205,7 @@ We synthesize theoretical and empirical findings, examine methodological limitat
 
 The variance preservation mechanism admits geometric interpretation. Ensemble data assimilation constrains uncertainty along directions aligned with observation sensitivity while ideally preserving uncertainty in orthogonal directions where observations provide no information. QPCA-EnDCF implements explicit orthogonal projection: corrections lie in the subspace spanned by dominant eigenmodes of whitened residuals, while ensemble diversity is preserved exactly in the orthogonal complement. This contrasts with stochastic methods where finite sampling causes perturbations to correlate spuriously with Kalman gain directions, inducing compression along intended preservation directions.
 
-The bias-variance decomposition reveals that sampling variance scales as $\kappa/N$ (number of retained modes over ensemble size) rather than $mL/N$ (observation dimension over ensemble size). For $\kappa = 1$ and $mL = 100$, this represents theoretical order-of-magnitude sampling efficiency advantage. Truncation bias can be small when forecast errors concentrate in leading eigenmodes, a condition satisfied for chaotic systems near unstable manifolds. Empirical eigenvalue analyses confirm substantial concentration with the leading eigenvalue capturing 60--80\% of total residual variance (Section~\ref{subsec:benchmark}).
+The bias-variance decomposition reveals that sampling variance scales as $\kappa/N$ (number of retained modes over ensemble size) rather than $d/N$ (observation dimension over ensemble size). For $\kappa = 1$ and $d = 100$, this represents theoretical order-of-magnitude sampling efficiency advantage. Truncation bias can be small when forecast errors concentrate in leading eigenmodes, a condition satisfied for chaotic systems near unstable manifolds. Empirical eigenvalue analyses confirm substantial concentration with the leading eigenvalue capturing 60--80\% of total residual variance (Section~\ref{subsec:benchmark}).
 
 These findings suggest deterministic filtering through spectral projection may provide more faithful discrete approximation to Bayesian inference under severe undersampling than stochastic sampling approaches when posterior uncertainty concentrates in low-rank subspaces.
 % ================================================================================
@@ -2261,7 +2236,7 @@ More broadly, our findings contribute to computational strategies for high-dimen
 \section{Conclusion}\label{sec:conclusion}
 % ================================================================================
 
-This work developed a theoretical framework for deterministic spectral regularization in ensemble data assimilation and demonstrated through controlled experiments that such methods achieve superior probabilistic calibration compared to conventional stochastic approaches. Three theoretical results characterize the mechanism: (i) deterministic spectral projection avoids variance injection from stochastic observation perturbations and leaves residual components in noise-dominated orthogonal directions unmodified; (ii) decomposition of estimation error reveals sampling variance scales with retained spectral rank ($\kappa$) rather than observation dimension ($mL$), conferring order-of-magnitude sampling efficiency under aggressive regularization; (iii) asymptotic analysis establishes near-ideal calibration as ensemble size increases, demonstrating deterministic projection can approximate Bayesian inference when posterior uncertainty concentrates in low-rank subspaces.
+This work developed a theoretical framework for deterministic spectral regularization in ensemble data assimilation and demonstrated through controlled experiments that such methods achieve superior probabilistic calibration compared to conventional stochastic approaches. Three theoretical results characterize the mechanism: (i) deterministic spectral projection avoids variance injection from stochastic observation perturbations and leaves residual components in noise-dominated orthogonal directions unmodified; (ii) decomposition of estimation error reveals sampling variance scales with retained spectral rank ($\kappa$) rather than observation dimension ($d$), conferring order-of-magnitude sampling efficiency under aggressive regularization; (iii) asymptotic analysis establishes near-ideal calibration as ensemble size increases, demonstrating deterministic projection can approximate Bayesian inference when posterior uncertainty concentrates in low-rank subspaces.
 
 Numerical experiments on the Lorenz-96 system confirm theoretical predictions. QPCA-EnDCF achieves spread-skill ratios approaching unity ($\bar{\gamma} = 0.811\pm0.101$ at the baseline $N=10$) while stochastic methods remain severely underdispersed ($\bar{\gamma} \approx 0.10$--$0.12$) despite covariance inflation. The method requires no inflation, exhibits robustness to non-Gaussian errors and spatial correlations, and maintains advantages from extreme undersampling ($N = 5$) through well-sampled regimes ($N = 50$). Geometric interpretation reveals the mechanism: spectral projection confines corrections to low-rank signal subspaces while preserving ensemble diversity exactly in orthogonal directions. This contrasts with stochastic perturbations where finite sampling induces spurious correlations, causing variance compression along intended preservation directions.
 
@@ -2356,7 +2331,7 @@ The four-dimensional stochastic ensemble Kalman filter accumulates information f
 \end{algorithmic}
 \end{algorithm}
 
-Joint processing of $L$ observations exploits temporal correlations through extended cross-covariance $\mathbf{P}_{xy} \in \mathbb{R}^{n \times mL}$. Perturbations are sampled from $\mathcal{N}(\mathbf{0}, \mathbf{R}^{(L)})$ with block-diagonal covariance structure.
+Joint processing of $L$ observations exploits temporal correlations through extended cross-covariance $\mathbf{P}_{xy} \in \mathbb{R}^{n \times d}$. Perturbations are sampled from $\mathcal{N}(\mathbf{0}, \mathbf{R}^{(L)})$ with block-diagonal covariance structure.
 % ================================================================================
 
 \subsection{QPCA Ensemble Data Consistency Filter}\label{app:qpca_endcf}
@@ -2402,8 +2377,8 @@ The QPCA ensemble data consistency filter implements deterministic residual filt
 	    \State $\mathbf{A}_x \gets \mathbf{X}_L - \bar{\mathbf{x}}_L^f\mathbf{1}^{\top}$
 	    \State $\mathbf{A}_y \gets \mathbf{Y}_{\mathrm{stack}} - \bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^{\top}$
 	    \State $\mathbf{P}_{xy} \gets \frac{1}{N-1}\mathbf{A}_x\mathbf{A}_y^{\top}$, \quad $\mathbf{P}_{yy} \gets \frac{1}{N-1}\mathbf{A}_y\mathbf{A}_y^{\top}$
-	    \State $\mathbf{K}^{\mathrm{EnDCF}} \gets \mathbf{P}_{xy}(\mathbf{P}_{yy})^{\dagger}$
-	    \State $\mathbf{X}_L \gets \mathbf{X}_L + \mathbf{K}^{\mathrm{EnDCF}}\boldsymbol{\Delta}_{\mathrm{obs}}$
+	    \State $\mathbf{K}^{\mathrm{DC}} \gets \mathbf{P}_{xy}(\mathbf{P}_{yy})^{\dagger}$
+	    \State $\mathbf{X}_L \gets \mathbf{X}_L + \mathbf{K}^{\mathrm{DC}}\boldsymbol{\Delta}_{\mathrm{obs}}$
     \State $\mathbf{X} \gets \mathbf{X}_L$
 \EndFor
 \State \Return $\mathbf{X}$
@@ -2431,7 +2406,7 @@ The algorithm applies a deterministic correction to the ensemble without stochas
 % \label{sec:notation_reference}
 
 % This section provides a consolidated reference for the mathematical objects and dimensions used in the analysis of QPCA-EnDCF.
-% % We distinguish population quantities (deterministic objects defined from the forecast law) from their \emph{sample}
+% % We distinguish population quantities (deterministic objects defined from the forecast distribution) from their \emph{sample}
 % % counterparts (random objects computed from a finite ensemble). In particular, the EnDCF gain used in implementation is
 % % \emph{empirical} and therefore random; throughout the analysis we either work conditionally on the ensemble or impose explicit
 % % moment assumptions to justify bounds in expectation. Moreover, in the small-ensemble regime $(N-1)<mL$ we define the gain using a
@@ -2543,7 +2518,7 @@ The algorithm applies a deterministic correction to the ensemble without stochas
 % $\hat{\mathbf{P}}_\kappa$ & $\mathbb{R}^{d\times d}$ & Sample rank-$\kappa$ projector, $\hat{\mathbf{P}}_\kappa=\sum_{i=1}^\kappa \hat{\mathbf{v}}_i\hat{\mathbf{v}}_i^\top$ \\
 % 	$\mathbf{K}_k$ & $\mathbb{R}^{n\times m}$ & Sequential Kalman gain at time $k$ (computed using sample covariance $\widehat{\mathbf{P}}^{\,f}$ in practice) \\
 % 	$\mathbf{K}^{(w)}$ & $\mathbb{R}^{n\times d}$ & Windowed Kalman gain for window $w$ (with $d=mL$, computed from sample covariances) \\
-% $\mathbf{K}^{\mathrm{EnDCF}}$ & $\mathbb{R}^{n\times d}$ & \textbf{Empirical} EnDCF gain (random), defined via a pseudoinverse \\
+% $\mathbf{K}^{\mathrm{DC}}$ & $\mathbb{R}^{n\times d}$ & \textbf{Empirical} EnDCF gain (random), defined via a pseudoinverse \\
 % $\mathbf{X}_L$ & $\mathbb{R}^{n\times N}$ & Forecast ensemble at assimilation time / window endpoint \\
 % $\mathbf{Y}_{\mathrm{stack}}$ & $\mathbb{R}^{d\times N}$ & Stacked forecast observations, columns $Q(\mathbf{x}^{(j),f})=\mathbf{H}^{(L)}\mathbf{x}^{(j),f}$ \\
 % $\mathbf{A}_x$ & $\mathbb{R}^{n\times N}$ & State anomalies at endpoint, $\mathbf{A}_x=\mathbf{X}_L-\bar{\mathbf{x}}_L^f\mathbf{1}^\top$ \\
@@ -2596,7 +2571,7 @@ The algorithm applies a deterministic correction to the ensemble without stochas
 % $\mu_{\mathcal{X}}$ & Lebesgue measure on $\mathcal{X}$ \\
 % $\mu_{\mathcal{D}}$ & Lebesgue measure on $\mathcal{D}$ \\
 % $\pi^{f}_{\mathcal{X}}$ & Forecast (prior) density on $\mathcal{X}$ \\
-% 	$P_{\mathcal{X}}$ & Forecast law on $\mathcal{X}$; under Gaussian modeling $P_{\mathcal{X}}=\mathcal{N}(\boldsymbol{\mu}^f,\mathbf{P}^f)$ \\
+% 	$P_{\mathcal{X}}$ & Forecast distribution on $\mathcal{X}$; under Gaussian modeling $P_{\mathcal{X}}=\mathcal{N}(\boldsymbol{\mu}^f,\mathbf{P}^f)$ \\
 % 	$Q:\mathcal{X}\to\mathcal{D}$ & QoI map; in QPCA-EnDCF, $Q(\mathbf{x})=\mathbf{H}^{(L)}\mathbf{x}$ \\
 % 	$Q_\ell:\mathcal{X}\to\mathcal{D}$ & Approximate QoI map at approximation level $\ell$; a sequence $\{Q_\ell\}_{\ell\geq 1}$ \\
 % 	& converging to $Q$ in $L^2(P_{\mathcal{X}})$ (e.g., reduced-order or surrogate observation operators) \\
@@ -2691,16 +2666,16 @@ The algorithm applies a deterministic correction to the ensemble without stochas
 % \]
 % The EnDCF gain used in implementation is the \emph{empirical} gain
 % \[
-% \mathbf{K}^{\mathrm{EnDCF}}
+% \mathbf{K}^{\mathrm{DC}}
 % :=
 % \mathbf{P}_{xy}\,\mathbf{P}_{yy}^{\dagger},
 % \]
-% where $(\cdot)^{\dagger}$ denotes the Moore--Penrose pseudoinverse (so $\mathbf{K}^{\mathrm{EnDCF}}$ is always well-defined, even when $N-1<d$).
+% where $(\cdot)^{\dagger}$ denotes the Moore--Penrose pseudoinverse (so $\mathbf{K}^{\mathrm{DC}}$ is always well-defined, even when $N-1<d$).
 
 % \item \textbf{Moment assumption for the (random) empirical gain:}
 % When bounding mean-square errors in expectation, we assume the gain has finite second moment,
 % \[
-% \mathbb{E}\bigl[\|\mathbf{K}^{\mathrm{EnDCF}}\|_2^2\bigr]<\infty.
+% \mathbb{E}\bigl[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\bigr]<\infty.
 % \]
 % (Any stronger moment condition used later will be stated explicitly.)
 

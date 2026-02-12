@@ -1776,7 +1776,7 @@ Together with the calibration diagnostics, the bias--variance analysis completes
 \section{Covariance Inflation and Maintenance of Ensemble Spread}
 \label{sec:inflation}
 
-Ensemble data assimilation represents forecast uncertainty with a finite set of samples. When the ensemble size $N$ is small relative to the state dimension $n$, empirical forecast covariances systematically underestimate uncertainty. This deficiency is twofold: the covariance is rank deficient—spanning at most $N\!-\!1$ directions—and its nonzero eigenvalues are negatively biased. Left uncorrected, these effects accumulate over assimilation cycles, eroding ensemble spread and ultimately causing filter divergence. For this reason, operational ensemble methods routinely employ covariance inflation to restore variance.
+Ensemble data assimilation represents forecast uncertainty with a finite set of samples. When the ensemble size $N$ is small relative to the state dimension $n$, empirical forecast covariances systematically underestimate uncertainty. This deficiency is twofold: the covariance is rank deficient, spanning at most $N\!-\!1$ directions, and its nonzero eigenvalues are negatively biased. Left uncorrected, these effects accumulate over assimilation cycles, eroding ensemble spread and ultimately causing filter divergence. For this reason, operational ensemble methods routinely employ covariance inflation to restore variance.
 
 This section examines whether QPCA-EnDCF mitigates variance loss intrinsically through spectral regularization, thereby reducing or eliminating the need for explicit inflation. The underlying hypothesis is that aggressive truncation concentrates updates onto signal-dominated modes while suppressing variance-depleting sampling noise, stabilizing ensemble spread without artificial augmentation. We test this hypothesis empirically by comparing inflation requirements across ensemble sizes and filtering methods.
 
@@ -1794,11 +1794,7 @@ Consider an ensemble of size $N$ representing uncertainty in an $n$-dimensional 
 \]
 constructed from anomaly matrix $\mathbf{A}^f \in \mathbb{R}^{n\times N}$, has rank at most $N-1$ and therefore $n-(N-1)$ zero eigenvalues. Rank deficiency alone would be manageable if the remaining eigenvalues accurately captured uncertainty within the ensemble subspace. In practice, finite sampling induces systematic negative bias: even the nonzero eigenvalues underestimate the true variances.
 
-This bias compounds in sequential assimilation. Each analysis step reduces variance along observed directions; if the incoming forecast covariance is already underestimated, subsequent updates further contract the ensemble. Over many cycles this feedback produces ensemble collapse, in which members concentrate in a narrow region of state space and fail to represent posterior uncertainty, preventing effective assimilation of new observations.
-
-Covariance inflation counteracts this variance loss by artificially augmenting ensemble spread. Two strategies dominate operational practice.
-
-Multiplicative inflation rescales anomalies by a factor $\lambda_{\mathrm{infl}} \ge 1$,
+This bias compounds in sequential assimilation. Each analysis step reduces variance along observed directions; if the incoming forecast covariance is already underestimated, subsequent updates further contract the ensemble. Over many cycles this feedback produces ensemble collapse, in which members concentrate in a narrow region of state space and fail to represent posterior uncertainty, preventing effective assimilation of new observations. Covariance inflation counteracts this variance loss by artificially augmenting ensemble spread. Two strategies dominate operational practice. Multiplicative inflation rescales anomalies by a factor $\lambda_{\mathrm{infl}} \ge 1$,
 \[
 \mathbf{X}^f_{\lambda_{\mathrm{infl}}}
 =
@@ -1808,9 +1804,7 @@ Multiplicative inflation rescales anomalies by a factor $\lambda_{\mathrm{infl}}
 \]
 where $\bar{\mathbf{x}}^f$ is the ensemble mean. The resulting covariance satisfies
 $\widehat{\mathbf{P}}^{\,f}_{\lambda_{\mathrm{infl}}}=\lambda_{\mathrm{infl}}^2\widehat{\mathbf{P}}^{\,f}$,
-uniformly amplifying all eigenvalues while preserving eigenvectors. Geometrically, this is a uniform dilation of the ensemble ellipsoid. Multiplicative inflation is inexpensive and preserves correlation structure, but it cannot address rank deficiency: the null space is unchanged.
-
-Additive inflation perturbs each ensemble member with independent noise,
+uniformly amplifying all eigenvalues while preserving eigenvectors. Geometrically, this is a uniform dilation of the ensemble ellipsoid. Multiplicative inflation is inexpensive and preserves correlation structure, but it cannot address rank deficiency: the null space is unchanged. Additive inflation perturbs each ensemble member with independent noise,
 \[
 \mathbf{x}^{(j)}_{\alpha_{\mathrm{add}}}
 =
@@ -1844,13 +1838,7 @@ Figure~\ref{fig:mult_inflation} reports RMSE as a function of the multiplicative
 \label{fig:mult_inflation}
 \end{figure}
 
-QPCA-EnDCF exhibits a uniform response across ensemble sizes: RMSE is minimized at $\lambda_{\mathrm{infl}}=1.0$ (no inflation) and increases monotonically for $\lambda_{\mathrm{infl}}>1.0$. Performance is insensitive to mild inflation ($\lambda_{\mathrm{infl}}\in[1.0,1.05]$) but degrades for larger values, indicating that spectral regularization alone maintains adequate ensemble spread.
-
-By contrast, Sequential EnKF and 4D-EnKF display ensemble-size-dependent optima. For $N=5$, minimum RMSE occurs near $\lambda_{\mathrm{infl}}=1.10$, shifting toward $\lambda_{\mathrm{infl}}=1.05$ as $N$ increases to 25. This trend reflects diminishing finite-sample bias with growing ensemble size. For $N=50$ (omitted from Figure~\ref{fig:mult_inflation} for clarity), the optimal factor is $\lambda_{\mathrm{infl}}\approx1.05$, and the performance gap relative to QPCA-EnDCF narrows to roughly 7--9\%.
-
-The magnitude of this effect is substantial for small ensembles. At $N=5$, Sequential EnKF with optimal inflation ($\lambda_{\mathrm{infl}}=1.10$) attains RMSE $2.15\pm0.18$, compared with $1.68\pm0.12$ for QPCA-EnDCF at $\lambda_{\mathrm{infl}}=1.0$, a reduction of approximately 22\%. Although this advantage decreases with $N$, QPCA-EnDCF retains an $\mathcal{O}(8\%)$ RMSE reduction even at $N=50$.
-
-Figure~\ref{fig:add_inflation} shows the corresponding results for additive inflation with $\mathbf{Q}_{\mathrm{add}}=\mathbf{I}_n$.
+QPCA-EnDCF exhibits a roughly uniform response across ensemble sizes. Performance is insensitive to mild inflation ($\lambda_{\mathrm{infl}}\in[1.0,1.05]$) but slightly increases for larger values, indicating that spectral regularization alone maintains adequate ensemble spread. By contrast, Sequential EnKF and 4D-EnKF display ensemble-size-dependent optima. For $N=5$, minimum RMSE occurs near $\lambda_{\mathrm{infl}}=1.15$. This trend reflects diminishing finite-sample bias with growing ensemble size. The magnitude of this effect is substantial for small ensembles. At $N=5$, Sequential EnKF with optimal inflation ($\lambda_{\mathrm{infl}}=1.10$) attains RMSE $2.15\pm0.18$, compared with $1.68\pm0.12$ for QPCA-EnDCF at $\lambda_{\mathrm{infl}}=1.0$, a reduction of approximately 22\%. Figure~\ref{fig:add_inflation} shows the corresponding results for additive inflation with $\mathbf{Q}_{\mathrm{add}}=\mathbf{I}_n$.
 
 \begin{figure}[htbp]
 \centering
@@ -1859,43 +1847,9 @@ Figure~\ref{fig:add_inflation} shows the corresponding results for additive infl
 \label{fig:add_inflation}
 \end{figure}
 
-QPCA-EnDCF again achieves its minimum RMSE at $\alpha_{\mathrm{add}}=0$, with monotonic degradation as $\alpha_{\mathrm{add}}$ increases. Since spectral regularization already controls variance, additive perturbations inject spurious energy that disrupts dynamically consistent correlations without compensating benefits.
+QPCA-EnDCF again achieves its minimum RMSE at $\alpha_{\mathrm{add}}=0$, with slight monotonic degradation as $\alpha_{\mathrm{add}}$ increases. Since spectral regularization already controls variance, additive perturbations inject spurious energy that disrupts dynamically consistent correlations without compensating benefits.
 
-For stochastic methods, additive inflation provides limited improvement relative to no inflation, but consistently underperforms multiplicative inflation by 5--10\%. This deficit reflects the difficulty of specifying an appropriate perturbation structure: isotropic noise introduces variance in dynamically irrelevant directions. More structured choices of $\mathbf{Q}_{\mathrm{add}}$ could improve performance but at the cost of additional modeling effort.
-
-% Table~\ref{tab:optimal_inflation} summarizes optimal inflation parameters and corresponding RMSE values for all ensemble sizes and methods.
-
-% \begin{table}[htbp]
-% \centering
-% \caption{Optimal inflation parameters and RMSE. For each method and ensemble size $N \in \{5,10,25,50\}$, we report the multiplicative factor $\lambda_{\mathrm{opt}}$ and additive magnitude $\alpha_{\mathrm{opt}}$ minimizing mean RMSE. Errors are reported as mean $\pm$ standard deviation over three trials, each averaged over 50 assimilation windows.}
-% \label{tab:optimal_inflation}
-% \small
-% \begin{tabular}{llcccc}
-% \toprule
-% \textbf{Method} & \textbf{$N$} & \textbf{$\lambda_{\mathrm{opt}}$} & \textbf{$\alpha_{\mathrm{opt}}$} & \textbf{RMSE (mult.)} & \textbf{RMSE (add.)} \\
-% \midrule
-% \multirow{4}{*}{Seq-EnKF}
-% & 5  & 1.10 & 0.05 & $2.15 \pm 0.18$ & $2.28 \pm 0.20$ \\
-% & 10 & 1.10 & 0.05 & $1.42 \pm 0.09$ & $1.52 \pm 0.10$ \\
-% & 25 & 1.05 & 0.01 & $1.18 \pm 0.06$ & $1.24 \pm 0.07$ \\
-% & 50 & 1.05 & 0.01 & $1.11 \pm 0.05$ & $1.15 \pm 0.06$ \\
-% \midrule
-% \multirow{4}{*}{4D-EnKF}
-% & 5  & 1.10 & 0.05 & $2.03 \pm 0.16$ & $2.19 \pm 0.18$ \\
-% & 10 & 1.10 & 0.05 & $1.38 \pm 0.08$ & $1.47 \pm 0.09$ \\
-% & 25 & 1.05 & 0.01 & $1.15 \pm 0.05$ & $1.20 \pm 0.06$ \\
-% & 50 & 1.05 & 0.01 & $1.09 \pm 0.04$ & $1.13 \pm 0.05$ \\
-% \midrule
-% \multirow{4}{*}{QPCA-EnDCF}
-% & 5  & 1.00 & 0.00 & $1.68 \pm 0.12$ & $1.68 \pm 0.12$ \\
-% & 10 & 1.00 & 0.00 & $1.23 \pm 0.05$ & $1.25 \pm 0.06$ \\
-% & 25 & 1.00 & 0.00 & $1.08 \pm 0.04$ & $1.08 \pm 0.04$ \\
-% & 50 & 1.00 & 0.00 & $1.02 \pm 0.03$ & $1.02 \pm 0.03$ \\
-% \bottomrule
-% \end{tabular}
-% \end{table}
-
-The defining feature of Figure~\ref{fig:mult_inflation} and Figure~\ref{fig:add_inflation} is the invariance of QPCA-EnDCF's optimal parameters: $(\lambda_{\mathrm{opt}},\alpha_{\mathrm{opt}})=(1.0,0.0)$ for all $N$. This eliminates the need for manual tuning or adaptive inflation schemes. In contrast, stochastic methods require ensemble-size-dependent inflation, with $\lambda_{\mathrm{opt}}$ decreasing toward unity as $N$ increases. The persistent inferiority of additive inflation relative to multiplicative inflation across all methods and ensemble sizes (visible in the consistently higher RMSE (add.) values) confirms that variance control through ensemble-wide rescaling is more effective than introducing isotropic random perturbations, which lack dynamical structure and contaminate correlations.
+For stochastic methods, additive inflation provides limited improvement relative to no inflation, but consistently underperforms multiplicative inflation by 5--10\%. This deficit reflects the difficulty of specifying an appropriate perturbation structure: isotropic noise introduces variance in dynamically irrelevant directions. More structured choices of $\mathbf{Q}_{\mathrm{add}}$ could improve performance but at the cost of additional modeling effort. The defining feature of Figure~\ref{fig:mult_inflation} and Figure~\ref{fig:add_inflation} is the invariance of QPCA-EnDCF's optimal parameters: $(\lambda_{\mathrm{opt}},\alpha_{\mathrm{opt}}) \approx (1.0,0.0)$ for all $N$. This eliminates the need for manual tuning or adaptive inflation schemes. In contrast, stochastic methods require ensemble-size-dependent inflation, with $\lambda_{\mathrm{opt}}$ decreasing toward unity as $N$ increases. The persistent inferiority of additive inflation relative to multiplicative inflation across all methods and ensemble sizes (visible in the consistently higher RMSE (add.) values) confirms that variance control through ensemble-wide rescaling is more effective than introducing isotropic random perturbations, which lack dynamical structure and contaminate correlations.
 
 
 % ================================================================================
@@ -1906,21 +1860,13 @@ The defining feature of Figure~\ref{fig:mult_inflation} and Figure~\ref{fig:add_
 \section{Robustness to Non-Ideal Observation Errors}
 \label{sec:robustness}
 
-Previous sections evaluate performance under idealized observational assumptions: Gaussian errors with known diagonal covariance. These assumptions simplify analysis and isolate algorithmic effects, but they are routinely violated in practice. Real observing systems may exhibit outliers (heavy tails), saturation or retrieval nonlinearities (skewness), and shared contamination or systematic biases (spatial correlations), all of which undermine the classical modeling assumptions. The operational question is whether QPCA-EnDCF’s gains persist under such non-idealities, or whether they are specific to the Gaussian/diagonal setting.
-
-We probe robustness by varying observation error characteristics along two axes that isolate distinct failure modes. Section~\ref{subsec:nongaussian} studies distributional departures by testing nine error distributions spanning symmetric heavy-tailed, right-skewed, and Gaussian cases while keeping the second-moment structure correctly specified. Section~\ref{subsec:correlated_errors} studies structural departures by introducing spatial correlations with condition numbers spanning five orders of magnitude, again under correctly specified covariances. Together, these experiments distinguish sensitivity to higher-order distributional features (skewness, kurtosis, tail behavior) from sensitivity to correlation structure.
-
-Unless otherwise stated, all experiments use the baseline configuration of Section~\ref{sec:framework} ($N=10$, $L=5$, $n=40$), modifying only the targeted observation model component.
+Previous sections evaluate performance under idealized observational assumptions: Gaussian errors with known diagonal covariance. These assumptions simplify analysis and isolate algorithmic effects, but they are routinely violated in practice. Real observing systems may exhibit outliers (heavy tails), saturation or retrieval nonlinearities (skewness), and shared contamination or systematic biases (spatial correlations), all of which undermine the classical modeling assumptions. The operational question is whether QPCA-EnDCF’s gains persist under such non-idealities, or whether they are specific to the Gaussian/diagonal covariance setting. We probe robustness by varying observation error characteristics along two axes that isolate distinct failure modes. Section~\ref{subsec:nongaussian} studies distributional departures by testing nine error distributions spanning symmetric heavy-tailed, right-skewed, and Gaussian cases while keeping the second-moment structure correctly specified. Section~\ref{subsec:correlated_errors} studies structural departures by introducing spatial correlations with condition numbers spanning five orders of magnitude, again under correctly specified covariances. Together, these experiments distinguish sensitivity to higher-order distributional features (skewness, kurtosis, tail behavior) from sensitivity to correlation structure. Unless otherwise stated, all experiments use the baseline configuration of Section~\ref{sec:framework} ($N=10$, $L=5$, $n=40$), modifying only the targeted observation model component.
 
 % ================================================================================
 \subsection{Non-Gaussian Observation Error Distributions}
 \label{subsec:nongaussian}
 
-Observation errors often depart from Gaussianity due to outliers, saturation, and nonlinear retrieval maps. Although Kalman-type derivations assume Gaussian noise, ensemble methods are frequently argued to be more robust because uncertainty is represented by samples rather than a parametric likelihood.
-
-Here we test whether the performance advantages observed under Gaussian errors persist under non-Gaussian noise. The design isolates shape effects from covariance misspecification: every distribution is standardized to mean zero and variance $\sigma_{\mathrm{obs}}^2=2.25$, and all methods are supplied the correct covariance $\mathbf{R}=2.25\mathbf{I}_m$. Thus any performance changes reflect higher-order properties rather than incorrect second-moment information.
-
-We consider nine distributions. The Gaussian $\mathcal{N}(0,\sigma_{\mathrm{obs}}^2)$ serves as a reference. Symmetric heavy-tailed cases include Student-$t$ with $\nu\in\{3,5,10\}$ degrees of freedom and Laplace with scale $b=\sigma_{\mathrm{obs}}/\sqrt{2}$, each centered at zero and rescaled to variance $\sigma_{\mathrm{obs}}^2$. Right-skewed cases include Gamma($k,\theta$) with shape $k\in\{2,5\}$ and Log-normal($\mu,\sigma_{\mathrm{LN}}$) with parameters $\sigma_{\mathrm{LN}}\in\{0.5,0.8\}$. These positive-valued distributions are shifted (by subtracting their mean) and rescaled to achieve mean zero and variance $\sigma_{\mathrm{obs}}^2$ while preserving their characteristic tail behavior and asymmetry. Thus, we use shifted and rescaled Gamma/Log-normal errors rather than the original positive-valued distributions.
+Observation errors often depart from Gaussianity due to outliers, saturation, and nonlinear retrieval maps. Although Kalman-type derivations assume Gaussian noise, ensemble methods are frequently argued to be more robust because uncertainty is represented by samples rather than a parametric likelihood. Here we test whether the performance advantages observed under Gaussian errors persist under non-Gaussian noise. The design isolates shape effects from covariance misspecification: every distribution is standardized to mean zero and variance $\sigma_{\mathrm{obs}}^2=2.25$, and all methods are supplied the correct covariance $\mathbf{R}=2.25\mathbf{I}_m$. Thus any performance changes reflect higher-order properties rather than incorrect second-moment information. We consider nine distributions. The Gaussian $\mathcal{N}(0,\sigma_{\mathrm{obs}}^2)$ serves as a reference. Symmetric heavy-tailed cases include Student-$t$ with $\nu\in\{3,5,10\}$ degrees of freedom and Laplace with scale $b=\sigma_{\mathrm{obs}}/\sqrt{2}$, each centered at zero and rescaled to variance $\sigma_{\mathrm{obs}}^2$. Right-skewed cases include Gamma($k,\theta$) with shape $k\in\{2,5\}$ and Log-normal($\mu,\sigma_{\mathrm{LN}}$) with parameters $\sigma_{\mathrm{LN}}\in\{0.5,0.8\}$. These positive-valued distributions are shifted (by subtracting their mean) and rescaled to achieve mean zero and variance $\sigma_{\mathrm{obs}}^2$ while preserving their characteristic tail behavior and asymmetry. Thus, we use shifted and rescaled Gamma/Log-normal errors rather than the original positive-valued distributions.
 
 Figure~\ref{fig:noise_distributions} illustrates representative samples. Despite pronounced differences in tails and skewness, all distributions share the same variance by construction.
 
@@ -1931,7 +1877,7 @@ Figure~\ref{fig:noise_distributions} illustrates representative samples. Despite
 \label{fig:noise_distributions}
 \end{figure}
 
-For each distribution we run three independent trials, each consisting of 10 initialization windows followed by 50 assimilation windows, yielding 150 window-level samples per method--distribution pair. Table~\ref{tab:nongaussian_performance} reports mean RMSE (trial-averaged over the 50 windows) and the relative improvement of QPCA-EnDCF compared with the stochastic methods.
+For each distribution we run three independent trials, each consisting of 50 assimilation windows, yielding 150 window-level samples per method--distribution pair. Table~\ref{tab:nongaussian_performance} reports mean RMSE (trial-averaged over the 50 windows) and the relative improvement of QPCA-EnDCF compared with the stochastic methods.
 
 \begin{table}[htbp]
 \centering
@@ -1962,9 +1908,7 @@ Cross-distribution std. & & $\mathbf{0.052}$ & $0.092$ & $0.131$ & --- & --- \\
 \end{tabular}
 \end{table}
 
-QPCA-EnDCF is essentially insensitive to distributional shape: RMSE remains in the narrow band 3.51--3.69 across all nine distributions, from extreme heavy tails (Student-$t$, $\nu=3$) to strong right skew (Log-normal, $\sigma_{\mathrm{LN}}=0.8$). The cross-distribution standard deviation is $0.052$ (coefficient of variation $\approx 1.4\%$), indicating near-constant accuracy despite substantial changes in skewness and kurtosis. In contrast, the stochastic methods are both less accurate and more variable across distributions (cross-distribution standard deviations $0.092$ for Sequential EnKF and $0.131$ for 4D-EnKF).
-
-Across all distributions, QPCA-EnDCF improves RMSE by 18.3--24.5\% relative to Sequential EnKF (mean 20.4\%) and by 17.3--22.7\% relative to 4D-EnKF (mean 19.8\%). Figure~\ref{fig:mean_rmse_comparison} summarizes these gains and highlights the comparatively tight spread of QPCA-EnDCF across distributional families.
+QPCA-EnDCF is essentially insensitive to distributional shape: RMSE remains in the narrow band 3.51--3.69 across all nine distributions, from extreme heavy tails (Student-$t$, $\nu=3$) to strong right skew (Log-normal, $\sigma_{\mathrm{LN}}=0.8$). The cross-distribution standard deviation is $0.052$ (coefficient of variation $\approx 1.4\%$), indicating near-constant accuracy despite substantial changes in skewness and kurtosis. In contrast, the stochastic methods are both less accurate and more variable across distributions (cross-distribution standard deviations $0.092$ for Sequential EnKF and $0.131$ for 4D-EnKF). Across all distributions, QPCA-EnDCF improves RMSE by 18.3--24.5\% relative to Sequential EnKF (mean 20.4\%) and by 17.3--22.7\% relative to 4D-EnKF (mean 19.8\%). Figure~\ref{fig:mean_rmse_comparison} summarizes these gains and highlights the comparatively tight spread of QPCA-EnDCF across distributional families.
 
 \begin{figure}[htbp]
 \centering
@@ -1997,17 +1941,13 @@ These results are consistent with the fact that QPCA-EnDCF is driven by second-m
 
 Observation errors in operational systems are rarely independent. Spatial correlations arise, for example, in satellite retrievals through shared atmospheric-path contamination and algorithmic dependencies; temporal correlations occur in ground networks through drift and common environmental forcing; and cross-channel correlations appear through shared calibration. When such correlations are ignored, the effective information content of the observations is overstated and posterior uncertainty becomes overconfident: highly correlated measurements contribute less independent information, yet a diagonal model treats them as additive evidence. Since optimal weighting depends on $\mathbf{R}$, correlation structure can materially affect both estimation and uncertainty quantification.
 
-This subsection tests whether QPCA-EnDCF's whitening step provides robustness to correlated observation errors, and whether its advantages persist as correlation strength and conditioning increase. Importantly, we avoid substantial covariance misspecification: in every experiment, the filter is provided a covariance matrix $\mathbf{R}$ that matches the true error correlation structure. For severely ill-conditioned cases, a small diagonal regularization is applied to ensure numerical stability (see below), which represents a minor departure from exact specification rather than a modeling assumption. The question is therefore algorithmic: given known correlations, does whitening effectively decorrelate the errors and recover performance close to the diagonal baseline?
-
-For non-diagonal $\mathbf{R}$, whitening uses
+This subsection tests whether QPCA-EnDCF's whitening step provides robustness to correlated observation errors, and whether its advantages persist as correlation strength and conditioning increase. Importantly, we avoid substantial covariance misspecification: in every experiment, the filter is provided a covariance matrix $\mathbf{R}$ that matches the true error correlation structure. For severely ill-conditioned cases, a small diagonal regularization is applied to ensure numerical stability (see below), which represents a minor departure from exact specification rather than a modeling assumption. The question is therefore algorithmic: given known correlations, does whitening effectively decorrelate the errors and recover performance close to the diagonal baseline? For non-diagonal $\mathbf{R}$, whitening uses
 \[
 \mathbf{W} = (\mathbf{R}^{(L)})^{-1/2},
 \qquad
 \mathbf{W}\mathbf{R}^{(L)}\mathbf{W}^{\top} = \mathbf{I},
 \]
-a bijective linear change of coordinates that standardizes and decorrelates the observation errors. We consider two standard implementations: (i) Cholesky whitening, $\mathbf{R}=\mathbf{L}\mathbf{L}^{\top}$ with $\mathbf{W}=\mathbf{L}^{-\top}$, and (ii) symmetric square-root whitening, $\mathbf{R}=\mathbf{U}\boldsymbol{\Lambda}\mathbf{U}^{\top}$ with $\mathbf{W}=\mathbf{U}\boldsymbol{\Lambda}^{-1/2}\mathbf{U}^{\top}$. Both have $\mathcal{O}(m^3)$ cost; the comparison here is numerical behavior under severe ill-conditioning.
-
-We test three covariance structures spanning five orders of magnitude in condition number. The diagonal baseline $\mathbf{R}=\sigma_{\mathrm{obs}}^2\mathbf{I}_m$ with $\sigma_{\mathrm{obs}}=1.5$ has $\mathrm{cond}(\mathbf{R})=1$. The exponential correlation model
+a bijective linear change of coordinates that standardizes and decorrelates the observation errors. We consider the standard Cholesky whitening implementation: $\mathbf{R}=\mathbf{L}\mathbf{L}^{\top}$ with $\mathbf{W}=\mathbf{L}^{-\top}$. This approach has $\mathcal{O}(m^3)$ cost; the comparison here focuses on its numerical behavior under severe ill-conditioning. We test three covariance structures spanning five orders of magnitude in condition number. The diagonal baseline $\mathbf{R}=\sigma_{\mathrm{obs}}^2\mathbf{I}_m$ with $\sigma_{\mathrm{obs}}=1.5$ has $\mathrm{cond}(\mathbf{R})=1$. The exponential correlation model
 \[
 [\mathbf{R}]_{ij}=\sigma_{\mathrm{obs}}^2\exp\!\left(-\frac{d_{ij}}{\ell_{\mathrm{corr}}}\right),
 \qquad
@@ -2026,13 +1966,11 @@ with $\ell_{\mathrm{corr}}=4$ is severely ill-conditioned, $\mathrm{cond}(\mathb
 \label{fig:correlation_structures}
 \end{figure}
 
-For each structure we compare QPCA-EnDCF with Cholesky and symmetric square-root whitening against 4D-EnKF as a stochastic baseline. All runs use a single realization with 50 assimilation windows following 10-window initialization. This choice reflects the substantial cost of repeated experiments under severely ill-conditioned covariances; the long window sequence still provides a meaningful within-run comparison.
-
-Table~\ref{tab:correlated_obs_summary} reports mean RMSE over the 50-window sequence, along with (i) degradation relative to the diagonal case for each method and (ii) QPCA-EnDCF’s improvement relative to 4D-EnKF under the same correlation structure.
+For each structure we compare QPCA-EnDCF with Cholesky whitening against 4D-EnKF as a stochastic baseline. All runs use a single realization with 50 assimilation windows. This choice reflects the substantial cost of repeated experiments under severely ill-conditioned covariances; the long window sequence still provides a meaningful within-run comparison. Table~\ref{tab:correlated_obs_summary} reports mean RMSE over the 50-window sequence, along with (i) degradation relative to the diagonal case for each method and (ii) QPCA-EnDCF’s improvement relative to 4D-EnKF under the same correlation structure.
 
 \begin{table}[htbp]
 \centering
-\caption{Reconstruction error under correlated observation errors. Values are mean RMSE over 50 assimilation windows (after 10-window initialization) from a single realization. Column ``vs. Diag'' reports percent change relative to the diagonal baseline for the same method. Column ``vs. 4D'' reports percent improvement of QPCA-EnDCF relative to 4D-EnKF under the same correlation structure (negative values indicate improvement).}
+\caption{Reconstruction error under correlated observation errors. Values are mean RMSE over 50 assimilation windows from a single realization. Column ``vs. Diag'' reports percent change relative to the diagonal baseline for the same method. Column ``vs. 4D'' reports percent improvement of QPCA-EnDCF relative to 4D-EnKF under the same correlation structure (negative values indicate improvement).}
 \label{tab:correlated_obs_summary}
 \small
 \begin{tabular}{llcccc}
@@ -2041,27 +1979,20 @@ Table~\ref{tab:correlated_obs_summary} reports mean RMSE over the 50-window sequ
 \midrule
 \multirow{3}{*}{Diagonal (baseline)}
     & QPCA-Cholesky & $1.00$ & $3.47$ & --- & $-25.2\%$ \\
-    & QPCA-SymSqrt & $1.00$ & $3.47$ & $0.0\%$ & $-25.2\%$ \\
     & 4D-EnKF & $1.00$ & $4.64$ & --- & --- \\
 \midrule
 \multirow{3}{*}{Exponential ($\ell=4$)}
     & QPCA-Cholesky & $649$ & $3.71$ & $+6.9\%$ & $-24.7\%$ \\
-    & QPCA-SymSqrt & $649$ & $3.71$ & $+6.9\%$ & $-24.7\%$ \\
     & 4D-EnKF & $649$ & $4.93$ & $+6.2\%$ & --- \\
 \midrule
 \multirow{3}{*}{Gaussian ($\ell=4$)}
     & QPCA-Cholesky & $3.7 \times 10^5$ & $3.65$ & $+5.1\%$ & $-31.9\%$ \\
-    & QPCA-SymSqrt & $3.7 \times 10^5$ & $3.65$ & $+5.1\%$ & $-31.9\%$ \\
     & 4D-EnKF & $3.7 \times 10^5$ & $5.35$ & $+15.3\%$ & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-QPCA-EnDCF is robust across condition numbers spanning five orders of magnitude. Relative to the diagonal baseline, RMSE increases only modestly under correlation: from 3.47 (diagonal) to 3.71 (exponential, $+6.9\%$) and 3.65 (Gaussian, $+5.1\%$). Even under $\kappa(\mathbf{R})\approx 3.7\times10^5$, performance remains within 7\% of the uncorrelated reference, indicating that whitening effectively neutralizes the impact of correlation on the subsequent spectral filtering.
-
-The two whitening implementations are numerically indistinguishable at the level relevant for filtering: both yield the same RMSE to two decimal places in every case (maximum difference $<0.005$). Given this equivalence and the favorable constant factors of Cholesky, Cholesky whitening is the natural default when $\mathbf{R}$ is positive definite.
-
-By contrast, 4D-EnKF exhibits substantially larger degradation as correlations strengthen, particularly in the severely ill-conditioned Gaussian case (RMSE 4.64 $\to$ 5.35, $+15.3\%$). Consequently, QPCA-EnDCF's advantage increases with correlation strength: the reduction relative to 4D-EnKF is 25.2\% (diagonal), 24.7\% (exponential), and 31.9\% (Gaussian). Thus the whitening-based deterministic update is most beneficial precisely in regimes where correlations reduce the effective independent information content and stochastic perturbations become less efficient.
+QPCA-EnDCF is robust across condition numbers spanning five orders of magnitude. Relative to the diagonal baseline, RMSE increases only modestly under correlation: from 3.47 (diagonal) to 3.71 (exponential, $+6.9\%$) and 3.65 (Gaussian, $+5.1\%$). Even under $\kappa(\mathbf{R})\approx 3.7\times10^5$, performance remains within 7\% of the uncorrelated reference, indicating that whitening effectively neutralizes the impact of correlation on the subsequent spectral filtering. The Cholesky whitening implementation is numerically stable at the level relevant for filtering, yielding consistent RMSE results across all cases. Given its favorable constant factors, Cholesky whitening is the natural default when $\mathbf{R}$ is positive definite. By contrast, 4D-EnKF exhibits substantially greater degradation as correlations strengthen, with the most pronounced effect occurring in the severely ill-conditioned Gaussian case, where the RMSE increases from $4.64$ to $5.35$, corresponding to a $15.3\%$ deterioration. Consequently, QPCA-EnDCF's advantage increases with correlation strength: the reduction relative to 4D-EnKF is 25.2\% (diagonal), 24.7\% (exponential), and 31.9\% (Gaussian). Thus the whitening-based deterministic update is most beneficial precisely in regimes where correlations reduce the effective independent information content and stochastic perturbations become less efficient.
 
 \FloatBarrier
 
@@ -2080,65 +2011,51 @@ By contrast, 4D-EnKF exhibits substantially larger degradation as correlations s
 \section{Operational Considerations}
 \label{sec:operational}
 
-The preceding sections demonstrate that QPCA-EnDCF improves reconstruction accuracy and calibration (Section~\ref{sec:calibration}), removes the need for inflation (Section~\ref{sec:inflation}), and remains robust to non-ideal observation errors (Section~\ref{sec:robustness}). For deployment, the central question is how these advantages trade against computational constraints. In operational settings, ensemble size $N$ is often severely limited (typically $N \ll n$), while window length $L$ affects both information content and cost, with matrix operations scaling as $\mathcal{O}(m^3L^3)$. Practical implementation therefore requires characterizing performance degradation as $N$ and $L$ move from computationally generous to resource-constrained regimes, and comparing these trends across methods.
-
-This section studies sensitivity to the two primary computational parameters. Section~\ref{subsec:operational_ensemble_size} varies $N \in \{5,10,15,20,30,50,100\}$, spanning extreme undersampling to well-sampled regimes, and evaluates both reconstruction accuracy and calibration. Section~\ref{subsec:operational_window_length} varies $L \in \{1,3,5,7,10,15\}$ to identify regimes where temporal coupling provides net benefit. The goal is to establish minimum viable operating points and provide actionable guidance for parameter selection.
+The preceding sections demonstrate that QPCA-EnDCF improves reconstruction accuracy and calibration (Section~\ref{sec:calibration}), removes the need for inflation (Section~\ref{sec:inflation}), and remains robust to non-ideal observation errors (Section~\ref{sec:robustness}). For deployment, the central question is how these advantages trade against computational constraints. In operational settings, ensemble size $N$ is often severely limited (typically $N \ll n$), while window length $L$ affects both information content and cost, with matrix operations scaling as $\mathcal{O}(m^3L^3)$. Practical implementation therefore requires characterizing performance degradation as $N$ and $L$ move from computationally generous to resource-constrained regimes, and comparing these trends across methods. This section studies sensitivity to the two primary computational parameters. Section~\ref{subsec:operational_ensemble_size} varies $N \in \{5,10,15,20,30,50,100\}$, spanning extreme undersampling to well-sampled regimes, and evaluates both reconstruction accuracy and calibration. Section~\ref{subsec:operational_window_length} varies $L \in \{1,3,5,7,10,15\}$ to identify regimes where temporal coupling provides net benefit. The goal is to establish minimum viable operating points and provide actionable guidance for parameter selection.
 
 % ================================================================================
 \subsection{Ensemble Size Dependence}
 \label{subsec:operational_ensemble_size}
 
-Ensemble size controls the fundamental accuracy--cost tradeoff: forecast propagation costs scale approximately linearly in $N$, while statistical error increases as sampling noise corrupts empirical covariances. This tradeoff differs across methods. Stochastic EnKF variants incur sampling error in $\hat{\mathbf{P}}^f$ and additional variance from perturbed observations, whereas deterministic methods avoid the latter. The key operational question is whether removing perturbation noise yields meaningful gains in small-ensemble regimes.
-
-A useful baseline comes from random matrix theory: in the undersampled regime $N \ll n$, for i.i.d. samples from a distribution with covariance $\mathbf{P}^f$,
+Ensemble size controls the fundamental accuracy--cost tradeoff: forecast propagation costs scale approximately linearly in $N$, while statistical error increases as sampling noise corrupts empirical covariances. This tradeoff differs across methods. Stochastic EnKF variants incur sampling error in $\hat{\mathbf{P}}^f$ and additional variance from perturbed observations, whereas deterministic methods avoid the latter. The key operational question is whether removing perturbation noise yields meaningful gains in small-ensemble regimes. A useful baseline comes from random matrix theory: in the undersampled regime $N \ll n$, for i.i.d. samples from a distribution with covariance $\mathbf{P}^f$,
 \[
 \mathbb{E}\!\left[\|\hat{\mathbf{P}}^f-\mathbf{P}^f\|_F^2\right] = \mathcal{O}\!\left(\frac{\|\mathbf{P}^f\|_F^2}{N}\right) = \mathcal{O}\!\left(\frac{\mathrm{tr}(\mathbf{P}^f)^2 + \|\mathbf{P}^f\|_F^2}{N}\right),
 \qquad
 \hat{\mathbf{P}}^f=\frac{1}{N-1}\mathbf{A}^f(\mathbf{A}^f)^{\top}.
 \]
 When $\mathbf{P}^f$ has entries of comparable magnitude, this scales as $\mathcal{O}(n^2/N)$; when normalized per component, it scales as $\mathcal{O}(n/N)$.
-Stochastic filters further introduce variance from observation perturbations, scaling like $\mathcal{O}(\mathrm{tr}(\mathbf{R})/N)$ per update. QPCA-EnDCF eliminates this perturbation component; the following experiments quantify the practical impact.
-
-We vary $N \in \{5,10,15,20,30,50,100\}$ while holding the baseline configuration fixed ($n=40$, $m=20$, $L=5$, $\sigma_{\mathrm{obs}}=1.5$). This spans extreme undersampling ($N=5$, rank-$4$ covariances, $N/n=0.125$) through moderate undersampling ($N=20$, $N/n=0.5$) to well-sampled conditions ($N=100$, $N/n=2.5$). Each setting uses three independent trials with 25-window initialization followed by 50 assimilation windows.
-
-Figure~\ref{fig:performance_degradation} summarizes reconstruction accuracy. Panel (a) reports absolute RMSE versus $N$; panel (b) reports degradation relative to the $N=100$ baseline.
+Stochastic filters further introduce variance from observation perturbations, scaling like $\mathcal{O}(\mathrm{tr}(\mathbf{R})/N)$ per update. QPCA-EnDCF eliminates this perturbation component; the following experiments quantify the practical impact. We vary $N \in \{5,10,15,20,30,50,100\}$ while holding the baseline configuration fixed ($n=40$, $m=20$, $L=5$, $\sigma_{\mathrm{obs}}=1.5$). This spans extreme undersampling ($N=5$, rank-$4$ covariances, $N/n=0.125$) through moderate undersampling ($N=20$, $N/n=0.5$) to well-sampled conditions ($N=100$, $N/n=2.5$). Each setting uses three independent trials with 50 assimilation windows. Figure~\ref{fig:performance_degradation} summarizes reconstruction accuracy. Panel (a) reports absolute RMSE versus $N$; panel (b) reports degradation relative to the $N=100$ baseline.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/performance_degradation.png}
-\caption{Reconstruction accuracy versus ensemble size $N \in \{5,10,15,20,30,50,100\}$. Curves show mean RMSE across three trials; shading indicates $\pm1$ standard deviation. \textbf{(a)} Absolute RMSE versus $N$ (logarithmic horizontal axis). \textbf{(b)} Relative degradation: percent increase in RMSE relative to $N=100$. QPCA-EnDCF degrades modestly from 3.33 ($N=100$) to 4.27 ($N=5$), whereas Sequential EnKF and 4D-EnKF degrade much more severely at small $N$.}
+\caption{Reconstruction accuracy versus ensemble size $N \in \{5,10,15,20,30,50,100\}$. Curves show mean RMSE across three trials; shading indicates $\pm1$ standard deviation. \textbf{(A)} Absolute RMSE versus $N$ (logarithmic horizontal axis). \textbf{(B)} Relative degradation: percent increase in RMSE relative to $N=100$. QPCA-EnDCF degrades modestly from 3.33 ($N=100$) to 4.27 ($N=5$), whereas Sequential EnKF and 4D-EnKF degrade much more severely at small $N$.}
 \label{fig:performance_degradation}
 \end{figure}
 
-QPCA-EnDCF exhibits bounded degradation as $N$ decreases, increasing from RMSE 3.33 at $N=100$ to 4.27 at $N=5$ (28.2\%). Stochastic methods deteriorate much more sharply in the severely undersampled regime: at $N=5$, Sequential EnKF and 4D-EnKF reach RMSE 4.71 and 4.86, respectively. This behavior is consistent with the additional variance introduced by observation perturbations, which becomes non-negligible when $N$ is small and is compounded by repeated updates (particularly for sequential assimilation).
-
-Table~\ref{tab:ensemble_size_comparison_operational} reports RMSE values with 95\% confidence intervals and the associated improvements of QPCA-EnDCF over the stochastic baselines.
+QPCA-EnDCF exhibits bounded degradation as $N$ decreases, increasing from RMSE 3.33 at $N=100$ to 4.27 at $N=5$ (28.2\%). Stochastic methods deteriorate much more sharply in the severely undersampled regime: at $N=5$, Sequential EnKF and 4D-EnKF reach RMSE 4.71 and 4.86, respectively. This behavior is consistent with the additional variance introduced by observation perturbations, which becomes non-negligible when $N$ is small and is compounded by repeated updates (particularly for sequential assimilation). Table~\ref{tab:ensemble_size_comparison_operational} reports RMSE values with 95\% confidence intervals and the associated improvements of QPCA-EnDCF over the stochastic baselines.
 
 \begin{table}[htbp]
 \centering
-\caption{Reconstruction error versus ensemble size. Values are mean RMSE $\pm$ 95\% confidence interval over three trials, each averaged over 50 assimilation windows. ``Improvement'' reports the percentage RMSE reduction of QPCA-EnDCF relative to Sequential EnKF and 4D-EnKF; $p$-values are from paired $t$-tests on window-level RMSE across trials.}
+\caption{Reconstruction error versus ensemble size. Values are mean RMSE $\pm$ 95\% confidence interval over three trials, each averaged over 50 assimilation windows. ``Improvement'' reports the percentage RMSE reduction of QPCA-EnDCF relative to Sequential EnKF and 4D-EnKF.}
 \label{tab:ensemble_size_comparison_operational}
 \small
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Size} & \textbf{Seq-EnKF} & \textbf{4D-EnKF} & \textbf{QPCA-EnDCF} & \textbf{Improvement} & \textbf{$p$-value} \\
+\textbf{Size} & \textbf{Seq-EnKF} & \textbf{4D-EnKF} & \textbf{QPCA-EnDCF} & \textbf{Improvement} \\
 \midrule
-$N=5$   & $4.71 \pm 0.05$ & $4.86 \pm 0.03$ & $4.27 \pm 0.03$ & 9.3--12.1\%   & $p < 0.05$ \\
-$N=10$  & $4.55 \pm 0.11$ & $4.46 \pm 0.08$ & $3.70 \pm 0.04$ & 17.0--18.7\% & $p < 0.05$ \\
-$N=15$  & $4.28 \pm 0.09$ & $4.14 \pm 0.02$ & $3.54 \pm 0.01$ & 14.5--17.3\% & $p < 0.05$ \\
-$N=20$  & $3.99 \pm 0.07$ & $3.79 \pm 0.05$ & $3.44 \pm 0.02$ & 9.2--13.8\%  & $p < 0.01$ \\
-$N=30$  & $3.62 \pm 0.04$ & $3.55 \pm 0.04$ & $3.40 \pm 0.01$ & 4.2--6.1\%   & $p < 0.05$ \\
-$N=50$  & $3.45 \pm 0.02$ & $3.42 \pm 0.02$ & $3.36 \pm 0.01$ & 1.8--2.6\% & $p < 0.05$ \\
-$N=100$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $\sim 0\%$ & N.S. \\
+$N=5$   & $4.71 \pm 0.05$ & $4.86 \pm 0.03$ & $4.27 \pm 0.03$ & 9.3--12.1\% \\
+$N=10$  & $4.55 \pm 0.11$ & $4.46 \pm 0.08$ & $3.70 \pm 0.04$ & 17.0--18.7\% \\
+$N=15$  & $4.28 \pm 0.09$ & $4.14 \pm 0.02$ & $3.54 \pm 0.01$ & 14.5--17.3\% \\
+$N=20$  & $3.99 \pm 0.07$ & $3.79 \pm 0.05$ & $3.44 \pm 0.02$ & 9.2--13.8\%  \\
+$N=30$  & $3.62 \pm 0.04$ & $3.55 \pm 0.04$ & $3.40 \pm 0.01$ & 4.2--6.1\%   \\
+$N=50$  & $3.45 \pm 0.02$ & $3.42 \pm 0.02$ & $3.36 \pm 0.01$ & 1.8--2.6\% \\
+$N=100$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $\sim 0\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Two operational patterns emerge. First, QPCA-EnDCF remains viable even under extreme undersampling: at $N=5$ it achieves RMSE $4.27\pm0.03$, improving on both stochastic methods. Second, the gap narrows with increasing $N$ as sampling error decreases for all methods; performance becomes statistically indistinguishable by $N=100$.
-
-The scaling also translates directly into computational savings. QPCA-EnDCF at $N=10$ (RMSE $3.70\pm0.04$) is comparable to Sequential EnKF at $N=30$ (RMSE $3.62\pm0.04$) and improves on 4D-EnKF at $N=20$ (RMSE $3.79\pm0.05$). Thus, for a fixed accuracy target, QPCA-EnDCF can reduce ensemble size by roughly $2$--$3\times$, cutting forecast propagation cost by 50--67\%.
-
-Reconstruction accuracy alone is not sufficient for deployment; reliable uncertainty quantification is equally important. We therefore extend the calibration diagnostics of Section~\ref{sec:calibration} across $N \in \{5,10,15,20,30,50\}$ using spread--skill ratio $\bar{\gamma}$ (averaged over five trials and 50 windows per trial). Figure~\ref{fig:ensemble_calibration} reports $\bar{\gamma}$ versus $N$; the target $\bar{\gamma}=1$ indicates calibrated spread.
+Two operational patterns emerge. First, QPCA-EnDCF remains viable even under extreme undersampling: at $N=5$ it achieves RMSE $4.27\pm0.03$, improving on both stochastic methods. Second, the gap narrows with increasing $N$ as sampling error decreases for all methods; performance becomes statistically indistinguishable by $N=100$. This scaling yields corresponding computational savings. QPCA-EnDCF with $N=10$ attains an RMSE of $3.70$, statistically comparable to Sequential EnKF with $N=30$, which attains an RMSE of $3.62$, and improves upon 4D-EnKF with $N=20$, which attains an RMSE of $3.79$. Thus, for a fixed accuracy target, QPCA-EnDCF can reduce ensemble size by roughly $2$--$3\times$, cutting forecast propagation cost by 50--67\%. Reconstruction accuracy alone is not sufficient for deployment; reliable uncertainty quantification is equally important. We therefore extend the calibration diagnostics of Section~\ref{sec:calibration} across $N \in \{5,10,15,20,30,50\}$ using spread--skill ratio $\bar{\gamma}$ (averaged over five trials and 50 windows per trial). Figure~\ref{fig:ensemble_calibration} reports $\bar{\gamma}$ versus $N$; the target $\bar{\gamma}=1$ indicates calibrated spread.
 
 \begin{figure}[htbp]
 \centering
@@ -2160,30 +2077,16 @@ In summary, ensemble-size scaling shows that QPCA-EnDCF (i) maintains lower RMSE
 \subsection{Window Length}
 \label{subsec:operational_window_length}
 
-Window length $L$ controls how many observation times are assimilated jointly, and therefore trades information content against computational and modeling costs. As $L$ grows, the number of assimilated observations increases linearly ($d$), which can improve estimation by exploiting temporal constraints. The costs are also clear: matrix sizes grow from $m\times m$ at $L=1$ to $d\times d$ for $L>1$, with dense linear algebra scaling as $\mathcal{O}(d^3)$. Longer windows also propagate forecasts further, increasing susceptibility to accumulated model error, and—once $L$ exceeds the decorrelation time—additional observations become largely redundant, yielding diminishing returns.
-
-For QPCA-EnDCF, $L$ directly changes the dimension of the whitened residual covariance $\mathbf{C}_E\in\mathbb{R}^{d\times d}$. Increasing $L$ provides a richer temporal residual structure from which principal modes can be identified, but gains should saturate beyond the decorrelation scale and may degrade if extra observations primarily contribute noise. In stochastic 4D-EnKF, longer windows can help through improved conditioning, but the impact is tempered by the accumulation of perturbation noise across multiple observation times.
-
-We vary $L\in\{1,3,5,7,10,15\}$ and adjust the number of windows $W$ so that the total number of assimilated observations satisfies $LW\approx 400$. This keeps the overall information budget approximately fixed, so differences reflect algorithmic response to temporal coupling rather than increased sample size. Each configuration uses three independent trials.
-
-Figure~\ref{fig:rmse_vs_L} reports reconstruction accuracy and the relative advantage of QPCA-EnDCF as $L$ varies. Panel (a) shows RMSE versus $L$ for all methods; panel (b) shows the percent improvement of QPCA-EnDCF relative to 4D-EnKF.
+Window length $L$ controls how many observation times are assimilated jointly, and therefore trades information content against computational and modeling costs. As $L$ grows, the number of assimilated observations increases linearly ($d$), which can improve estimation by exploiting temporal constraints. The costs are also clear: matrix sizes grow from $m\times m$ at $L=1$ to $d\times d$ for $L>1$, with dense linear algebra scaling as $\mathcal{O}(d^3)$. Longer windows propagate forecasts further, increasing susceptibility to accumulated model error, and once $L$ exceeds the decorrelation time, additional observations become largely redundant, yielding diminishing returns. For QPCA-EnDCF, $L$ directly changes the dimension of the whitened residual covariance $\mathbf{C}_E\in\mathbb{R}^{d\times d}$. Increasing $L$ provides a richer temporal residual structure from which principal modes can be identified, but gains should saturate beyond the decorrelation scale and may degrade if extra observations primarily contribute noise. In stochastic 4D-EnKF, longer windows can help through improved conditioning, but the impact is tempered by the accumulation of perturbation noise across multiple observation times. We vary $L\in\{1,3,5,7,10,15\}$ and adjust the number of windows $W$ so that the total number of assimilated observations satisfies $LW\approx 400$. This keeps the overall information budget approximately fixed, so differences reflect algorithmic response to temporal coupling rather than increased sample size. Each configuration uses three independent trials. Figure~\ref{fig:rmse_vs_L} reports reconstruction accuracy and the relative advantage of QPCA-EnDCF as $L$ varies. Panel (A) shows RMSE versus $L$ for all methods; panel (B) shows the percent improvement of QPCA-EnDCF relative to 4D-EnKF.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/combined_window_rmse_analysis.png}
-\caption{Window-length sensitivity for $L\in\{1,3,5,7,10,15\}$ with $LW\approx 400$ held approximately constant. Shading denotes $\pm1$ standard deviation across three trials. \textbf{(a)} RMSE versus $L$ for Sequential EnKF (blue circles), 4D-EnKF (purple squares), and QPCA-EnDCF (orange triangles). \textbf{(b)} Percent RMSE improvement of QPCA-EnDCF relative to Sequential EnKF (green bars) and 4D-EnKF (orange bars) versus $L$.}
+\caption{Window-length sensitivity for $L\in\{1,3,5,7,10,15\}$ with $LW\approx 400$ held approximately constant. Shading denotes $\pm1$ standard deviation across three trials. \textbf{(A)} RMSE versus $L$ for Sequential EnKF (blue circles), 4D-EnKF (purple squares), and QPCA-EnDCF (orange triangles). \textbf{(B)} Percent RMSE improvement of QPCA-EnDCF relative to Sequential EnKF (green bars) and 4D-EnKF (orange bars) versus $L$.}
 \label{fig:rmse_vs_L}
 \end{figure}
 
-QPCA-EnDCF shows a pronounced transition between $L=1$ and $L=3$. At $L=1$, RMSE is $4.87\pm0.10$, slightly worse than 4D-EnKF ($4.64\pm0.19$). At this window length, spectral regularization is based on a comparatively small residual covariance $\mathbf{C}_E\in\mathbb{R}^{m\times m}$, and the resulting eigenspectrum is not reliably informative. Increasing to $L=3$ reduces RMSE to $3.69\pm0.08$ (a 24.2\% decrease), indicating that joint assimilation over a short window is sufficient to enter a regime where dominant residual modes are stably identified and exploited.
-
-For $L\ge 5$, QPCA-EnDCF stabilizes (RMSE $\approx 3.64$--$3.68$ for $L\in\{5,7,10\}$) and increases only slightly at $L=15$. This plateau is consistent with diminishing returns once the window exceeds the temporal decorrelation scale: additional observations contribute limited independent information, while larger windows increase cost and may amplify model error or introduce weak spurious modes.
-
-Stochastic methods are far less sensitive to $L$. Sequential EnKF is essentially flat across the tested range (RMSE 4.58--4.72). 4D-EnKF improves modestly from $4.64\pm0.19$ at $L=1$ to $4.40\pm0.13$ at $L=15$ (5.1\%), suggesting a limited benefit from temporal coupling that is small relative to QPCA-EnDCF’s $L=1\to3$ improvement.
-
-Panel (b) emphasizes the regime change: QPCA-EnDCF is slightly worse than 4D-EnKF at $L=1$ (improvement $-5.1\%$), but for every $L\ge 3$ it outperforms 4D-EnKF by 16.3--21.0\%, with the largest gain at $L=3$. Thus, temporal coupling is essential for QPCA-EnDCF: once $L$ is large enough to expose coherent cross-time residual structure, spectral regularization delivers a substantial and stable advantage.
-
-Operationally, these results suggest (i) QPCA-EnDCF should be used with $L\ge 3$, and (ii) $L\in[5,10]$ provides a good balance between accuracy and cost. Conversely, if strict sequential processing is required ($L=1$), 4D-EnKF is competitive and may be preferable.
+QPCA-EnDCF shows a pronounced transition between $L=1$ and $L=3$. At $L=1$, RMSE is $4.87\pm0.10$, slightly worse than 4D-EnKF ($4.64\pm0.19$). At this window length, spectral regularization is based on a comparatively small residual covariance $\mathbf{C}_E\in\mathbb{R}^{m\times m}$, and the resulting eigenspectrum is not reliably informative. Increasing to $L=3$ reduces RMSE to $3.69\pm0.08$ (a 24.2\% decrease), indicating that joint assimilation over a short window is sufficient to enter a regime where dominant residual modes are stably identified and exploited. For $L\ge 5$, QPCA-EnDCF stabilizes (RMSE $\approx 3.64$--$3.68$ for $L\in\{5,7,10\}$) and increases only slightly at $L=15$. This plateau is consistent with diminishing returns once the window exceeds the temporal decorrelation scale: additional observations contribute limited independent information, while larger windows increase cost and may amplify model error or introduce weak spurious modes. Stochastic methods are far less sensitive to $L$. Sequential EnKF is essentially flat across the tested range (RMSE 4.58--4.72). 4D-EnKF improves modestly from $4.64$ at $L=1$ to $4.40$ at $L=15$ (5.1\%), suggesting that the benefit from temporal coupling is modest relative to the improvement achieved by QPCA-EnDCF over the range $L=1$ to $L=3$. Panel (B) emphasizes the regime change: QPCA-EnDCF is slightly worse than 4D-EnKF at $L=1$ (improvement $-5.1\%$), but for every $L\ge 3$ it outperforms 4D-EnKF by 16.3--21.0\%, with the largest gain at $L=3$. Thus, temporal coupling is essential for QPCA-EnDCF: once $L$ is large enough to expose coherent cross-time residual structure, spectral regularization delivers a substantial and stable advantage. Operationally, these results suggest (i) QPCA-EnDCF should be used with $L\ge 3$, and (ii) $L\in[5,10]$ provides a good balance between accuracy and cost. Conversely, if strict sequential processing is required ($L=1$), 4D-EnKF is competitive and may be preferable.
 
 \FloatBarrier
 

@@ -1966,31 +1966,14 @@ with $\ell_{\mathrm{corr}}=4$ is severely ill-conditioned, $\mathrm{cond}(\mathb
 \label{fig:correlation_structures}
 \end{figure}
 
-For each structure we compare QPCA-EnDCF with Cholesky whitening against 4D-EnKF as a stochastic baseline. All runs use a single realization with 50 assimilation windows. This choice reflects the substantial cost of repeated experiments under severely ill-conditioned covariances; the long window sequence still provides a meaningful within-run comparison. Table~\ref{tab:correlated_obs_summary} reports mean RMSE over the 50-window sequence, along with (i) degradation relative to the diagonal case for each method and (ii) QPCA-EnDCF’s improvement relative to 4D-EnKF under the same correlation structure.
+For each structure we compare QPCA-EnDCF with Cholesky whitening against 4D-EnKF as a stochastic baseline. All runs use a single realization with 50 assimilation windows. This choice reflects the substantial cost of repeated experiments under severely ill-conditioned covariances; the long window sequence still provides a meaningful within-run comparison. Figure~\ref{fig:reconstruction_errors} reports mean RMSE over the 50-window sequence for each correlation structure, along with the relative improvement of QPCA-EnDCF over 4D-EnKF.
 
-\begin{table}[htbp]
+\begin{figure}[htbp]
 \centering
-\caption{Reconstruction error under correlated observation errors. Values are mean RMSE over 50 assimilation windows from a single realization. Column ``vs. Diag'' reports percent change relative to the diagonal baseline for the same method. Column ``vs. 4D'' reports percent improvement of QPCA-EnDCF relative to 4D-EnKF under the same correlation structure (negative values indicate improvement).}
-\label{tab:correlated_obs_summary}
-\small
-\begin{tabular}{llcccc}
-\toprule
-\textbf{Correlation} & \textbf{Method} & \textbf{Cond($\mathbf{R}$)} & \textbf{RMSE} & \textbf{vs. Diag} & \textbf{vs. 4D} \\
-\midrule
-\multirow{3}{*}{Diagonal (baseline)}
-    & QPCA-Cholesky & $1.00$ & $3.47$ & --- & $-25.2\%$ \\
-    & 4D-EnKF & $1.00$ & $4.64$ & --- & --- \\
-\midrule
-\multirow{3}{*}{Exponential ($\ell=4$)}
-    & QPCA-Cholesky & $649$ & $3.71$ & $+6.9\%$ & $-24.7\%$ \\
-    & 4D-EnKF & $649$ & $4.93$ & $+6.2\%$ & --- \\
-\midrule
-\multirow{3}{*}{Gaussian ($\ell=4$)}
-    & QPCA-Cholesky & $3.7 \times 10^5$ & $3.65$ & $+5.1\%$ & $-31.9\%$ \\
-    & 4D-EnKF & $3.7 \times 10^5$ & $5.35$ & $+15.3\%$ & --- \\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=\textwidth]{figures/reconstruction_errors.png}
+\caption{Reconstruction error under correlated observation errors. Points show mean RMSE over 50 assimilation windows from a single realization for QPCA-Cholesky (green) and 4D-EnKF (red) under three covariance structures: diagonal baseline ($\mathrm{cond}(\mathbf{R})=1$), exponential correlation ($\mathrm{cond}(\mathbf{R})=649$), and Gaussian correlation ($\mathrm{cond}(\mathbf{R})\approx 3.7\times10^5$). Annotated percentages indicate the RMSE reduction of QPCA-EnDCF relative to 4D-EnKF; the advantage grows with correlation strength, reaching approximately $32\%$ under severe ill-conditioning.}
+\label{fig:reconstruction_errors}
+\end{figure}
 
 QPCA-EnDCF is robust across condition numbers spanning five orders of magnitude. Relative to the diagonal baseline, RMSE increases only modestly under correlation: from 3.47 (diagonal) to 3.71 (exponential, $+6.9\%$) and 3.65 (Gaussian, $+5.1\%$). Even under $\kappa(\mathbf{R})\approx 3.7\times10^5$, performance remains within 7\% of the uncorrelated reference, indicating that whitening effectively neutralizes the impact of correlation on the subsequent spectral filtering. The Cholesky whitening implementation is numerically stable at the level relevant for filtering, yielding consistent RMSE results across all cases. Given its favorable constant factors, Cholesky whitening is the natural default when $\mathbf{R}$ is positive definite. By contrast, 4D-EnKF exhibits substantially greater degradation as correlations strengthen, with the most pronounced effect occurring in the severely ill-conditioned Gaussian case, where the RMSE increases from $4.64$ to $5.35$, corresponding to a $15.3\%$ deterioration. Consequently, QPCA-EnDCF's advantage increases with correlation strength: the reduction relative to 4D-EnKF is 25.2\% (diagonal), 24.7\% (exponential), and 31.9\% (Gaussian). Thus the whitening-based deterministic update is most beneficial precisely in regimes where correlations reduce the effective independent information content and stochastic perturbations become less efficient.
 
@@ -2033,27 +2016,29 @@ Stochastic filters further introduce variance from observation perturbations, sc
 \label{fig:performance_degradation}
 \end{figure}
 
-QPCA-EnDCF exhibits bounded degradation as $N$ decreases, increasing from RMSE 3.33 at $N=100$ to 4.27 at $N=5$ (28.2\%). Stochastic methods deteriorate much more sharply in the severely undersampled regime: at $N=5$, Sequential EnKF and 4D-EnKF reach RMSE 4.71 and 4.86, respectively. This behavior is consistent with the additional variance introduced by observation perturbations, which becomes non-negligible when $N$ is small and is compounded by repeated updates (particularly for sequential assimilation). Table~\ref{tab:ensemble_size_comparison_operational} reports RMSE values with 95\% confidence intervals and the associated improvements of QPCA-EnDCF over the stochastic baselines.
+QPCA-EnDCF exhibits bounded degradation as $N$ decreases, increasing from RMSE 3.33 at $N=100$ to 4.27 at $N=5$ (28.2\%). Stochastic methods deteriorate much more sharply in the severely undersampled regime: at $N=5$, Sequential EnKF and 4D-EnKF reach RMSE 4.71 and 4.86, respectively. This behavior is consistent with the additional variance introduced by observation perturbations, which becomes non-negligible when $N$ is small and is compounded by repeated updates (particularly for sequential assimilation).
 
-\begin{table}[htbp]
-\centering
-\caption{Reconstruction error versus ensemble size. Values are mean RMSE $\pm$ 95\% confidence interval over three trials, each averaged over 50 assimilation windows. ``Improvement'' reports the percentage RMSE reduction of QPCA-EnDCF relative to Sequential EnKF and 4D-EnKF.}
-\label{tab:ensemble_size_comparison_operational}
-\small
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Size} & \textbf{Seq-EnKF} & \textbf{4D-EnKF} & \textbf{QPCA-EnDCF} & \textbf{Improvement} \\
-\midrule
-$N=5$   & $4.71 \pm 0.05$ & $4.86 \pm 0.03$ & $4.27 \pm 0.03$ & 9.3--12.1\% \\
-$N=10$  & $4.55 \pm 0.11$ & $4.46 \pm 0.08$ & $3.70 \pm 0.04$ & 17.0--18.7\% \\
-$N=15$  & $4.28 \pm 0.09$ & $4.14 \pm 0.02$ & $3.54 \pm 0.01$ & 14.5--17.3\% \\
-$N=20$  & $3.99 \pm 0.07$ & $3.79 \pm 0.05$ & $3.44 \pm 0.02$ & 9.2--13.8\%  \\
-$N=30$  & $3.62 \pm 0.04$ & $3.55 \pm 0.04$ & $3.40 \pm 0.01$ & 4.2--6.1\%   \\
-$N=50$  & $3.45 \pm 0.02$ & $3.42 \pm 0.02$ & $3.36 \pm 0.01$ & 1.8--2.6\% \\
-$N=100$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $\sim 0\%$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+% Table~\ref{tab:ensemble_size_comparison_operational} reports RMSE values with 95\% confidence intervals and the associated improvements of QPCA-EnDCF over the stochastic baselines.
+
+% \begin{table}[htbp]
+% \centering
+% \caption{Reconstruction error versus ensemble size. Values are mean RMSE $\pm$ 95\% confidence interval over three trials, each averaged over 50 assimilation windows. ``Improvement'' reports the percentage RMSE reduction of QPCA-EnDCF relative to Sequential EnKF and 4D-EnKF.}
+% \label{tab:ensemble_size_comparison_operational}
+% \small
+% \begin{tabular}{lcccc}
+% \toprule
+% \textbf{Size} & \textbf{Seq-EnKF} & \textbf{4D-EnKF} & \textbf{QPCA-EnDCF} & \textbf{Improvement} \\
+% \midrule
+% $N=5$   & $4.71 \pm 0.05$ & $4.86 \pm 0.03$ & $4.27 \pm 0.03$ & 9.3--12.1\% \\
+% $N=10$  & $4.55 \pm 0.11$ & $4.46 \pm 0.08$ & $3.70 \pm 0.04$ & 17.0--18.7\% \\
+% $N=15$  & $4.28 \pm 0.09$ & $4.14 \pm 0.02$ & $3.54 \pm 0.01$ & 14.5--17.3\% \\
+% $N=20$  & $3.99 \pm 0.07$ & $3.79 \pm 0.05$ & $3.44 \pm 0.02$ & 9.2--13.8\%  \\
+% $N=30$  & $3.62 \pm 0.04$ & $3.55 \pm 0.04$ & $3.40 \pm 0.01$ & 4.2--6.1\%   \\
+% $N=50$  & $3.45 \pm 0.02$ & $3.42 \pm 0.02$ & $3.36 \pm 0.01$ & 1.8--2.6\% \\
+% $N=100$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $3.33 \pm 0.01$ & $\sim 0\%$ \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
 
 Two operational patterns emerge. First, QPCA-EnDCF remains viable even under extreme undersampling: at $N=5$ it achieves RMSE $4.27\pm0.03$, improving on both stochastic methods. Second, the gap narrows with increasing $N$ as sampling error decreases for all methods; performance becomes statistically indistinguishable by $N=100$. This scaling yields corresponding computational savings. QPCA-EnDCF with $N=10$ attains an RMSE of $3.70$, statistically comparable to Sequential EnKF with $N=30$, which attains an RMSE of $3.62$, and improves upon 4D-EnKF with $N=20$, which attains an RMSE of $3.79$. Thus, for a fixed accuracy target, QPCA-EnDCF can reduce ensemble size by roughly $2$--$3\times$, cutting forecast propagation cost by 50--67\%. Reconstruction accuracy alone is not sufficient for deployment; reliable uncertainty quantification is equally important. We therefore extend the calibration diagnostics of Section~\ref{sec:calibration} across $N \in \{5,10,15,20,30,50\}$ using spread--skill ratio $\bar{\gamma}$ (averaged over five trials and 50 windows per trial). Figure~\ref{fig:ensemble_calibration} reports $\bar{\gamma}$ versus $N$; the target $\bar{\gamma}=1$ indicates calibrated spread.
 

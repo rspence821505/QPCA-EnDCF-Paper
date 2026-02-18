@@ -522,7 +522,7 @@ Let $d:=mL$. The population covariance $\boldsymbol{\Sigma}_E$ and the sample co
 =
 \sum_{i=1}^{d}\hat{\lambda}_i\,\hat{\mathbf{v}}_i\hat{\mathbf{v}}_i^\top,
 \]
-where the eigenvalues are ordered as $\lambda_1\ge\cdots\ge\lambda_d\ge 0$ and $\hat{\lambda}_1\ge\cdots\ge\hat{\lambda}_d\ge 0$. The population covariance $\boldsymbol{\Sigma}_E$ has rank at most $d$, while the sample covariance $\mathbf{C}_E$ has rank at most $\min(d,N-1)$ due to the centering step. For any truncation level $1\le\kappa\le \min(d,N-1)$, we define the corresponding truncated covariances
+where the eigenvalues are ordered as $\lambda_1\ge\cdots\ge\lambda_d\ge 0$ and $\hat{\lambda}_1\ge\cdots\ge\hat{\lambda}_d\ge 0$ (with the convention that $\hat{\lambda}_i=0$ for $i>\min(d,N{-}1)$). The population covariance $\boldsymbol{\Sigma}_E$ has rank at most $d$, while the sample covariance $\mathbf{C}_E$ has rank at most $\min(d,N-1)$ due to the centering step. For any truncation level $1\le\kappa\le \min(d,N-1)$, we define the corresponding truncated covariances
 \[
 \boldsymbol{\Sigma}_E^{\kappa}
 :=
@@ -1478,7 +1478,7 @@ C_{\mathrm{p}}\,
 \Bigr\}.
 \end{split}
 \end{equation}
-Here $C_{\mathrm{bias},1},C_{\mathrm{bias},2},C_{\mathrm{var}},C_{\mathrm{p}}>0$ depend only on $\|\mathbf{K}^{\mathrm{DC}}\|_2$ and $\|\mathbf{R}^{(L)}\|_2$ (and the inverse-stability constant from~\cite{ButlerWildeyZhang2020}), but are independent of $N$. Under Gaussian sampling, the projector-estimation contribution in \eqref{eq:kappa_proxy_objective} scales as $\mathcal{O}(1/N)$.
+Here $C_{\mathrm{bias},1},C_{\mathrm{bias},2},C_{\mathrm{var}},C_{\mathrm{p}}>0$ depend only on $\|\mathbf{K}^{\mathrm{DC}}\|_2$ and $\|\mathbf{R}^{(L)}\|_2$ (and the inverse-stability constant from~\cite{ButlerWildeyZhang2020}), but are independent of $N$. Under Gaussian sampling, the projector-estimation contribution in \eqref{eq:kappa_proxy_objective} scales as $\mathcal{O}(1/N)$. Note that the map-approximation term $C_{\mathrm{bias},2}\|Q_s-Q\|_{L^2}^2$ and the forecast-fluctuation term $(C_{\mathrm{var}}/N)\,\mathrm{tr}(\boldsymbol{\Sigma}_E^{\,s})$ do not depend on $\kappa$ and therefore do not affect the minimizer; they are included only for completeness. In practice, $\kappa^\ast$ is determined by balancing the truncation remainder $\mathcal{T}_\kappa^{\,s}$ against the projector-estimation term $\kappa/\delta_\kappa^2$.
 \end{corollary}
 
 \begin{proof}
@@ -1628,7 +1628,7 @@ Figure~\ref{fig:reliability} provides complementary calibration diagnostics.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{figures/fig04_combined_calibration_analysis.png}
-\caption{Probabilistic calibration diagnostics. \textbf{(A)} Spread--skill ratio $\gamma_w$ across assimilation windows; the dashed line indicates perfect calibration. \textbf{(B)} Reliability diagram plotting ensemble spread against RMSE for all windows and trials, with the diagonal denoting $\sigma_{\mathrm{ens}}=\mathrm{RMSE}$.}
+\caption{Probabilistic calibration diagnostics. \textbf{(A)} Spread--skill ratio $\gamma_w$ across assimilation windows; the dashed line indicates perfect calibration. \textbf{(B)} Reliability diagram plotting window-level ensemble spread $\sigma_w$ against window-level $\mathrm{RMSE}_w$ for all windows and trials, with the diagonal denoting $\sigma_w=\mathrm{RMSE}_w$.}
 \label{fig:reliability}
 \end{figure}
 
@@ -1677,7 +1677,7 @@ Ranks are computed at each algorithm's analysis times. Aggregating across all st
 
 QPCA-EnDCF provides the closest approximation to uniformity, with a flatness metric of $0.199$ and rank frequencies fluctuating mildly around the expected value. Although $\chi^2=396.8$ formally rejects uniformity ($p<0.001$), this reflects the extreme power of the test with $10{,}000$ samples. In relative terms, the departure is nearly two orders of magnitude smaller than for 4D-EnKF and three orders of magnitude smaller than for the Sequential EnKF, indicating near-distributional consistency in practice.
 
-Sequential EnKF is strongly miscalibrated ($\chi^2=173{,}195$, flatness $1.861$), with a pronounced U shape: extreme ranks occur far more frequently than expected, while central ranks are depleted. This is the canonical signature of severe underdispersion caused by ensemble collapse. The 4D-EnKF shows improvement ($\chi^2=32{,}269$, flatness $1.796$) but retains a U-shaped structure, indicating persistent underdispersion despite temporal coupling. Increasing the effective dimension from $m=20$ to $mL=100$ without increasing ensemble size exacerbates this limitation.
+Sequential EnKF is strongly miscalibrated ($\chi^2=173{,}195$, flatness $1.861$), with a pronounced U shape: extreme ranks occur far more frequently than expected, while central ranks are depleted. This is the canonical signature of severe underdispersion caused by ensemble collapse. The 4D-EnKF shows improvement ($\chi^2=32{,}269$, flatness $1.796$) but retains a U-shaped structure, indicating persistent underdispersion despite temporal coupling. While increasing $L$ provides more observational information per window, it simultaneously increases the effective observation dimension $mL$, exacerbating undersampling when $N \ll mL$. For 4D-EnKF with $N = 10$ and $mL = 100$, the latter effect dominates.
 
 Overall, the rank histogram analysis demonstrates that QPCA-EnDCF substantially improves distributional calibration beyond variance matching alone. Its flatness metric—an order of magnitude smaller than those of the EnKF variants—indicates that the truth is placed appropriately across the ensemble support. While not perfectly uniform, deviations are minor relative to the severe systematic distortions observed in stochastic methods. The improvement is attributable to the deterministic update and spectral regularization of QPCA-EnDCF, which avoid observation perturbation noise and concentrate corrections into dynamically dominant modes, preserving ensemble diversity and yielding a more faithful approximation of the posterior distribution.
 \FloatBarrier
@@ -1729,7 +1729,7 @@ The window-wise estimators are
 \bar{\mathbf{x}}_{t,w}^a-\bar{\mathbf{x}}_{\cdot,w}^a
 \right\|^2,
 \end{align}
-with $\widehat{\mathrm{MSE}}_{w}=\widehat{\mathrm{Bias}}_{w}^2+\widehat{\mathrm{Variance}}_{w}$. To summarize performance over the full run, we time-average these window-wise quantities:
+with $\widehat{\mathrm{MSE}}_{w}=\widehat{\mathrm{Bias}}_{w}^2+\widehat{\mathrm{Variance}}_{w}$. All norms are total (summed over $n$ state components), so bias$^2$, variance, and MSE values reported below are $\mathcal{O}(n)$ in magnitude. To summarize performance over the full run, we time-average these window-wise quantities:
 \[
 \widehat{\mathrm{Bias}}^2:=\frac{1}{W}\sum_{w=1}^{W}\widehat{\mathrm{Bias}}_{w}^2,
 \qquad
@@ -1760,9 +1760,9 @@ Figure~\ref{fig:mse_decomposition_bars} summarizes these results via stacked bar
 \label{fig:mse_decomposition_bars}
 \end{figure}
 
-QPCA-EnDCF achieves MSE $=12.97$ (Bias$^2=10.67$, Variance$=2.29$), while Sequential EnKF and 4D-EnKF exhibit MSE $\approx21$--$22$ with variance contributions near $11.6$. Normalized bars emphasize the qualitative shift: QPCA-EnDCF error is overwhelmingly systematic, whereas stochastic methods are variance-limited.
+QPCA-EnDCF achieves MSE $=12.96$ (Bias$^2=10.67$, Variance$=2.29$), while Sequential EnKF and 4D-EnKF exhibit MSE $\approx21$--$22$ with variance contributions near $11.6$. Normalized bars emphasize the qualitative shift: QPCA-EnDCF error is overwhelmingly systematic, whereas stochastic methods are variance-limited.
 
-These findings validate the theoretical predictions and explain QPCA-EnDCF’s superior calibration. Variance reduction arises from two effects: (i) the deterministic update avoids observation-perturbation noise, whose contribution scales as $C_{\mathrm{pert}}L\,\mathrm{tr}(\mathbf{R})/N$ and is substantial under baseline parameters; and (ii) spectral truncation ($\kappa=1$) concentrates updates in the dominant eigenmode, avoiding estimation of noise-dominated directions. With variance scaling as $\mathcal{O}(\kappa/N)$ rather than $\mathcal{O}(r/N)$, the observed order-of-magnitude reduction follows directly.
+These findings validate the theoretical predictions and explain QPCA-EnDCF’s superior calibration. Variance reduction arises from two effects: (i) the deterministic update avoids observation-perturbation noise, whose contribution scales as $C_{\mathrm{pert}}L\,\mathrm{tr}(\mathbf{R})/N$ and is substantial under baseline parameters; and (ii) spectral truncation ($\kappa=1$) concentrates updates in the dominant eigenmode, avoiding estimation of noise-dominated directions. With variance scaling as $\mathcal{O}(\kappa/N)$ rather than $\mathcal{O}(r/N)$, the observed roughly fivefold reduction follows directly.
 
 Crucially, this variance reduction occurs without a bias penalty. Unlike classical penalty-based regularization, which trades variance for increased bias, QPCA-EnDCF maintains bias comparable to or lower than that of stochastic methods while sharply reducing variance. This favorable regime is enabled by rapid spectral decay, whereby leading modes encode signal and higher modes primarily represent sampling noise.
 
@@ -1950,7 +1950,7 @@ This subsection tests whether QPCA-EnDCF's whitening step provides robustness to
 \qquad
 \mathbf{W}\mathbf{R}^{(L)}\mathbf{W}^{\top} = \mathbf{I},
 \]
-a bijective linear change of coordinates that standardizes and decorrelates the observation errors. We consider the standard Cholesky whitening implementation: $\mathbf{R}=\mathbf{L}\mathbf{L}^{\top}$ with $\mathbf{W}=\mathbf{L}^{-\top}$. This approach has $\mathcal{O}(m^3)$ cost; the comparison here focuses on its numerical behavior under severe ill-conditioning. We test three covariance structures spanning five orders of magnitude in condition number. The diagonal baseline $\mathbf{R}=\sigma_{\mathrm{obs}}^2\mathbf{I}_m$ with $\sigma_{\mathrm{obs}}=1.5$ has $\mathrm{cond}(\mathbf{R})=1$. The exponential correlation model
+a bijective linear change of coordinates that standardizes and decorrelates the observation errors. Since $\mathbf{R}^{(L)}=\mathbf{I}_L\otimes\mathbf{R}$, it suffices to whiten each per-observation block $\mathbf{R}$ independently. We consider the standard Cholesky whitening implementation: $\mathbf{R}=\mathbf{L}\mathbf{L}^{\top}$ with $\mathbf{W}=\mathbf{L}^{-\top}$ applied to each block. This approach has $\mathcal{O}(m^3)$ cost; the comparison here focuses on its numerical behavior under severe ill-conditioning. We test three covariance structures spanning five orders of magnitude in condition number. The diagonal baseline $\mathbf{R}=\sigma_{\mathrm{obs}}^2\mathbf{I}_m$ with $\sigma_{\mathrm{obs}}=1.5$ has $\mathrm{cond}(\mathbf{R})=1$. The exponential correlation model
 \[
 [\mathbf{R}]_{ij}=\sigma_{\mathrm{obs}}^2\exp\!\left(-\frac{d_{ij}}{\ell_{\mathrm{corr}}}\right),
 \qquad
@@ -2005,7 +2005,7 @@ The preceding sections demonstrate that QPCA-EnDCF improves reconstruction accur
 
 Ensemble size controls the fundamental accuracy--cost tradeoff: forecast propagation costs scale approximately linearly in $N$, while statistical error increases as sampling noise corrupts empirical covariances. This tradeoff differs across methods. Stochastic EnKF variants incur sampling error in $\hat{\mathbf{P}}^f$ and additional variance from perturbed observations, whereas deterministic methods avoid the latter. The key operational question is whether removing perturbation noise yields meaningful gains in small-ensemble regimes. A useful baseline comes from random matrix theory: in the undersampled regime $N \ll n$, for i.i.d. samples from a distribution with covariance $\mathbf{P}^f$,
 \[
-\mathbb{E}\!\left[\|\hat{\mathbf{P}}^f-\mathbf{P}^f\|_F^2\right] = \mathcal{O}\!\left(\frac{\|\mathbf{P}^f\|_F^2}{N}\right) = \mathcal{O}\!\left(\frac{\mathrm{tr}(\mathbf{P}^f)^2 + \|\mathbf{P}^f\|_F^2}{N}\right),
+\mathbb{E}\!\left[\|\hat{\mathbf{P}}^f-\mathbf{P}^f\|_F^2\right] = \mathcal{O}\!\left(\frac{\mathrm{tr}(\mathbf{P}^f)^2 + \|\mathbf{P}^f\|_F^2}{N}\right),
 \qquad
 \hat{\mathbf{P}}^f=\frac{1}{N-1}\mathbf{A}^f(\mathbf{A}^f)^{\top}.
 \]
@@ -2176,7 +2176,7 @@ The sequential stochastic ensemble Kalman filter processes observations individu
     \For{$j = 1$ to $N$}
         \State $\mathbf{x}^{(j)} \gets \mathcal{M}(\mathbf{x}^{(j)})$ \Comment{Forecast propagation}
     \EndFor
-    \State $\bar{\mathbf{x}}^f \gets \frac{1}{N}\sum_{j=1}^{N}\mathbf{x}^{(j)}$, \quad $\mathbf{A}^f \gets \lambda_{\mathrm{infl}}(\mathbf{X} - \bar{\mathbf{x}}^f\mathbf{1}^{\top})$ \Comment{Inflated anomalies}
+    \State $\bar{\mathbf{x}}^f \gets \frac{1}{N}\sum_{j=1}^{N}\mathbf{x}^{(j)}$, \quad $\mathbf{A}^f \gets \mathbf{X} - \bar{\mathbf{x}}^f\mathbf{1}^{\top}$ \Comment{Forecast anomalies}
     \State $\widehat{\mathbf{P}}^{\,f} \gets \frac{1}{N-1}\mathbf{A}^f(\mathbf{A}^f)^{\top}$, \quad $\mathbf{Y} \gets \mathbf{H}\mathbf{X}$
     \State $\bar{\mathbf{y}} \gets \frac{1}{N}\mathbf{Y}\mathbf{1}$ \Comment{Mean predicted observation}
     \State $\mathbf{S} \gets \frac{1}{N-1}(\mathbf{Y} - \bar{\mathbf{y}}\mathbf{1}^{\top})(\mathbf{Y} - \bar{\mathbf{y}}\mathbf{1}^{\top})^{\top} + \mathbf{R}$
@@ -2185,12 +2185,14 @@ The sequential stochastic ensemble Kalman filter processes observations individu
         \State $\boldsymbol{\epsilon}_{k}^{(j)} \sim \mathcal{N}(\mathbf{0}, \mathbf{R})$
         \State $\mathbf{x}^{(j)} \gets \mathbf{x}^{(j)} + \mathbf{K}_k(\mathbf{z}_k + \boldsymbol{\epsilon}_{k}^{(j)} - \mathbf{H}\mathbf{x}^{(j)})$ \Comment{Perturbed update}
     \EndFor
+    \State $\bar{\mathbf{x}}^a \gets \frac{1}{N}\sum_{j=1}^{N}\mathbf{x}^{(j)}$
+    \State $\mathbf{x}^{(j)} \gets \bar{\mathbf{x}}^a + \lambda_{\mathrm{infl}}(\mathbf{x}^{(j)} - \bar{\mathbf{x}}^a)$ for $j=1,\ldots,N$ \Comment{Post-update inflation}
 \EndFor
 \State \Return $\mathbf{X}$
 \end{algorithmic}
 \end{algorithm}
 
-Observation perturbations $\boldsymbol{\epsilon}_{k}^{(j)} \sim \mathcal{N}(\mathbf{0}, \mathbf{R})$ are introduced to preserve ensemble variance in expectation. Multiplicative inflation $\lambda_{\mathrm{infl}} > 1$ provides additional variance augmentation.
+Observation perturbations $\boldsymbol{\epsilon}_{k}^{(j)} \sim \mathcal{N}(\mathbf{0}, \mathbf{R})$ are introduced to preserve ensemble variance in expectation. Multiplicative inflation $\lambda_{\mathrm{infl}} > 1$ is applied after each analysis update, inflating analysis anomalies about the analysis mean to counteract ensemble collapse.
 % ================================================================================
 
 \subsection{Four-Dimensional Stochastic Ensemble Kalman Filter}\label{app:4d_enkf}
@@ -2214,7 +2216,7 @@ The four-dimensional stochastic ensemble Kalman filter accumulates information f
     \EndFor
     \State $\mathbf{z}^{(w)} \gets [\mathbf{z}_{(w-1)L+1}^{\top}, \ldots, \mathbf{z}_{wL}^{\top}]^{\top}$, \quad $\mathbf{Y}_{\mathrm{stack}} \gets [\mathbf{Y}_1^{\top}, \ldots, \mathbf{Y}_L^{\top}]^{\top}$
     \State $\bar{\mathbf{x}}_L^f \gets \frac{1}{N}\mathbf{X}_L\mathbf{1}$, \quad $\bar{\mathbf{y}}_{\mathrm{stack}} \gets \frac{1}{N}\mathbf{Y}_{\mathrm{stack}}\mathbf{1}$ \Comment{Ensemble means}
-    \State $\mathbf{A}_x \gets \lambda_{\mathrm{infl}}(\mathbf{X}_L - \bar{\mathbf{x}}_L^f\mathbf{1}^{\top})$, \quad $\mathbf{A}_y \gets \mathbf{Y}_{\mathrm{stack}} - \bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^{\top}$
+    \State $\mathbf{A}_x \gets \mathbf{X}_L - \bar{\mathbf{x}}_L^f\mathbf{1}^{\top}$, \quad $\mathbf{A}_y \gets \mathbf{Y}_{\mathrm{stack}} - \bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^{\top}$ \Comment{Forecast anomalies}
     \State $\mathbf{P}_{xy} \gets \frac{1}{N-1}\mathbf{A}_x\mathbf{A}_y^{\top}$, \quad $\mathbf{P}_{yy} \gets \frac{1}{N-1}\mathbf{A}_y\mathbf{A}_y^{\top}$
     \State $\mathbf{K}^{(w)} \gets \mathbf{P}_{xy}(\mathbf{P}_{yy} + \mathbf{R}^{(L)})^{-1}$
     \For{$j = 1$ to $N$}
@@ -2222,12 +2224,14 @@ The four-dimensional stochastic ensemble Kalman filter accumulates information f
         \State $\mathbf{x}_L^{(j)} \gets \mathbf{x}_L^{(j)} + \mathbf{K}^{(w)}(\mathbf{z}^{(w)} + \boldsymbol{\epsilon}_{w}^{(j)} - \mathbf{Y}_{\mathrm{stack}}^{(j)})$
     \EndFor
     \State $\mathbf{X} \gets \mathbf{X}_L$
+    \State $\bar{\mathbf{x}}^a \gets \frac{1}{N}\mathbf{X}\mathbf{1}$
+    \State $\mathbf{x}^{(j)} \gets \bar{\mathbf{x}}^a + \lambda_{\mathrm{infl}}(\mathbf{x}^{(j)} - \bar{\mathbf{x}}^a)$ for $j=1,\ldots,N$ \Comment{Post-update inflation}
 \EndFor
 \State \Return $\mathbf{X}$
 \end{algorithmic}
 \end{algorithm}
 
-Joint processing of $L$ observations exploits temporal correlations through extended cross-covariance $\mathbf{P}_{xy} \in \mathbb{R}^{n \times d}$. Perturbations are sampled from $\mathcal{N}(\mathbf{0}, \mathbf{R}^{(L)})$ with block-diagonal covariance structure.
+Joint processing of $L$ observations exploits temporal correlations through extended cross-covariance $\mathbf{P}_{xy} \in \mathbb{R}^{n \times d}$. Perturbations are sampled from $\mathcal{N}(\mathbf{0}, \mathbf{R}^{(L)})$ with block-diagonal covariance structure. Multiplicative inflation is applied after the analysis update, consistent with the sequential variant.
 % ================================================================================
 
 \subsection{QPCA Ensemble Data Consistency Filter}\label{app:qpca_endcf}
@@ -2260,7 +2264,7 @@ The QPCA ensemble data consistency filter implements deterministic residual filt
     \State
 	    \State \textit{// Spectral decomposition}
 	    \State $\mathbf{C}_E \gets \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^{\top}$
-	    \State $[\mathbf{V}, \boldsymbol{\Lambda}] \gets \mathrm{eig}(\mathbf{C}_E)$ \Comment{$\mathbf{V}=[\mathbf{v}_1,\ldots,\mathbf{v}_d]$, $\boldsymbol{\Lambda}=\mathrm{diag}(\lambda_1,\ldots,\lambda_d)$}
+	    \State $[\hat{\mathbf{V}}, \hat{\boldsymbol{\Lambda}}] \gets \mathrm{eig}(\mathbf{C}_E)$ \Comment{$\hat{\mathbf{V}}=[\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_d]$, $\hat{\boldsymbol{\Lambda}}=\mathrm{diag}(\hat{\lambda}_1,\ldots,\hat{\lambda}_d)$}
 	    \State $r \gets \min(d, N-1)$ \Comment{Maximum rank of $\mathbf{C}_E$, where $d=mL$}
 	    \State Sort indices so $\hat{\lambda}_1 \geq \hat{\lambda}_2 \geq \cdots \geq \hat{\lambda}_{r} \geq 0$; permute $\hat{\mathbf{v}}_i$ consistently
 	    \State $\hat{\mathbf{V}}_{\kappa} \gets [\hat{\mathbf{v}}_1, \ldots, \hat{\mathbf{v}}_{\kappa}]$ \Comment{Leading $\kappa$ eigenvectors}

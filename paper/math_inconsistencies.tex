@@ -36,9 +36,9 @@
 % ---------------------------------------------------------------------------
 \subsection{Incorrect Factorization of Joint Expectation in Bias Bound}
 \label{issue:bias_factor}
-\severity{H}
+\severity{L}
 
-\noindent\textbf{Status:} Valid proof gap (the displayed factorization is not justified without additional assumptions).
+\noindent\textbf{Status:} Presentation/justification issue (the bound is valid via Jensen + Cauchy--Schwarz, but the intermediate steps are not shown).
 
 \noindent\textbf{Location:} Lines 1305--1310 (proof of Theorem~4, bias bound).
 
@@ -53,32 +53,22 @@
 \]
 
 \noindent\textbf{Issue:}
-The step from the squared-norm expectation to the product of separate expectations implicitly factors
-\[
-\mathbb{E}\bigl[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,
-\|\hat{\mathbf{P}}_\kappa-\mathbf{P}_\kappa\|_F^2\bigr]
-\;=\;
-\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2
-\;\cdot\;
-\mathbb{E}\|\hat{\mathbf{P}}_\kappa-\mathbf{P}_\kappa\|_F^2.
-\]
-This factorization requires independence of $\mathbf{K}^{\mathrm{DC}}$ and $\hat{\mathbf{P}}_\kappa$. Both are computed from the same finite ensemble: $\mathbf{K}^{\mathrm{DC}} = \mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$ depends on the ensemble anomalies, and $\hat{\mathbf{P}}_\kappa = \mathbf{P}_\kappa(\mathbf{C}_E^s)$ is the empirical projector from the sample covariance of the whitened residuals. They are \emph{not} independent.
+As written, the paper jumps directly from $\|\mathbb{E}[\cdot]\|^2$ to a product of expectations, which can be misread as an (incorrect) independence-based factorization. In fact, the displayed bound is obtainable without any independence assumption by combining (i) Jensen's inequality $\|\mathbb{E}[Z]\|^2 \le (\mathbb{E}\|Z\|)^2$ with (ii) Cauchy--Schwarz applied to $\mathbb{E}[\|\mathbf{K}^{\mathrm{DC}}\|_2\,\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F]$.
 
-\noindent\textbf{Correct approach:}
-Apply Cauchy--Schwarz:
-\[
-\mathbb{E}\bigl[\|\mathbf{K}\|_2^2\|\hat{\mathbf{P}}-\mathbf{P}\|_F^2\bigr]
-\;\le\;
-\bigl(\mathbb{E}\|\mathbf{K}\|_2^4\bigr)^{1/2}\,
-\bigl(\mathbb{E}\|\hat{\mathbf{P}}-\mathbf{P}\|_F^4\bigr)^{1/2}.
-\]
-This requires $\mathbb{E}[\|\mathbf{K}^{\mathrm{DC}}\|_2^4] < \infty$, but Assumption~2 (line~616) only guarantees $\mathbb{E}[\|\mathbf{K}^{\mathrm{DC}}\|_2^2] < \infty$.
+\noindent\textbf{Correct approach (one-line justification):}
+Let $Z=\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\bm{\mu}_E^{\,s}$. Then
+\begin{align*}
+\|\mathbb{E}[Z]\|^2
+&\le (\mathbb{E}\|Z\|)^2 \\
+&\le \|\mathbf{R}^{(L)}\|_2\|\bm{\mu}_E^{\,s}\|^2
+\bigl(\mathbb{E}[\|\mathbf{K}^{\mathrm{DC}}\|_2\,\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F]\bigr)^2 \\
+&\le \|\mathbf{R}^{(L)}\|_2\|\bm{\mu}_E^{\,s}\|^2\,
+\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,
+\mathbb{E}\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F^2.
+\end{align*}
 
-\noindent\textbf{Consequences:}
-\begin{itemize}[nosep]
-\item The third term of the bias bound (eq.\ at lines 1225--1227) should involve $(\mathbb{E}\|\mathbf{C}_E^s - \bm{\Sigma}_E^s\|_F^4)^{1/2}$ (a fourth-moment quantity) rather than $\mathbb{E}\|\mathbf{C}_E^s - \bm{\Sigma}_E^s\|_F^2$.
-\item Assumption~2 needs strengthening to $\mathbb{E}[\|\mathbf{K}^{\mathrm{DC}}\|_2^4] < \infty$, or the independence of $\mathbf{K}^{\mathrm{DC}}$ and $\hat{\mathbf{P}}_\kappa$ must be established (e.g., under Gaussianity with structural independence arguments).
-\end{itemize}
+\noindent\textbf{Recommended fix:}
+In \texttt{uq\_paper\_draft.tex} around lines 1305--1311, insert a brief justification (one or two displayed lines) indicating that the bound follows from Jensen's inequality and Cauchy--Schwarz (as above). This makes clear that no independence between $\mathbf{K}^{\mathrm{DC}}$ and $\hat{\mathbf{P}}_\kappa^{\,s}$ is being assumed.
 
 
 % ---------------------------------------------------------------------------
@@ -109,18 +99,45 @@ The correct algebraic decomposition of $\hat{\mathbf{P}}_\kappa \bar{\mathbf{e}}
 \]
 After multiplying by $\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}$ and taking expectations, the full expression is:
 \begin{align*}
-\mathbb{E}[\mathbf{K}\mathbf{R}^{1/2}\hat{\mathbf{P}}\bar{\mathbf{e}}]
-&= \mathbb{E}[\mathbf{K}]\,\mathbf{R}^{1/2}\mathbf{P}\,\bm{\mu}
-+ \mathbb{E}[\mathbf{K}\mathbf{R}^{1/2}(\hat{\mathbf{P}} - \mathbf{P})\bm{\mu}] \\
-&\quad + \mathbb{E}[\mathbf{K}\mathbf{R}^{1/2}\hat{\mathbf{P}}(\bar{\mathbf{e}} - \bm{\mu})].
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\bar{\mathbf{e}}^{\,s}\right]
+&=
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}\right]
+\;+\;
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s} - \mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right] \\
+&\quad +\;
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right].
 \end{align*}
-The third term $\mathbb{E}[\mathbf{K}\mathbf{R}^{1/2}\hat{\mathbf{P}}(\bar{\mathbf{e}} - \bm{\mu})]$ is dropped without justification. While $\mathbb{E}[\bar{\mathbf{e}} - \bm{\mu}] = 0$, the quantities $\mathbf{K}$, $\hat{\mathbf{P}}$, and $(\bar{\mathbf{e}} - \bm{\mu})$ are all functions of the same ensemble, so the expectation of their product does \emph{not} factor.
+The third term
+\(
+\mathbb{E}[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})]
+\)
+is dropped without justification. While $\mathbb{E}[\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}] = 0$, the quantities $\mathbf{K}^{\mathrm{DC}}$, $\hat{\mathbf{P}}_\kappa^{\,s}$, and $(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})$ are computed from the same ensemble, so the expectation of their product does \emph{not} factor in general.
 
 \noindent\textbf{When it vanishes:}
-Under Gaussianity, the sample mean and sample covariance of i.i.d.\ Gaussian vectors are independent, so $\hat{\mathbf{P}}$ (a function of $\mathbf{C}_E$) is independent of $(\bar{\mathbf{e}} - \bm{\mu})$. After conditioning on $\hat{\mathbf{P}}$ and $\mathbf{K}$, the inner expectation over $(\bar{\mathbf{e}} - \bm{\mu})$ is zero. For non-Gaussian ensembles, this term is generally $O(1/N)$ and contributes an additional bias that is not captured by the stated bound.
+If the ensemble residuals are Gaussian and the gain/projector are functions only of centered anomalies (so that $(\mathbf{K},\hat{\mathbf{P}})$ is measurable with respect to the centered residual matrix $\mathbf{E}_c$), then the Gaussian independence of sample mean and sample covariance implies $(\bar{\mathbf{e}}-\bm{\mu})$ is independent of $(\mathbf{K},\hat{\mathbf{P}})$. In that case,
+\(
+\mathbb{E}[\mathbf{K}\mathbf{R}^{1/2}\hat{\mathbf{P}}(\bar{\mathbf{e}}-\bm{\mu})]=\mathbf{0}.
+\)
+Absent such an assumption, the term need not vanish.
 
 \noindent\textbf{Recommended fix:}
-Either invoke Gaussianity explicitly at this step, or include this term as an additional $O(1/N)$ bias contribution (which can be absorbed into the projector-estimation term with modified constants).
+In \texttt{uq\_paper\_draft.tex} around lines 1287--1296, explicitly add and bound the missing term
+\[
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right]
+\]
+in one of the following ways:
+\begin{itemize}[nosep]
+\item \emph{Assumption route:} state a Gaussian/independence hypothesis at this step (or as an additional assumption in the theorem) under which $(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})$ is independent of $(\mathbf{K}^{\mathrm{DC}},\hat{\mathbf{P}}_\kappa^{\,s})$, so the term is exactly zero.
+\item \emph{Bound route (no independence):} use $\|\hat{\mathbf{P}}_\kappa^{\,s}\|_2\le 1$ and Cauchy--Schwarz to obtain
+\[
+\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right]\right\|^2
+\le
+\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,\mathbb{E}\|\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}\|^2
+=
+\frac{\mathrm{tr}(\boldsymbol{\Sigma}_E^{\,s})}{N}\,\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2.
+\]
+\end{itemize}
+This yields an additional finite-$N$ bias contribution of order $N^{-1}$ that can be included explicitly in the bias bound (or absorbed into existing constants if the bias bound is only intended up to $O(N^{-1})$ terms).
 
 
 % ---------------------------------------------------------------------------
@@ -153,11 +170,25 @@ The text implies (via ``In particular'') that the marginal bound directly refine
 \noindent\textbf{Note:} The proof on line 1329 correctly acknowledges that $\hat{\mathbf{P}}$ and $(\bar{\mathbf{e}} - \bm{\mu})$ are dependent and uses Cauchy--Schwarz on fourth moments for eq.\ (1260). However, the same care is \emph{not} taken for the $\|\mathbf{K}\|_2^2$ factor.
 
 \noindent\textbf{Recommended fix:}
-Either (i) explicitly keep the variance bound's third term as the joint expectation $\mathbb{E}[\|\mathbf{K}\|_2^2 Y^2]$ and present the marginal projector bound as a separate auxiliary estimate, or (ii) add the missing Cauchy--Schwarz step
+In \texttt{uq\_paper\_draft.tex} around lines 1248--1250, modify the ``In particular'' discussion so that it does not suggest the marginal projector bound directly refines the \emph{joint} term in the variance bound (eq.\ at lines 1232--1247 of the paper). Concretely, one of the following options resolves the issue:
+\begin{itemize}[nosep]
+\item \emph{Minimal (presentation) fix:} keep the variance bound as stated and change the lead-in ``In particular'' to a separate remark, e.g.\ ``Moreover, the projector factor admits the marginal bound (eq.\ at lines 1250--1261).'' Then make explicit that combining the joint term (lines 1244--1246) with the marginal bound requires additional control of $\|\mathbf{K}^{\mathrm{DC}}\|_2$ beyond the second-moment assumption currently stated for the gain.
+\item \emph{Uniform-bound route:} if the gain is computed using a stabilized inverse with an almost-sure bound $\|\mathbf{K}^{\mathrm{DC}}\|_2\le K_{\max}$ (as is the case for Tikhonov/ridge with fixed regularization and bounded anomalies), then
 \[
-\mathbb{E}[\|\mathbf{K}\|_2^2 Y^2] \le (\mathbb{E}\|\mathbf{K}\|_2^4)^{1/2}(\mathbb{E}Y^4)^{1/2},
+\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2 Y^2\right]
+\le
+K_{\max}^2\,\mathbb{E}[Y^2],
 \]
-which requires a fourth-moment assumption on $\|\mathbf{K}\|_2$ (or an alternative uniform bound on $\|\mathbf{K}\|_2$).
+so the marginal projector bound (lines 1250--1261) can be used directly in the joint variance term (lines 1244--1246), with an extra prefactor $K_{\max}^2$.
+\item \emph{Moment route:} strengthen the gain moment assumption (Assumption at lines 612--619 of \texttt{uq\_paper\_draft.tex}) to $\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^{4}<\infty$ and insert the missing Hölder/Cauchy--Schwarz step
+\[
+\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2 Y^2\right]
+\le
+\bigl(\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^4\bigr)^{1/2}\,
+\bigl(\mathbb{E}Y^4\bigr)^{1/2}.
+\]
+This makes the dependence on gain moments explicit; to close the bound fully one must then control $\mathbb{E}Y^4$ (e.g., via higher-moment bounds on $\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}$ and $\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}$).
+\end{itemize}
 
 
 % ============================================================================
@@ -192,10 +223,53 @@ By the law of total covariance:
 = \mathbb{E}[\mathrm{Cov}(\bar{\mathbf{x}}^a_{\mathrm{stoch}} \mid \mathbf{K})]
 + \mathrm{Cov}(\mathbb{E}[\bar{\mathbf{x}}^a_{\mathrm{stoch}} \mid \mathbf{K}]).
 \]
-The conditional decomposition gives $\mathrm{Cov}(\bar{\mathbf{x}}^a_{\mathrm{stoch}} \mid \mathbf{K}) = \mathrm{Cov}(\bar{\mathbf{x}}^a_{\mathrm{det}} \mid \mathbf{K}) + (1/N)\,\mathbf{K}\mathbf{R}\mathbf{K}^\top$, but the unconditional version involves $\frac{1}{N}\mathbb{E}[\mathbf{K}\mathbf{R}\mathbf{K}^\top]$, not $\frac{1}{N}\mathbf{K}\mathbf{R}\mathbf{K}^\top$, plus additional terms from the outer covariance.
+The conditional decomposition gives
+\[
+\mathrm{Cov}(\bar{\mathbf{x}}^a_{\mathrm{stoch}} \mid \mathbf{K})
+=
+\mathrm{Cov}(\bar{\mathbf{x}}^a_{\mathrm{det}} \mid \mathbf{K})
++
+\frac{1}{N}\,\mathbf{K}\mathbf{R}^{(L)}\mathbf{K}^\top,
+\]
+and taking expectations yields
+\(
+\mathrm{Cov}(\bar{\mathbf{x}}^a_{\mathrm{stoch}})
+=
+\mathrm{Cov}(\bar{\mathbf{x}}^a_{\mathrm{det}})
++
+\frac{1}{N}\mathbb{E}[\mathbf{K}\mathbf{R}^{(L)}\mathbf{K}^\top].
+\)
 
 \noindent\textbf{Recommended fix:}
-Either restrict the statement to deterministic $\mathbf{K}^{(w)}$, or state the identity conditionally (given $\mathbf{K}^{(w)}$) and note that the unconditional version requires $\frac{1}{N}\mathbb{E}[\mathbf{K}\mathbf{R}\mathbf{K}^\top]$.
+The clean fix is to decide whether Corollary~2 is meant to be conditional on the gain (and/or the forecast ensemble) or fully unconditional, and then rewrite the covariance identity accordingly:
+\begin{itemize}[nosep]
+\item \emph{Deterministic-gain route (minimal change):} in \texttt{uq\_paper\_draft.tex} line 1397, keep only ``$\mathbf{K}^{(w)}$ is deterministic'' and leave eq.\ at lines 1409--1413 unchanged.
+\item \emph{Conditional-identity route (keeps random gain allowed):} in \texttt{uq\_paper\_draft.tex} replace eq.\ at lines 1409--1413 with a conditional statement, for example
+\[
+\mathrm{Cov}\!\left(\bar{\mathbf{x}}^{a}_{\mathrm{stoch}}\mid \mathbf{K}^{(w)}\right)
+=
+\mathrm{Cov}\!\left(\bar{\mathbf{x}}^{a}_{\mathrm{det}}\mid \mathbf{K}^{(w)}\right)
++
+\frac{1}{N}\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top,
+\]
+and add one sentence noting that taking expectations yields the unconditional additive term $\frac{1}{N}\mathbb{E}[\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top]$.
+\item \emph{Unconditional-identity route (explicit averaging over the random gain):} keep ``$\mathbf{K}^{(w)}$ independent of $\{\boldsymbol{\epsilon}_w^{(j)}\}$'' in line 1397, but replace eq.\ at lines 1409--1413 by
+\[
+\mathrm{Cov}\!\left(\bar{\mathbf{x}}^{a}_{\mathrm{stoch}}\right)
+=
+\mathrm{Cov}\!\left(\bar{\mathbf{x}}^{a}_{\mathrm{det}}\right)
++
+\frac{1}{N}\,\mathbb{E}\!\left[\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top\right].
+\]
+In this case, also update eq.\ at lines 1421--1426 so that
+\(
+\mathbb{E}\bigl\|\frac{1}{N}\sum_j \mathbf{K}^{(w)}\boldsymbol{\epsilon}_w^{(j)}\bigr\|^2
+=
+\frac{1}{N}\mathbb{E}\,\mathrm{tr}(\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top)
+\le
+\frac{\mathrm{tr}(\mathbf{R}^{(L)})}{N}\,\mathbb{E}\|\mathbf{K}^{(w)}\|_2^2.
+\)
+\end{itemize}
 
 
 % ============================================================================
@@ -219,7 +293,25 @@ Either restrict the statement to deterministic $\mathbf{K}^{(w)}$, or state the 
 The constant $C_{\mathrm{pert}}$ is used here but is never defined elsewhere in the paper. It is unclear whether it depends on the gain norm, the observation operator, or other problem parameters.
 
 \noindent\textbf{Recommended fix:}
-Either define $C_{\mathrm{pert}}$ explicitly (it should be related to $\|\mathbf{K}\|_2^2$ from Corollary~2's lower bound), or remove the constant and write the scaling directly in terms of previously defined quantities, e.g., $\|\mathbf{K}\|_2^2\,\mathrm{tr}(\mathbf{R}^{(L)})/N$.
+In \texttt{uq\_paper\_draft.tex} line 1765, either remove $C_{\mathrm{pert}}$ entirely and write the perturbation scaling using already-defined quantities, or define $C_{\mathrm{pert}}$ on first use. A concrete rewrite can be based on the standard bound
+\[
+\frac{1}{N}\,\mathrm{tr}\!\bigl(\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top\bigr)
+\le
+\frac{\|\mathbf{K}^{(w)}\|_2^2\,\mathrm{tr}(\mathbf{R}^{(L)})}{N}
+=
+\frac{\|\mathbf{K}^{(w)}\|_2^2\,L\,\mathrm{tr}(\mathbf{R})}{N}
+\quad (\mathbf{R}^{(L)}=\mathbf{I}_L\otimes \mathbf{R}),
+\]
+and (if $\mathbf{K}^{(w)}$ is random) the corresponding expected injection
+\(
+\frac{1}{N}\mathbb{E}\,\mathrm{tr}(\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top)
+\le
+\frac{L\,\mathrm{tr}(\mathbf{R})}{N}\,\mathbb{E}\|\mathbf{K}^{(w)}\|_2^2.
+\)
+\begin{itemize}[nosep]
+\item \emph{No-new-constants route:} replace ``$C_{\mathrm{pert}}L\,\mathrm{tr}(\mathbf{R})/N$'' by ``$\|\mathbf{K}^{(w)}\|_2^2\,L\,\mathrm{tr}(\mathbf{R})/N$'' (deterministic gain) or ``$\mathbb{E}\|\mathbf{K}^{(w)}\|_2^2\,L\,\mathrm{tr}(\mathbf{R})/N$'' (random gain).
+\item \emph{Definition route:} define $C_{\mathrm{pert}}$ explicitly, e.g.\ $C_{\mathrm{pert}}:=\|\mathbf{K}^{(w)}\|_2^2$ (deterministic gain) or $C_{\mathrm{pert}}:=\mathbb{E}\|\mathbf{K}^{(w)}\|_2^2$ (random gain), and add a parenthetical reference to the Corollary~2 variance-injection estimate.
+\end{itemize}
 
 
 % ============================================================================
@@ -233,7 +325,7 @@ Either define $C_{\mathrm{pert}}$ explicitly (it should be related to $\|\mathbf
 
 \noindent\textbf{Status:} Partially valid (requires additional eigenvalue scaling assumptions; otherwise should be phrased as $\mathcal{O}(1/N)$ with $\kappa$-dependent prefactors).
 
-\noindent\textbf{Location:} Lines 1708 and 1762.
+\noindent\textbf{Location:} Lines 1711 and 1765.
 
 \noindent\textbf{Statement in paper:}
 ``For QPCA-EnDCF, theory shows variance scaling as $\mathcal{O}(\kappa/N)$, where $\kappa$ is the truncation level'' (line~1708).
@@ -243,17 +335,24 @@ Theorem~4's variance bound (eq.\ at lines 1233--1247) is:
 \[
 \mathrm{Variance} \;\le\;
 \frac{2}{N}\mathbb{E}\|\mathbf{x}^{(1),f} - \bm{\mu}^f\|^2
-+ \frac{2\,\mathrm{tr}(\bm{\Sigma}_E^s)}{N}\,\mathbb{E}\|\mathbf{K}\|_2^2\,\|\mathbf{R}\|_2
++ \frac{2}{N}\,\mathbb{E}\!\left[\|\mathbf{K}\|_2^2\right]\,
+\|\mathbf{R}^{(L)}\|_2\,\mathrm{tr}(\bm{\Sigma}_E^s)
 + 2\|\mathbf{R}\|_2\,\mathbb{E}[\|\mathbf{K}\|_2^2\,\|(\hat{\mathbf{P}} - \mathbf{P})(\bar{\mathbf{e}} - \bm{\mu})\|^2].
 \]
-The first term scales as $\mathcal{O}(1/N)$ (no $\kappa$ dependence). The second term scales as $\mathcal{O}(\mathrm{tr}(\bm{\Sigma}_E^\kappa)/N)$, which for $\kappa = 1$ gives $\mathcal{O}(\lambda_1/N)$, not $\mathcal{O}(1/N)$ unless $\lambda_1$ is treated as $\mathcal{O}(1)$. The third term involves projector estimation error.
+The first two terms scale as $\mathcal{O}(1/N)$ and, as stated, they do \emph{not} exhibit an explicit $\kappa$ factor (the second term uses $\mathrm{tr}(\bm{\Sigma}_E^s)$ rather than a truncated trace such as $\mathrm{tr}(\mathbf{P}_\kappa\bm{\Sigma}_E^s)$). The only explicit $\kappa$-dependence in the theorem arises through the projector-estimation/stability mechanism (via $\kappa/\delta_\kappa^2$ in the projector bounds used to control the third term).
 
-The claim $\mathcal{O}(\kappa/N)$ would require $\mathrm{tr}(\bm{\Sigma}_E^\kappa) = \sum_{i=1}^\kappa \lambda_i = \mathcal{O}(\kappa)$, which holds only when eigenvalues are $\mathcal{O}(1)$.
-
-More importantly, the bound's second term already has $\mathcal{O}(1/N)$ scaling \emph{without} $\kappa$ dependence from the first term. The $\kappa$ factor enters only through $\mathrm{tr}(\bm{\Sigma}_E^\kappa)$ in the second term and through the $\kappa/\delta_\kappa^2$ factor in the third term's projector-estimation refinement.
+Thus, the sentence ``variance scaling as $\mathcal{O}(\kappa/N)$'' is not literally supported by the stated theorem without an additional argument translating the observation-space variance contribution into an \emph{effective-dimension} quantity (e.g., replacing $\mathrm{tr}(\bm{\Sigma}_E^s)$ by a truncated trace such as $\sum_{i=1}^{\kappa}\lambda_i^{\,s}$) and then assuming a normalization like $\lambda_i^{\,s}=\mathcal{O}(1)$.
 
 \noindent\textbf{Recommended fix:}
-Replace ``$\mathcal{O}(\kappa/N)$'' with a more precise statement such as: ``variance scales as $\mathcal{O}(1/N)$ with $\kappa$-dependent prefactors'' or ``the $\kappa$-sensitive term scales as $\mathcal{O}(\mathrm{tr}(\bm{\Sigma}_E^\kappa)/N)$.''
+In \texttt{uq\_paper\_draft.tex}, rewrite the two occurrences of ``$\mathcal{O}(\kappa/N)$'' to match what Theorem~4 actually provides:
+\begin{itemize}[nosep]
+\item \emph{Safe (fully consistent) wording:} replace the first sentence at line 1711 by
+\begin{quote}
+``For QPCA-EnDCF, Theorem~4 yields $\mathrm{Variance}=\mathcal{O}(1/N)$ with $\kappa$-dependent prefactors arising through projector stability (via $\kappa/\delta_\kappa^2$) and the dependence of the observation-space term on $\mathrm{tr}(\boldsymbol{\Sigma}_E)$.''%
+\end{quote}
+and replace the clause at line 1765 by ``With variance scaling as $\mathcal{O}(1/N)$ (with $\kappa$-dependent prefactors) rather than $\mathcal{O}(r/N)$, \ldots''.
+\item \emph{If you want an explicit $\kappa/N$ statement:} state the additional assumption needed (e.g., a bound $\mathrm{tr}(\mathbf{P}_\kappa\boldsymbol{\Sigma}_E)\lesssim \kappa$ under eigenvalue normalization) and either (i) tighten the theorem's second variance term accordingly, or (ii) explicitly qualify the sentence as a heuristic/effective-dimension interpretation (``in regimes where $\sum_{i=1}^{\kappa}\lambda_i=\mathcal{O}(\kappa)$, the $\kappa$-sensitive contribution behaves like $\mathcal{O}(\kappa/N)$'').
+\end{itemize}
 
 
 % ---------------------------------------------------------------------------
@@ -263,7 +362,7 @@ Replace ``$\mathcal{O}(\kappa/N)$'' with a more precise statement such as: ``var
 
 \noindent\textbf{Status:} Potentially incorrect scaling in $d$ unless the implied big-$\mathcal{O}$ constant is allowed to depend on dimension.
 
-\noindent\textbf{Location:} Lines 199--203.
+\noindent\textbf{Location:} Lines 187--206 (discussion of sampling error in $\widehat{\mathbf{R}}^{(L)}$) and in particular lines 197--205.
 
 \noindent\textbf{Statement in paper:}
 \[
@@ -283,7 +382,30 @@ Taking the square root gives $\sigma_{\mathrm{obs}}^2\sqrt{d(d+1)/(N{-}1)} = \ma
 However, the paper's own Lemma~3 gives a bound in terms of $\mathrm{tr}(\bm{\Sigma}^2)/(N{-}1)$ with a dimension-dependent constant $C_{\mathrm{cov}}$, which may absorb the extra $\sqrt{d}$ factor. If the claim is meant as a general big-O statement (with constants depending on $d$), it should be stated as such.
 
 \noindent\textbf{Recommended fix:}
-Either write $\mathcal{O}(\sigma_{\mathrm{obs}}^2\,d/\sqrt{N})$ for the exact Wishart scaling, or clarify that the $\mathcal{O}$ constant depends on $d$ (e.g., ``$= \mathcal{O}_d(\sigma_{\mathrm{obs}}^2\sqrt{d/N})$ where the implied constant depends on $d$'').
+In \texttt{uq\_paper\_draft.tex} at lines 197--205, make the scaling consistent with the Frobenius-norm identity you intend to invoke:
+\begin{itemize}[nosep]
+\item \emph{If the norm is truly Frobenius (recommended):} replace the display at lines 199--203 by the explicit Gaussian/Wishart expression (for $\mathbf{R}^{(L)}=\sigma_{\mathrm{obs}}^2\mathbf{I}_d$)
+\[
+\left(\mathbb{E}\bigl[\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_F^2\bigr]\right)^{1/2}
+=
+\sigma_{\mathrm{obs}}^2\sqrt{\frac{d(d+1)}{N-1}}
+=
+\mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\,\frac{d}{\sqrt{N}}\right),
+\]
+and update the concluding sentence (line 206) from ``the prefactor grows like $\sqrt{L}$'' to ``the prefactor grows like $L$'' (since $d=mL$). If you want to keep the discussion distribution-agnostic, the corresponding general-Gaussian formula is
+\(
+\left(\mathbb{E}\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_F^2\right)^{1/2}
+=
+\mathcal{O}\!\left(\sqrt{\frac{\mathrm{tr}((\mathbf{R}^{(L)})^2)+\mathrm{tr}(\mathbf{R}^{(L)})^2}{N}}\right).
+\)
+\item \emph{If you intended the $\sqrt{d/N}$ scaling:} change the norm in the display and subsequent sentence to an operator-norm statement. For Gaussian $\mathbf{R}^{(L)}=\sigma_{\mathrm{obs}}^2\mathbf{I}_d$, a spectral-norm bound has the form
+\(
+\left(\mathbb{E}\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_2^2\right)^{1/2}
+=
+\mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\sqrt{d/N}\right)
+\)
+(up to the usual additional $d/N$ term in high dimension). This preserves the ``$\sqrt{L}$ amplification'' narrative but requires using $\|\cdot\|_2$ rather than $\|\cdot\|_F$ throughout that paragraph.
+\end{itemize}
 
 
 % ============================================================================
@@ -310,7 +432,7 @@ Either write $\mathcal{O}(\sigma_{\mathrm{obs}}^2\,d/\sqrt{N})$ for the exact Wi
 
 \noindent\textbf{Status:} Partially valid (a $\mathrm{tr}(\bm{\Sigma}^2)$-only bound can hold with an explicit dimension factor; the missing step/assumptions should be made explicit).
 
-\noindent\textbf{Location:} Lemma~3 proof (Corollary~1, Gaussian specialization).
+\noindent\textbf{Location:} Lemma~3 (Mean-square Frobenius deviation of the sample covariance), especially the proof lines 868--876 and the optional Gaussian remark at lines 879--880.
 
 \noindent\textbf{Issue:}
 For the Gaussian case, $\mathbb{E}\|\tilde{\mathbf{e}}\|^4$ involves both $\mathrm{tr}(\bm{\Sigma})^2$ and $\mathrm{tr}(\bm{\Sigma}^2)$. However, since $\mathrm{tr}(\bm{\Sigma})^2 \le d\,\mathrm{tr}(\bm{\Sigma}^2)$, a bound of the form $C(d)\,\mathrm{tr}(\bm{\Sigma}^2)$ can still be valid provided the dimension dependence is made explicit and justified.
@@ -318,7 +440,27 @@ For the Gaussian case, $\mathbb{E}\|\tilde{\mathbf{e}}\|^4$ involves both $\math
 As written, the paper states a $C(d)\,\mathrm{tr}(\bm{\Sigma}^2)$ bound without derivation, and for non-Gaussian ensembles a fourth-moment (bounded-kurtosis) condition is typically required to control $\mathbb{E}\|\tilde{\mathbf{e}}\|^4$ with constants that do not blow up unexpectedly.
 
 \noindent\textbf{Recommended fix:}
-State the exact fourth-moment formula for the Gaussian case, or add a bounded-kurtosis assumption for the general case.
+In \texttt{uq\_paper\_draft.tex} near the end of the Lemma~3 proof (lines 868--876), make explicit the step that reduces $\mathbb{E}\|\tilde{\mathbf{e}}^{(1)}\|^4$ to a multiple of $\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$, and state the corresponding assumption/constant dependence. Concretely:
+\begin{itemize}[nosep]
+\item \emph{Gaussian route (fully explicit):} add one displayed line (or sentence) using the exact identity
+\[
+\mathbb{E}\|\tilde{\mathbf{e}}^{(1)}\|^4
+=
+\bigl(\mathrm{tr}(\boldsymbol{\Sigma}_E)\bigr)^2 + 2\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2)
+\le
+(d+2)\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2),
+\]
+where the last inequality uses $\bigl(\mathrm{tr}(\boldsymbol{\Sigma}_E)\bigr)^2\le d\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$. This justifies the ``absorb into $C_{\mathrm{cov}}$'' sentence and clarifies the dimension dependence.
+\item \emph{Non-Gaussian route (standardized kurtosis):} define an explicit ``standardized fourth moment'' parameter, e.g.
+\[
+\kappa_4:=\sup_{\|u\|_2=1}\frac{\mathbb{E}\bigl[(u^\top \tilde{\mathbf{e}}^{(1)})^4\bigr]}{\bigl(u^\top \boldsymbol{\Sigma}_E u\bigr)^2}<\infty,
+\]
+and then add the short bound (using the eigenbasis of $\boldsymbol{\Sigma}_E$) showing
+\(
+\mathbb{E}\|\tilde{\mathbf{e}}^{(1)}\|^4 \le \kappa_4\,d\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2).
+\)
+Then state explicitly that $C_{\mathrm{cov}}$ depends on $\kappa_4$ and $d$ (not just on the existence of a finite fourth moment).
+\end{itemize}
 
 
 % ---------------------------------------------------------------------------
@@ -328,7 +470,7 @@ State the exact fourth-moment formula for the Gaussian case, or add a bounded-ku
 
 \noindent\textbf{Status:} Needs verification (may be correct depending on how $C_{\mathrm{cov}}$ is defined).
 
-\noindent\textbf{Location:} Lemma~3, Gaussian case specialization.
+\noindent\textbf{Location:} Lemma~3 (Mean-square Frobenius deviation of the sample covariance), especially the optional Gaussian remark at lines 879--880 of \texttt{uq\_paper\_draft.tex}.
 
 \noindent\textbf{Issue:}
 The constant $C_{\mathrm{cov}} = 8(d+2)$ is stated for the Gaussian case. Standard Wishart distribution results give:
@@ -337,7 +479,26 @@ The constant $C_{\mathrm{cov}} = 8(d+2)$ is stated for the Gaussian case. Standa
 = \frac{1}{N-1}\bigl[\mathrm{tr}(\bm{\Sigma})^2 + \mathrm{tr}(\bm{\Sigma}^2)\bigr]
 \quad\text{(for Gaussian data)}.
 \]
-The mapping from this formula to $C_{\mathrm{cov}} = 8(d+2)$ depends on how the constant is defined relative to the bound structure. The factor should be verified against standard references (e.g., Anderson 2003, Theorem 3.4.4) to ensure consistency.
+Since Lemma~3 is stated in the form
+\(
+\mathbb{E}\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F^2 \le \frac{C_{\mathrm{cov}}}{N-1}\mathrm{tr}(\boldsymbol{\Sigma}_E^2),
+\)
+the exact Gaussian identity implies an explicit admissible choice
+\[
+C_{\mathrm{cov}} = 1 + \frac{\mathrm{tr}(\boldsymbol{\Sigma}_E)^2}{\mathrm{tr}(\boldsymbol{\Sigma}_E^2)}
+\le d+1,
+\]
+using $\mathrm{tr}(\boldsymbol{\Sigma}_E)^2\le d\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$. Therefore $8(d+2)$ is a very conservative constant; it may still be correct as a bound, but the remark should either (i) present the exact identity, or (ii) explain how $8(d+2)$ arises from the particular inequality chain used in the proof.
+
+\noindent\textbf{Recommended fix:}
+In \texttt{uq\_paper\_draft.tex} lines 879--880, replace the current sentence with either an exact statement or an explicit bound consistent with Lemma~3:
+\begin{itemize}[nosep]
+\item \emph{Exact identity (preferred):} ``If $\tilde{\mathbf{e}}^{(1)}$ is Gaussian, then $(N-1)\mathbf{C}_E$ is Wishart and
+\(
+\mathbb{E}\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F^2=\frac{\mathrm{tr}(\boldsymbol{\Sigma}_E)^2+\mathrm{tr}(\boldsymbol{\Sigma}_E^2)}{N-1}.
+\)''
+\item \emph{Explicit constant in Lemma~3 form:} append ``In particular, $\mathbb{E}\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F^2 \le \frac{d+1}{N-1}\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$.'' If you keep $8(d+2)$, add a brief derivation or state explicitly that it is a loose but convenient choice coming from the proof inequalities.
+\end{itemize}
 
 
 

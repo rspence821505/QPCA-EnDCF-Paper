@@ -194,16 +194,16 @@ Windowed assimilation also amplifies sampling effects in stochastic ensemble met
 \qquad
 \bar{\boldsymbol{\epsilon}}_w:=\frac{1}{N}\sum_{j=1}^N \boldsymbol{\epsilon}_w^{(j)}.
 \]
-Then, with $d=mL$, one has (under finite fourth moments, and with explicit constants in the Gaussian case)
+Then, with $d=mL$, in the Gaussian case one has
 \[
 \left(\mathbb{E}\bigl[\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_F^2\bigr]\right)^{1/2}
 =
-\mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\sqrt{\frac{d}{N-1}}\right)
+\sigma_{\mathrm{obs}}^2\sqrt{\frac{d(d+1)}{N-1}}
 =
-\mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\sqrt{\frac{d}{N}}\right),
+\mathcal{O}\!\left(\sigma_{\mathrm{obs}}^2\,\frac{d}{\sqrt{N}}\right),
 \]
 and hence, by Jensen's inequality,
-$\mathbb{E}\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_F=\mathcal{O}(\sigma_{\mathrm{obs}}^2\sqrt{d/N})$. Relative to the sequential case ($d=m$), the prefactor grows like $\sqrt{L}$, so for moderate ensemble sizes this $\sqrt{L}$ amplification can offset gains from temporal coupling. Quantifying and mitigating this tradeoff between information gain and sampling noise motivates the comparative numerical analysis that follows.
+$\mathbb{E}\|\widehat{\mathbf{R}}^{(L)}-\mathbf{R}^{(L)}\|_F=\mathcal{O}(\sigma_{\mathrm{obs}}^2\,d/\sqrt{N})$. Relative to the sequential case ($d=m$), the prefactor grows like $L$, so for moderate ensemble sizes this $L$ amplification can offset gains from temporal coupling. Quantifying and mitigating this tradeoff between information gain and sampling noise motivates the comparative numerical analysis that follows.
 
 
 
@@ -871,13 +871,27 @@ Applying the inequality $(a+b)^2\le 2a^2+2b^2$, using independence of the sample
 	\le
 	2\|\tilde{\mathbf{e}}^{(1)}(\tilde{\mathbf{e}}^{(1)})^\top\|_F^2+2\|\boldsymbol{\Sigma}_E\|_F^2
 	=
-	2\|\tilde{\mathbf{e}}^{(1)}\|^4+2\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2),
-	\)
-	and the standardized fourth-moment control implicit in the constant $C_{\mathrm{cov}}$ ensures that $\mathbb{E}\|\tilde{\mathbf{e}}^{(1)}\|^4$ is bounded by a dimension-dependent multiple of $\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$. Absorbing this ratio into $C_{\mathrm{cov}}$ yields the stated bound.
+		2\|\tilde{\mathbf{e}}^{(1)}\|^4+2\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2),
+		\)
+		and the standardized fourth-moment control implicit in the constant $C_{\mathrm{cov}}$ ensures that $\mathbb{E}\|\tilde{\mathbf{e}}^{(1)}\|^4$ is bounded by a dimension-dependent multiple of $\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$. In particular, if $\tilde{\mathbf{e}}^{(1)}$ is Gaussian then
+		\[
+		\mathbb{E}\|\tilde{\mathbf{e}}^{(1)}\|^4
+		=
+		\bigl(\mathrm{tr}(\boldsymbol{\Sigma}_E)\bigr)^2 + 2\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2)
+		\le
+		(d+2)\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2),
+		\]
+		where the final inequality uses $\bigl(\mathrm{tr}(\boldsymbol{\Sigma}_E)\bigr)^2\le d\,\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$. Absorbing this ratio into $C_{\mathrm{cov}}$ yields the stated bound.
 \end{proof}
 
 \par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Optional Gaussian case).}
-If, in addition, $\tilde{\mathbf{e}}^{(1)}$ is Gaussian, one may take an explicit constant $C_{\mathrm{cov}}=8(d+2)$ via Isserlis' theorem, recovering the familiar Wishart-rate bound.
+If, in addition, $\tilde{\mathbf{e}}^{(1)}$ is Gaussian, then $(N-1)\mathbf{C}_E$ is Wishart and
+\[
+\mathbb{E}\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F^2
+=
+\frac{\bigl(\mathrm{tr}(\boldsymbol{\Sigma}_E)\bigr)^2+\mathrm{tr}(\boldsymbol{\Sigma}_E^2)}{N-1}.
+\]
+In particular, $\mathbb{E}\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F^2\le \frac{d+1}{N-1}\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$.
 \par\smallskip
 
 \begin{lemma}[Fourth-moment bound for the sample mean]
@@ -1732,7 +1746,7 @@ quantifies sampling-induced fluctuations. Bias reflects deterministic algorithmi
 
 In the sequential setting where truth and observations evolve over many assimilation cycles, the decomposition \eqref{eq:mse_decomposition_empirical} applies at each assimilation time (here, at each window endpoint). We therefore estimate bias and variance as functions of window index and then time-average over windows to obtain representative values for a method.
 
-For QPCA-EnDCF, theory shows variance scaling as $\mathcal{O}(\kappa/N)$, where $\kappa$ is the truncation level. The bias contribution is governed by $\|(\mathbf{I}-\mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2$, the component of the mean whitened innovation orthogonal to the retained eigenspace (see Theorem~\ref{thm:bias_variance} and Remark~\ref{rem:truncation_bias_tail}). Importantly, this cannot be bounded simply by the discarded spectral tail $\sum_{i>\kappa}\lambda_i$ without additional structure linking $\boldsymbol{\mu}_E$ to $\boldsymbol{\Sigma}_E$ (e.g., a source condition). However, when the mean mismatch is well-aligned with the leading covariance directions—as occurs empirically when the dominant eigenmode captures systematic forecast--observation discrepancy—aggressive truncation ($\kappa=1$) achieves $\mathcal{O}(1/N)$ variance with minimal bias penalty. By contrast, standard ensemble updates exhibit variance scaling as $\mathcal{O}(r/N)$, where $r$ approaches the effective rank of the update.
+For QPCA-EnDCF, Theorem~\ref{thm:bias_variance} yields $\mathrm{Variance}=\mathcal{O}(1/N)$ with $\kappa$-dependent prefactors arising through projector stability (via $\kappa/\delta_\kappa^2$) and through the observation-space term involving $\mathrm{tr}(\boldsymbol{\Sigma}_E)$. The bias contribution is governed by $\|(\mathbf{I}-\mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2$, the component of the mean whitened innovation orthogonal to the retained eigenspace (see Theorem~\ref{thm:bias_variance} and Remark~\ref{rem:truncation_bias_tail}). Importantly, this cannot be bounded simply by the discarded spectral tail $\sum_{i>\kappa}\lambda_i$ without additional structure linking $\boldsymbol{\mu}_E$ to $\boldsymbol{\Sigma}_E$ (e.g., a source condition). However, when the mean mismatch is well-aligned with the leading covariance directions—as occurs empirically when the dominant eigenmode captures systematic forecast--observation discrepancy—aggressive truncation ($\kappa=1$) can reduce sampling variance without a commensurate bias penalty. By contrast, standard ensemble updates exhibit variance scaling as $\mathcal{O}(r/N)$, where $r$ approaches the effective rank of the update.
 
 We estimate bias and variance empirically using $N_{\mathrm{trial}}=10$ independent ensemble realizations per algorithm, differing only in initial ensemble draws. (Note: $N_{\mathrm{trial}}$ denotes the number of Monte Carlo trials, distinct from the ensemble size $N=10$ and the total rank samples $M_{\mathrm{rank}}$ used in Section~\ref{subsec:rank_histograms}.) Let $\bar{\mathbf{x}}_{t,w}^a$ denote the analysis ensemble mean at the end of window $w$ in trial $t$, and let $\mathbf{x}_{w}^{\mathrm{true}}$ denote the corresponding true state (both evaluated at window endpoints). For each window $w$, define the across-trial mean
 \[
@@ -1786,7 +1800,7 @@ Figure~\ref{fig:mse_decomposition_bars} summarizes these results via stacked bar
 
 QPCA-EnDCF achieves MSE $=12.96$ (Bias$^2=10.67$, Variance$=2.29$), while Sequential EnKF and 4D-EnKF exhibit MSE $\approx21$--$22$ with variance contributions near $11.6$. Normalized bars emphasize the qualitative shift: QPCA-EnDCF error is overwhelmingly systematic, whereas stochastic methods are variance-limited.
 
-These findings validate the theoretical predictions and explain QPCA-EnDCF’s superior calibration. Variance reduction arises from two effects: (i) the deterministic update avoids observation-perturbation noise, whose contribution scales as $C_{\mathrm{pert}}L\,\mathrm{tr}(\mathbf{R})/N$ and is substantial under baseline parameters; and (ii) spectral truncation ($\kappa=1$) concentrates updates in the dominant eigenmode, avoiding estimation of noise-dominated directions. With variance scaling as $\mathcal{O}(\kappa/N)$ rather than $\mathcal{O}(r/N)$, the observed roughly fivefold reduction follows directly.
+These findings validate the theoretical predictions and explain QPCA-EnDCF’s superior calibration. Variance reduction arises from two effects: (i) the deterministic update avoids observation-perturbation noise, whose contribution scales like $\|\mathbf{K}^{(w)}\|_2^2\,L\,\mathrm{tr}(\mathbf{R})/N$ (cf.\ \eqref{eq:stoch_var_bound_new}) and is substantial under baseline parameters; and (ii) spectral truncation ($\kappa=1$) concentrates updates in the dominant eigenmode, avoiding estimation of noise-dominated directions. With variance scaling as $\mathcal{O}(1/N)$ (with $\kappa$-dependent prefactors) rather than $\mathcal{O}(r/N)$, the observed roughly fivefold reduction follows directly.
 
 Crucially, this variance reduction occurs without a bias penalty. Unlike classical penalty-based regularization, which trades variance for increased bias, QPCA-EnDCF maintains bias comparable to or lower than that of stochastic methods while sharply reducing variance. This favorable regime is enabled by rapid spectral decay, whereby leading modes encode signal and higher modes primarily represent sampling noise.
 

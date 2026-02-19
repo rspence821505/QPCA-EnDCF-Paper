@@ -1220,13 +1220,19 @@ Moreover, the bias satisfies
 C_{\mathrm{m}}\,
 \|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2
 \nonumber\\
-&\hspace{3.2em}
-+\;
-C_{\mathrm{p}}\,
-\frac{\kappa}{\delta_\kappa^2}\,
-\mathbb{E}\!\left[\|\mathbf{C}_E^{\,s}-\boldsymbol{\Sigma}_E^{\,s}\|_F^2\right],
-\label{eq:bias_bound_fixed_main}
-\end{align}
+	&\hspace{3.2em}
+	+\;
+	\frac{\|\mathbf{R}^{(L)}\|_2}{N}\,
+	\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
+	\mathrm{tr}\!\bigl(\boldsymbol{\Sigma}_E^{\,s}\bigr)
+	\nonumber\\
+	&\hspace{3.2em}
+	+\;
+	C_{\mathrm{p}}\,
+	\frac{\kappa}{\delta_\kappa^2}\,
+	\mathbb{E}\!\left[\|\mathbf{C}_E^{\,s}-\boldsymbol{\Sigma}_E^{\,s}\|_F^2\right],
+	\label{eq:bias_bound_fixed_main}
+	\end{align}
 for constants $C_{\mathrm{m}},C_{\mathrm{p}}>0$ independent of $N$.
 
 The variance satisfies
@@ -1246,7 +1252,7 @@ The variance satisfies
 \|(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\|^2\right],
 \label{eq:var_bound_fixed_main_raw}
 \end{align}
-In particular, by Cauchy--Schwarz and Lemma~\ref{lem:covariance_concentration}(iii) applied with $(\boldsymbol{\Sigma}_E,\mathbf{C}_E)$ replaced by $(\boldsymbol{\Sigma}_E^{\,s},\mathbf{C}_E^{\,s})$,
+Moreover, the projector factor admits the marginal bound (by Cauchy--Schwarz and Lemma~\ref{lem:covariance_concentration}(iii) applied with $(\boldsymbol{\Sigma}_E,\mathbf{C}_E)$ replaced by $(\boldsymbol{\Sigma}_E^{\,s},\mathbf{C}_E^{\,s})$),
 \begin{align}
 \mathbb{E}\!\left[\|(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\|^2\right]
 &\le
@@ -1259,6 +1265,7 @@ In particular, by Cauchy--Schwarz and Lemma~\ref{lem:covariance_concentration}(i
 \Bigl(\mathbb{E}\|\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}\|^4\Bigr)^{1/2}.
 \label{eq:var_projector_term_bound_main}
 \end{align}
+We record \eqref{eq:var_projector_term_bound_main} separately because it does not, by itself, control the gain-weighted joint term in \eqref{eq:var_bound_fixed_main_raw} without additional assumptions on $\mathbf{K}^{\mathrm{DC}}$ beyond second-moment finiteness.
 \end{theorem}
 
 \begin{proof}
@@ -1284,7 +1291,7 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 \end{equation}
 
 \smallskip
-\noindent Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main}, take expectations, and use $\mathbb{E}[\bar{\mathbf{e}}^{\,s}]=\boldsymbol{\mu}_E^{\,s}$ to obtain
+\noindent Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main} and decompose $\bar{\mathbf{e}}^{\,s}=\boldsymbol{\mu}_E^{\,s}+(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})$ to obtain
 \[
 \mathbb{E}[\bar{\mathbf{x}}^{a,s}]
 =
@@ -1292,7 +1299,9 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 -
 \mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]
 -
-\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right].
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right]
+-
+\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right].
 \]
 The truncation remainder relative to the full population correction is governed by $(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}$. By Jensen's inequality and submultiplicativity of the spectral norm,
 \[
@@ -1302,20 +1311,35 @@ The truncation remainder relative to the full population correction is governed 
 \]
 which yields the leading truncation term in \eqref{eq:bias_bound_fixed_main} after a factor-$2$ slack to accommodate the remaining contributions.
 
-The projector-estimation term is bounded similarly:
+The sample-mean fluctuation term is controlled without any independence assumption. Using $\|\hat{\mathbf{P}}_\kappa^{\,s}\|_2\le 1$, Jensen's inequality, submultiplicativity, and Cauchy--Schwarz,
 \[
-\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
+\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right]\right\|^2
 \le
-\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,
-\mathbb{E}\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F^2\,\|\boldsymbol{\mu}_E^{\,s}\|^2.
+\|\mathbf{R}^{(L)}\|_2
+\left(\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2\,\|\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}\|\right]\right)^2
+\le
+\|\mathbf{R}^{(L)}\|_2\,\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,
+\mathbb{E}\|\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}\|^2.
 \]
-Invoking Lemma~\ref{lem:covariance_concentration}(iii) gives
-\(
-\mathbb{E}\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F^2
+Since $\mathbb{E}\|\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}\|^2=N^{-1}\mathrm{tr}(\boldsymbol{\Sigma}_E^{\,s})$, this yields the $\mathcal{O}(N^{-1})$ contribution in \eqref{eq:bias_bound_fixed_main}.
+
+	The projector-estimation term is bounded similarly. Indeed, by Jensen's inequality, submultiplicativity, $\|(\mathbf{R}^{(L)})^{1/2}\|_2^2=\|\mathbf{R}^{(L)}\|_2$, $\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_2\le \|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F$, and Cauchy--Schwarz (no independence assumption),
+	\begin{align*}
+	\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
+	&\le
+	\|\mathbf{R}^{(L)}\|_2\,\|\boldsymbol{\mu}_E^{\,s}\|^2
+	\left(\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2\,\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F\right]\right)^2\\
+	&\le
+	\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,
+	\mathbb{E}\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F^2\,\|\boldsymbol{\mu}_E^{\,s}\|^2.
+	\end{align*}
+	Invoking Lemma~\ref{lem:covariance_concentration}(iii) gives
+	\(
+	\mathbb{E}\|\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s}\|_F^2
 \lesssim
 \frac{\kappa}{\delta_\kappa^2}\mathbb{E}\|\mathbf{C}_E^{\,s}-\boldsymbol{\Sigma}_E^{\,s}\|_F^2,
 \)
-and absorbing $\|\boldsymbol{\mu}_E^{\,s}\|^2$ into the constant yields the third term in \eqref{eq:bias_bound_fixed_main}.
+and absorbing $\|\boldsymbol{\mu}_E^{\,s}\|^2$ into the constant yields the projector-estimation term in \eqref{eq:bias_bound_fixed_main}.
 
 Finally, the map-approximation term $C_{\mathrm{m}}\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2$ follows from stability of the mean update with respect to $Q_s\to Q$ in $L^2(P_{\mathcal{X}})$ (cf.\ the continuity framework in~\cite{ButlerWildeyZhang2020}); we record it separately because it is orthogonal to the sampling and truncation mechanisms.
 
@@ -1394,7 +1418,7 @@ Assume the hypotheses of Theorem~\ref{thm:bias_variance}. Consider a stochastic 
 \qquad
 \boldsymbol{\epsilon}_{w}^{(j)}\stackrel{\mathrm{i.i.d.}}{\sim}\mathcal{N}(\mathbf{0},\mathbf{R}^{(L)}),
 \]
-where $\mathbf{K}^{(w)}$ is deterministic, or more generally independent of $\{\boldsymbol{\epsilon}_{w}^{(j)}\}_{j=1}^N$.
+where $\mathbf{K}^{(w)}$ is deterministic.
 Let $\bar{\mathbf{x}}^{a}_{\mathrm{stoch}}$ denote the stochastic analysis mean and let $\bar{\mathbf{x}}^{a}_{\mathrm{det}}$
 denote the corresponding mean obtained by setting $\boldsymbol{\epsilon}_{w}^{(j)}\equiv 0$. Then
 \[

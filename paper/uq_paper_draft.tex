@@ -65,7 +65,7 @@
 
 \begin{abstract}
 Ensemble Kalman filtering in chaotic, partially observed systems is routinely performed with ensembles far smaller than the state dimension, where sampling noise and rank deficiency degrade both accuracy and probabilistic calibration. We develop a unified theoretical framework connecting spectral regularization in observation space to calibrated uncertainty quantification, and we analyze a deterministic alternative to stochastic observation perturbations: the Quantity-of-Interest Principal Component Analysis Ensemble Data Consistent Filter (QPCA-EnDCF). The method whitens forecast--observation residuals, identifies dominant mismatch modes via an empirical eigen-decomposition, and applies a rank-$\kappa$ truncated correction that leaves orthogonal noise-dominated directions unchanged, avoiding perturbation-induced variance injection. Our analysis separates population and finite-ensemble objects and combines covariance concentration with eigenspace perturbation bounds to obtain a bias--variance decomposition for the analysis mean.
-The results show that stochastic EnKF variants incur an irreducible variance term from perturbed observations that scales inversely with ensemble size, whereas QPCA-EnDCF replaces this with projector-estimation error controlled by spectral gaps and scales with retained rank rather than observation dimension. Numerical experiments on the Lorenz--96 system under severe undersampling (state dimension exceeding the per-observation-time observation dimension and the per-observation-time observation dimension exceeding ensemble size, with multi-step assimilation windows) confirm the theory: QPCA-EnDCF achieves near-ideal spread--skill ratios and strong temporal tracking between spread and error, while sequential and 4D stochastic EnKF remain strongly underdispersed despite inflation. The method simultaneously reduces RMSE, mitigates tuning requirements, and remains robust under non-ideal observation error assumptions, suggesting deterministic spectral regularization as a practical route to reliable uncertainty quantification in resource-constrained data assimilation.
+The results show that stochastic EnKF variants incur an irreducible $\mathcal{O}(1/N)$ variance term from perturbed observations, whereas QPCA-EnDCF replaces this with variability from estimating a rank-$\kappa$ residual projector. This projector-estimation contribution is also $\mathcal{O}(1/N)$ but carries $\kappa$- and cutoff-gap-dependent prefactors through projector stability, and in effective-dimension regimes it yields rank-driven sampling behavior rather than observation-dimension-driven behavior. Numerical experiments on the Lorenz--96 system under severe undersampling (state dimension exceeding the per-observation-time observation dimension and the per-observation-time observation dimension exceeding ensemble size, with multi-step assimilation windows) confirm the theory: QPCA-EnDCF achieves near-ideal spread--skill ratios and strong temporal tracking between spread and error, while sequential and 4D stochastic EnKF remain strongly underdispersed despite inflation. The method simultaneously reduces RMSE, mitigates tuning requirements, and remains robust under non-ideal observation error assumptions, suggesting deterministic spectral regularization as a practical route to reliable uncertainty quantification in resource-constrained data assimilation.
 \end{abstract}
 
 \noindent\textbf{Keywords}: data assimilation, uncertainty quantification, probabilistic calibration, dynamical systems
@@ -713,7 +713,7 @@ Assumption~\ref{ass:regularity_bias_variance}(i) ensures that all first and seco
 
 \par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Scope of the i.i.d.\ assumption).}
 \label{rem:iid_scope}
-The i.i.d.\ sampling assumption in (iii) is a mathematical idealization adopted for deriving the convergence bounds and concentration estimates in Sections~\ref{subsec:fundamental_concentration}--\ref{subsec:main_bv}. In practical cycling experiments (Sections~\ref{sec:calibration}--\ref{sec:operational}), the analysis ensemble from window $w$ becomes the forecast ensemble for window $w+1$, inducing temporal dependence that violates strict i.i.d.\ conditions. Nonetheless, the theoretical results provide qualitative guidance: under ergodic dynamics and sufficient mixing, consecutive windows become approximately independent in distribution, and the main conclusions---that sampling variance scales as $\mathcal{O}(1/N)$ and is controlled by $\kappa$ rather than $d$---remain empirically valid. The experiments demonstrate that the predicted performance advantages persist under cycling, even though the formal assumptions are satisfied only asymptotically or approximately.
+The i.i.d.\ sampling assumption in (iii) is a mathematical idealization adopted for deriving the convergence bounds and concentration estimates in Sections~\ref{subsec:fundamental_concentration}--\ref{subsec:main_bv}. In practical cycling experiments (Sections~\ref{sec:calibration}--\ref{sec:operational}), the analysis ensemble from window $w$ becomes the forecast ensemble for window $w+1$, inducing temporal dependence that violates strict i.i.d.\ conditions. Nonetheless, the theoretical results provide qualitative guidance: under ergodic dynamics and sufficient mixing, consecutive windows become approximately independent in distribution, and the main conclusions---that sampling variance scales as $\mathcal{O}(1/N)$ and that the projector-estimation contribution is governed by $\kappa$ and the cutoff gap $\delta_\kappa$ through stability bounds---remain empirically valid. In regimes where residual energy concentrates in low-rank subspaces, the dominant sampling-sensitive contribution exhibits rank-driven behavior. The experiments demonstrate that the predicted performance advantages persist under cycling, even though the formal assumptions are satisfied only asymptotically or approximately.
 \par\smallskip
 
 
@@ -757,28 +757,28 @@ Define the deterministic bias vector
 \(
 \mathbf{b}:=\mathbb{E}[\bar{\mathbf{x}}^{a}]-\mathbf{x}^{\mathrm{true}}
 \)
-and the zero-mean fluctuation
-\(
-\mathbf{v}:=\bar{\mathbf{x}}^{a}-\mathbb{E}[\bar{\mathbf{x}}^{a}],
-\)
-so that $\mathbb{E}[\mathbf{v}]=\mathbf{0}$. Writing
-\(
-\bar{\mathbf{x}}^{a}-\mathbf{x}^{\mathrm{true}}=\mathbf{b}+\mathbf{v},
-\)
-we compute
-\[
-\mathbb{E}\|\mathbf{b}+\mathbf{v}\|^2
-=
-\|\mathbf{b}\|^2
-+
-2\langle \mathbf{b},\mathbb{E}\mathbf{v}\rangle
-+
-\mathbb{E}\|\mathbf{v}\|^2
-=
-\|\mathbf{b}\|^2+\mathbb{E}\|\mathbf{v}\|^2,
-\]
-which yields the stated identity.
-\end{proof}
+	and the zero-mean fluctuation
+	\(
+	\boldsymbol{\xi}:=\bar{\mathbf{x}}^{a}-\mathbb{E}[\bar{\mathbf{x}}^{a}],
+	\)
+	so that $\mathbb{E}[\boldsymbol{\xi}]=\mathbf{0}$. Writing
+	\(
+	\bar{\mathbf{x}}^{a}-\mathbf{x}^{\mathrm{true}}=\mathbf{b}+\boldsymbol{\xi},
+	\)
+	we compute
+	\[
+	\mathbb{E}\|\mathbf{b}+\boldsymbol{\xi}\|^2
+	=
+	\|\mathbf{b}\|^2
+	+
+	2\langle \mathbf{b},\mathbb{E}\boldsymbol{\xi}\rangle
+	+
+	\mathbb{E}\|\boldsymbol{\xi}\|^2
+	=
+	\|\mathbf{b}\|^2+\mathbb{E}\|\boldsymbol{\xi}\|^2,
+	\]
+	which yields the stated identity.
+	\end{proof}
 
 \begin{lemma}[Unbiasedness of the sample covariance]
 \label{lem:unbiasedness_sample_cov}
@@ -959,28 +959,28 @@ Let $\boldsymbol{\Sigma}_E$, $\mathbf{C}_E$, and their eigendecompositions be as
 \|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2 .
 \]
 
-\item Fix $i\in\{1,\ldots,d\}$ and assume that $\lambda_i$ is isolated, i.e.,
-\[
-\mathrm{gap}_i
-:=
+	\item Fix $i\in\{1,\ldots,d\}$ and assume that $\lambda_i$ is isolated, i.e.,
+	\[
+	\mathrm{gap}_i
+	:=
 \min\{\lambda_{i-1}-\lambda_i,\ \lambda_i-\lambda_{i+1}\}
 \ge
 \delta_i>0,
 \qquad
 (\lambda_0:=+\infty,\ \lambda_{d+1}:=0).
 \]
-Choose the sign of $\hat{\mathbf{v}}_i$ so that $\langle \hat{\mathbf{v}}_i,\mathbf{v}_i\rangle\ge 0$. Then
-\[
-\sin\angle(\hat{\mathbf{v}}_i,\mathbf{v}_i)
-=
-\|(\mathbf{I}-\mathbf{v}_i\mathbf{v}_i^\top)\hat{\mathbf{v}}_i\|_2
-\le
-\frac{2\,\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2}{\delta_i},
-\qquad
-\|\hat{\mathbf{v}}_i-\mathbf{v}_i\|_2
-\le
-\frac{4\,\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2}{\delta_i}.
-\]
+	Choose the sign of $\hat{\mathbf{v}}_i$ so that $\langle \hat{\mathbf{v}}_i,\mathbf{v}_i\rangle\ge 0$. Then
+	\[
+	\sin\angle(\hat{\mathbf{v}}_i,\mathbf{v}_i)
+	=
+	\|(\mathbf{I}-\mathbf{v}_i\mathbf{v}_i^\top)\hat{\mathbf{v}}_i\|_2
+	\le
+	\frac{\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2}{\delta_i},
+	\qquad
+	\|\hat{\mathbf{v}}_i-\mathbf{v}_i\|_2
+	\le
+	\frac{\sqrt{2}\,\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2}{\delta_i}.
+	\]
 
 \item Fix $\kappa\in\{1,\ldots,d\}$ and assume a cutoff gap
 \[
@@ -995,16 +995,16 @@ and
 \(
 \hat{\mathbf{P}}_\kappa:=\sum_{i=1}^{\kappa}\hat{\mathbf{v}}_i\hat{\mathbf{v}}_i^\top.
 \)
-Then
-\[
-\|\hat{\mathbf{P}}_\kappa-\mathbf{P}_\kappa\|_F
-\le
-\frac{2\sqrt{2\kappa}}{\delta_\kappa}\,
-\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2
-\le
-\frac{2\sqrt{2\kappa}}{\delta_\kappa}\,
-\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F.
-\]
+	Then
+	\[
+	\|\hat{\mathbf{P}}_\kappa-\mathbf{P}_\kappa\|_F
+	\le
+	\frac{\sqrt{2\kappa}}{\delta_\kappa}\,
+	\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2
+	\le
+	\frac{\sqrt{2\kappa}}{\delta_\kappa}\,
+	\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_F.
+	\]
 
 
 \item With $\boldsymbol{\Sigma}_E^\kappa:=\mathbf{P}_\kappa\boldsymbol{\Sigma}_E\mathbf{P}_\kappa$
@@ -1041,17 +1041,17 @@ proving (i).
 =
 \|(\mathbf{I}-\mathbf{v}_i\mathbf{v}_i^\top)\hat{\mathbf{v}}_i\|_2
 \le
-\frac{2\,\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2}{\delta_i}.
+\frac{\|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2}{\delta_i}.
 \]
 Choosing the sign of $\hat{\mathbf{v}}_i$ so that $\langle \hat{\mathbf{v}}_i,\mathbf{v}_i\rangle\ge 0$ and using
-$\|\hat{\mathbf{v}}_i-\mathbf{v}_i\|_2\le 2\sin\angle(\hat{\mathbf{v}}_i,\mathbf{v}_i)$ yields the Euclidean bound in (ii).
+$\|\hat{\mathbf{v}}_i-\mathbf{v}_i\|_2=2\sin(\angle(\hat{\mathbf{v}}_i,\mathbf{v}_i)/2)\le \sqrt{2}\,\sin\angle(\hat{\mathbf{v}}_i,\mathbf{v}_i)$ yields the Euclidean bound in (ii).
 
 \smallskip
 \noindent Under the cutoff-gap condition in (iii), Davis--Kahan in projector form yields
 \[
 \|\hat{\mathbf{P}}_\kappa-\mathbf{P}_\kappa\|_F
 \le
-\frac{2\sqrt{2\kappa}}{\delta_\kappa}\,
+\frac{\sqrt{2\kappa}}{\delta_\kappa}\,
 \|\mathbf{C}_E-\boldsymbol{\Sigma}_E\|_2,
 \]
 and the final inequality follows from $\|\cdot\|_2\le \|\cdot\|_F$.
@@ -1221,32 +1221,39 @@ where
 \mathrm{Bias}^2(\kappa,s):=\bigl\|\mathbb{E}[\bar{\mathbf{x}}^{a,s}]-\mathbf{x}^{\mathrm{true}}\bigr\|^2,
 \qquad
 \mathrm{Var}(N,\kappa,s):=\mathbb{E}\!\left[\|\bar{\mathbf{x}}^{a,s}-\mathbb{E}[\bar{\mathbf{x}}^{a,s}]\|^2\right].
-\]
+	\]
 
-Moreover, the bias satisfies
-\begin{align}
-\mathrm{Bias}^2(\kappa,s)
-&\le
-2\,\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
-\|\mathbf{R}^{(L)}\|_2\,
-\bigl\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\bigr\|^2
-\;+\;
-C_{\mathrm{m}}\,
-\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2
-\nonumber\\
-	&\hspace{3.2em}
-	+\;
-	\frac{\|\mathbf{R}^{(L)}\|_2}{N}\,
-	\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
-	\mathrm{tr}\!\bigl(\boldsymbol{\Sigma}_E^{\,s}\bigr)
+	Moreover, the bias satisfies
+	\[
+	\mathrm{Bias}_{\mathrm{base}}^{2}(s)
+	:=
+	\bigl\|\boldsymbol{\mu}^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}\bigr\|^2,
+	\]
+	\begin{align}
+	\mathrm{Bias}^2(\kappa,s)
+	&\le
+	2\,\mathrm{Bias}_{\mathrm{base}}^{2}(s)
+	+
+	4\,\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
+	\|\mathbf{R}^{(L)}\|_2\,
+	\bigl\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\bigr\|^2
+	\;+\;
+	2\,C_{\mathrm{m}}\,
+	\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}^2
 	\nonumber\\
-	&\hspace{3.2em}
-	+\;
-	C_{\mathrm{p}}\,
-	\frac{\kappa}{\delta_\kappa^2}\,
-	\mathbb{E}\!\left[\|\mathbf{C}_E^{\,s}-\boldsymbol{\Sigma}_E^{\,s}\|_F^2\right],
-	\label{eq:bias_bound_fixed_main}
-	\end{align}
+		&\hspace{3.2em}
+		+\;
+		\frac{2\|\mathbf{R}^{(L)}\|_2}{N}\,
+		\mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
+		\mathrm{tr}\!\bigl(\boldsymbol{\Sigma}_E^{\,s}\bigr)
+		\nonumber\\
+		&\hspace{3.2em}
+		+\;
+		2\,C_{\mathrm{p}}\,
+		\frac{\kappa}{\delta_\kappa^2}\,
+		\mathbb{E}\!\left[\|\mathbf{C}_E^{\,s}-\boldsymbol{\Sigma}_E^{\,s}\|_F^2\right],
+		\label{eq:bias_bound_fixed_main}
+		\end{align}
 for constants $C_{\mathrm{m}},C_{\mathrm{p}}>0$ independent of $N$.
 
 The variance satisfies
@@ -1305,25 +1312,52 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 \end{equation}
 
 \smallskip
-\noindent Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main} and decompose $\bar{\mathbf{e}}^{\,s}=\boldsymbol{\mu}_E^{\,s}+(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})$ to obtain
-\[
-\mathbb{E}[\bar{\mathbf{x}}^{a,s}]
-=
-\boldsymbol{\mu}^f
--
-\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]
--
-\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right]
--
-\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right].
-\]
-The truncation remainder relative to the full population correction is governed by $(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}$. By Jensen's inequality and submultiplicativity of the spectral norm,
-\[
-\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
-\le
-\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2,
-\]
-which yields the leading truncation term in \eqref{eq:bias_bound_fixed_main} after a factor-$2$ slack to accommodate the remaining contributions.
+	\noindent Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main} and decompose $\bar{\mathbf{e}}^{\,s}=\boldsymbol{\mu}_E^{\,s}+(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})$ to obtain
+	\[
+	\mathbb{E}[\bar{\mathbf{x}}^{a,s}]
+	=
+	\boldsymbol{\mu}^f
+	-
+	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]
+	-
+	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right]
+	-
+	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right].
+	\]
+	Add and subtract the untruncated population correction $\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}$ to isolate the residual (``base'') analysis bias:
+	\[
+	\mathbf{b}_{\mathrm{base}}^{\,s}
+	:=
+	\boldsymbol{\mu}^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}.
+	\]
+	Using $\mathbb{E}[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}]=\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}$, we obtain
+	\begin{align*}
+	\mathbb{E}[\bar{\mathbf{x}}^{a,s}]-\mathbf{x}^{\mathrm{true}}
+	&=
+	\mathbf{b}_{\mathrm{base}}^{\,s}
+	+
+	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\\
+	&\qquad
+	-
+	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right]
+	-
+	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})\right].
+	\end{align*}
+	Consequently,
+	\[
+	\mathrm{Bias}^2(\kappa,s)
+	\le
+	2\|\mathbf{b}_{\mathrm{base}}^{\,s}\|^2
+	+
+	2\left\|\mathbb{E}[\bar{\mathbf{x}}^{a,s}]-\mathbf{x}^{\mathrm{true}}-\mathbf{b}_{\mathrm{base}}^{\,s}\right\|^2.
+	\]
+	The truncation remainder relative to the full population correction is governed by $(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}$. By Jensen's inequality and submultiplicativity of the spectral norm,
+	\[
+	\left\|\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\right]\right\|^2
+	\le
+	\mathbb{E}\|\mathbf{K}^{\mathrm{DC}}\|_2^2\,\|\mathbf{R}^{(L)}\|_2\,\|(\mathbf{I}-\mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2,
+	\]
+	which yields the truncation contribution in \eqref{eq:bias_bound_fixed_main}.
 
 The sample-mean fluctuation term is controlled without any independence assumption. Using $\|\hat{\mathbf{P}}_\kappa^{\,s}\|_2\le 1$, Jensen's inequality, submultiplicativity, and Cauchy--Schwarz,
 \[
@@ -1381,7 +1415,7 @@ do not hold in general; they require additional structure linking $\boldsymbol{\
 \par\smallskip
 
 \par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Interpretation).}
-Theorem~\ref{thm:bias_variance} decomposes the mean-squared error into: (i) truncation bias from restricting the population correction to a $\kappa$-dimensional subspace; (ii) approximation error from using $Q_s$ in place of $Q$; and (iii) sampling variability, including the stability factor $\kappa/\delta_\kappa^2$ associated with estimating a rank-$\kappa$ projector from $N$ samples. The pseudoinverse gain is essential in the small-ensemble regime $N-1<d$, and Assumption~\ref{ass:gain_moment} is the only probabilistic requirement needed to justify the gain-dependent mean-square bounds.
+Theorem~\ref{thm:bias_variance} decomposes the mean-squared error into: (i) a base analysis-bias term $\mathrm{Bias}_{\mathrm{base}}^{2}(s)$ reflecting residual error after the (untruncated) population mean correction is applied; (ii) additional truncation bias from restricting the correction to a $\kappa$-dimensional subspace; (iii) approximation error from using $Q_s$ in place of $Q$; and (iv) sampling variability, including the stability factor $\kappa/\delta_\kappa^2$ associated with estimating a rank-$\kappa$ projector from $N$ samples. The pseudoinverse gain is essential in the small-ensemble regime $N-1<d$, and Assumption~\ref{ass:gain_moment} is the only probabilistic requirement needed to justify the gain-dependent mean-square bounds.
 \par\smallskip
 
 \FloatBarrier
@@ -1394,7 +1428,7 @@ Theorem~\ref{thm:bias_variance} decomposes the mean-squared error into: (i) trun
 \subsection{Corollaries and Practical Implications}
 \label{subsec:corollaries_implications}
 
-Theorem~\ref{thm:bias_variance} yields two immediate and practically relevant messages. First, the variance contribution $\mathrm{Var}(N,\kappa,s)$ decays at the canonical Monte Carlo rate $N^{-1}$, with a prefactor that depends on the effective dimension $\kappa$ and the cutoff gap $\delta_\kappa$ through the stability of the empirical projector. Second, the bias separates into (i) a truncation component governed by the alignment of the mean innovation $\boldsymbol{\mu}_E^{\,s}$ with the discarded subspace and (ii) a model-approximation component controlled by $\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}$.
+Theorem~\ref{thm:bias_variance} yields two immediate and practically relevant messages. First, the variance contribution $\mathrm{Var}(N,\kappa,s)$ decays at the canonical Monte Carlo rate $N^{-1}$, with a prefactor that depends on the effective dimension $\kappa$ and the cutoff gap $\delta_\kappa$ through the stability of the empirical projector. Second, apart from the base analysis-bias term $\mathrm{Bias}_{\mathrm{base}}^{2}(s)$, the additional bias separates into (i) a truncation component governed by the alignment of the mean innovation $\boldsymbol{\mu}_E^{\,s}$ with the discarded subspace and (ii) a model-approximation component controlled by $\|Q_s-Q\|_{L^2(P_{\mathcal{X}})}$.
 
 %--------------------------------------------------------------------
 \begin{corollary}[Scaling of the projector-estimation term (Gaussian case)]
@@ -1481,7 +1515,7 @@ The final comparison for QPCA-EnDCF is a direct restatement of Theorem~\ref{thm:
 \end{proof}
 
 \par\smallskip\noindent\refstepcounter{remark}\textbf{Remark~\theremark\ (Interpreting Corollary~\ref{cor:stochastic_comparison_new}).}
-Equation~\eqref{eq:stoch_var_bound_new} isolates an irreducible $\mathcal{O}(N^{-1})$ contribution to the variance of the stochastic analysis mean arising solely from observation perturbations. QPCA-EnDCF eliminates this specific source of sampling noise, but introduces variability through estimation of the low-rank projector; the latter contribution is controlled by the cutoff gap $\delta_\kappa$ and by the covariance concentration rate.
+Equation~\eqref{eq:stoch_var_bound_new} isolates an irreducible $\mathcal{O}(N^{-1})$ contribution to the variance of the stochastic analysis mean arising solely from observation perturbations. In empirical implementations, $\mathbf{K}^{(w)}$ is typically computed from sample covariances and is therefore random; the covariance identity holds conditionally on $\mathbf{K}^{(w)}$ (or on the forecast ensemble), and the unconditional injected-variance term becomes $\frac{1}{N}\,\mathbb{E}\!\left[\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top\right]$. QPCA-EnDCF eliminates this specific source of sampling noise, but introduces variability through estimation of the low-rank projector; the latter contribution is controlled by the cutoff gap $\delta_\kappa$ and by the covariance concentration rate.
 \par\smallskip
 
 %--------------------------------------------------------------------
@@ -1516,7 +1550,7 @@ C_{\mathrm{p}}\,
 \Bigr\}.
 \end{split}
 \end{equation}
-Here $C_{\mathrm{bias},1},C_{\mathrm{bias},2},C_{\mathrm{var}},C_{\mathrm{p}}>0$ depend only on $\|\mathbf{K}^{\mathrm{DC}}\|_2$ and $\|\mathbf{R}^{(L)}\|_2$ (and the inverse-stability constant from~\cite{ButlerWildeyZhang2020}), but are independent of $N$. Under Gaussian sampling, the projector-estimation contribution in \eqref{eq:kappa_proxy_objective} scales as $\mathcal{O}(1/N)$. Note that the map-approximation term $C_{\mathrm{bias},2}\|Q_s-Q\|_{L^2}^2$ and the forecast-fluctuation term $(C_{\mathrm{var}}/N)\,\mathrm{tr}(\boldsymbol{\Sigma}_E^{\,s})$ do not depend on $\kappa$ and therefore do not affect the minimizer; they are included only for completeness. In practice, $\kappa^\ast$ is determined by balancing the truncation remainder $\mathcal{T}_\kappa^{\,s}$ against the projector-estimation term $\kappa/\delta_\kappa^2$.
+Here $C_{\mathrm{bias},1},C_{\mathrm{bias},2},C_{\mathrm{var}},C_{\mathrm{p}}>0$ depend only on $\|\mathbf{R}^{(L)}\|_2$ and on deterministic gain-stability controls (e.g., the gain-moment bound in Assumption~\ref{ass:gain_moment} and the inverse-stability constant from~\cite{ButlerWildeyZhang2020}), but are independent of $N$. Under Gaussian sampling, the projector-estimation contribution in \eqref{eq:kappa_proxy_objective} scales as $\mathcal{O}(1/N)$. Note that the map-approximation term $C_{\mathrm{bias},2}\|Q_s-Q\|_{L^2}^2$ and the forecast-fluctuation term $(C_{\mathrm{var}}/N)\,\mathrm{tr}(\boldsymbol{\Sigma}_E^{\,s})$ do not depend on $\kappa$ and therefore do not affect the minimizer; they are included only for completeness. In practice, $\kappa^\ast$ is determined by balancing the truncation remainder $\mathcal{T}_\kappa^{\,s}$ against the projector-estimation term $\kappa/\delta_\kappa^2$.
 \end{corollary}
 
 \begin{proof}
@@ -2041,11 +2075,11 @@ The preceding sections demonstrate that QPCA-EnDCF improves reconstruction accur
 \subsection{Ensemble Size Dependence}
 \label{subsec:operational_ensemble_size}
 
-Ensemble size controls the fundamental accuracy--cost tradeoff: forecast propagation costs scale approximately linearly in $N$, while statistical error increases as sampling noise corrupts empirical covariances. This tradeoff differs across methods. Stochastic EnKF variants incur sampling error in $\hat{\mathbf{P}}^f$ and additional variance from perturbed observations, whereas deterministic methods avoid the latter. The key operational question is whether removing perturbation noise yields meaningful gains in small-ensemble regimes. A useful baseline comes from random matrix theory: in the undersampled regime $N \ll n$, for i.i.d. samples from a distribution with covariance $\mathbf{P}^f$,
+Ensemble size controls the fundamental accuracy--cost tradeoff: forecast propagation costs scale approximately linearly in $N$, while statistical error increases as sampling noise corrupts empirical covariances. This tradeoff differs across methods. Stochastic EnKF variants incur sampling error in $\widehat{\mathbf{P}}^{\,f}$ and additional variance from perturbed observations, whereas deterministic methods avoid the latter. The key operational question is whether removing perturbation noise yields meaningful gains in small-ensemble regimes. A useful baseline comes from random matrix theory: in the undersampled regime $N \ll n$, for i.i.d. samples from a distribution with covariance $\mathbf{P}^f$,
 \[
-\mathbb{E}\!\left[\|\hat{\mathbf{P}}^f-\mathbf{P}^f\|_F^2\right] = \mathcal{O}\!\left(\frac{\mathrm{tr}(\mathbf{P}^f)^2 + \|\mathbf{P}^f\|_F^2}{N}\right),
+\mathbb{E}\!\left[\|\widehat{\mathbf{P}}^{\,f}-\mathbf{P}^f\|_F^2\right] = \mathcal{O}\!\left(\frac{\bigl(\mathrm{tr}(\mathbf{P}^f)\bigr)^2 + \|\mathbf{P}^f\|_F^2}{N}\right),
 \qquad
-\hat{\mathbf{P}}^f=\frac{1}{N-1}\mathbf{A}^f(\mathbf{A}^f)^{\top}.
+\widehat{\mathbf{P}}^{\,f}=\frac{1}{N-1}\mathbf{A}^f(\mathbf{A}^f)^{\top}.
 \]
 When $\mathbf{P}^f$ has entries of comparable magnitude, this scales as $\mathcal{O}(n^2/N)$; when normalized per component, it scales as $\mathcal{O}(n/N)$.
 Stochastic filters further introduce variance from observation perturbations, scaling like $\mathcal{O}(\mathrm{tr}(\mathbf{R})/N)$ per update. QPCA-EnDCF eliminates this perturbation component; the following experiments quantify the practical impact. We vary $N \in \{5,10,15,20,30,50,100\}$ while holding the baseline configuration fixed ($n=40$, $m=20$, $L=5$, $\sigma_{\mathrm{obs}}=1.5$). This spans extreme undersampling ($N=5$, rank-$4$ covariances, $N/n=0.125$) through moderate undersampling ($N=20$, $N/n=0.5$) to well-sampled conditions ($N=100$, $N/n=2.5$). Each setting uses three independent trials with 50 assimilation windows. Figure~\ref{fig:performance_degradation} summarizes reconstruction accuracy. Panel (a) reports absolute RMSE versus $N$; panel (b) reports degradation relative to the $N=100$ baseline.
@@ -2134,7 +2168,6 @@ QPCA-EnDCF shows a pronounced transition between $L=1$ and $L=3$. At $L=1$, RMSE
 
 % The variance preservation mechanism admits geometric interpretation. Ensemble data assimilation constrains uncertainty along directions aligned with observation sensitivity while ideally preserving uncertainty in orthogonal directions where observations provide no information. QPCA-EnDCF implements explicit orthogonal projection: corrections lie in the subspace spanned by dominant eigenmodes of whitened residuals, while ensemble diversity is preserved exactly in the orthogonal complement. This contrasts with stochastic methods where finite sampling causes perturbations to correlate spuriously with Kalman gain directions, inducing compression along intended preservation directions.
 
-% The bias-variance decomposition reveals that sampling variance scales as $\kappa/N$ (number of retained modes over ensemble size) rather than $d/N$ (observation dimension over ensemble size). For $\kappa = 1$ and $d = 100$, this represents theoretical order-of-magnitude sampling efficiency advantage. Truncation bias can be small when forecast errors concentrate in leading eigenmodes, a condition satisfied for chaotic systems near unstable manifolds. Empirical eigenvalue analyses confirm substantial concentration with the leading eigenvalue capturing 60--80\% of total residual variance (Section~\ref{subsec:benchmark}).
 
 % These findings suggest deterministic filtering through spectral projection may provide more faithful discrete approximation to Bayesian inference under severe undersampling than stochastic sampling approaches when posterior uncertainty concentrates in low-rank subspaces.
 % % ================================================================================
@@ -2165,7 +2198,7 @@ QPCA-EnDCF shows a pronounced transition between $L=1$ and $L=3$. At $L=1$, RMSE
 \section{Conclusion}\label{sec:conclusion}
 % ================================================================================
 
-This work developed a theoretical framework for deterministic spectral regularization in ensemble data assimilation and demonstrated through controlled experiments that such methods achieve superior probabilistic calibration compared to conventional stochastic approaches. Three theoretical results characterize the mechanism: (i) deterministic spectral projection avoids variance injection from stochastic observation perturbations and leaves residual components in noise-dominated orthogonal directions unmodified; (ii) decomposition of estimation error reveals sampling variance scales with retained spectral rank ($\kappa$) rather than observation dimension ($d$), conferring order-of-magnitude sampling efficiency under aggressive regularization; 
+This work developed a theoretical framework for deterministic spectral regularization in ensemble data assimilation and demonstrated through controlled experiments that such methods achieve superior probabilistic calibration compared to conventional stochastic approaches. Three theoretical results characterize the mechanism: (i) deterministic spectral projection avoids variance injection from stochastic observation perturbations and leaves residual components in noise-dominated orthogonal directions unmodified; (ii) decomposition of estimation error yields a canonical $\mathcal{O}(1/N)$ sampling variance and identifies a $\kappa$- and $\delta_\kappa$-dependent stability prefactor associated with estimating the rank-$\kappa$ projector, which in low effective-dimension regimes can produce rank-driven sampling behavior relative to the observation dimension $d$; 
 (iii) the convergence analysis shows projector-estimation error decays as $N$ grows (with effective dimension $\kappa$), and ensemble-size scaling experiments show calibration approaches ideal values, supporting deterministic spectral projection as a practical low-rank route to improved UQ under severe undersampling.
 
 Numerical experiments on the Lorenz--96 system confirm theoretical predictions. QPCA-EnDCF achieves spread--skill ratios approaching unity at the baseline $N=10$ while stochastic methods remain severely underdispersed despite covariance inflation. The method requires no inflation, exhibits robustness to non-Gaussian errors and spatial correlations, and maintains advantages from extreme undersampling ($N = 5$) through well-sampled regimes. Geometric interpretation reveals the mechanism: spectral projection confines corrections to low-rank signal subspaces while preserving ensemble diversity exactly in orthogonal directions. This contrasts with stochastic perturbations where finite sampling induces spurious correlations, causing variance compression along intended preservation directions.

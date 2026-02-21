@@ -339,7 +339,18 @@ In the final stage, corrections are constructed by projecting onto the leading $
 -\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top\mathbf{E},
 \label{eq:qpca_correction}
 \end{equation}
-where $\hat{\mathbf{V}}_\kappa=[\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa]$ and $\kappa\ll\min(d,N-1)$. Note that eigenvectors $\hat{\mathbf{v}}_i$ are computed from the centered residuals $\mathbf{E}_c$ (characterizing covariance structure), but the projection is applied to the uncentered residuals $\mathbf{E}$ (containing both mean mismatch and fluctuations). This allows correction of both systematic bias (captured by $\bar{\mathbf{e}}$) and random fluctuations about the mean, but only to the extent that these components lie in the retained $\kappa$-dimensional eigenspace. Components of the mean mismatch orthogonal to $\{\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa\}$ are not corrected, which can introduce bias if the mean mismatch does not align well with the leading covariance directions. This truncation implements hard spectral regularization in observation space, retaining dominant mismatch directions while suppressing noise-dominated components. The resulting observation-space corrections are then mapped back to state space via the empirical cross-covariance gain matrix $\mathbf{K}^{\mathrm{DC}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$, which projects the observation-space innovations onto the state-space ensemble covariance structure, and the resulting state-space increments are applied deterministically to the ensemble (see Definition~\ref{def:endcf_gain_ensemble} and Algorithm~\ref{alg:qpca_endcf} for details).
+where $\hat{\mathbf{V}}_\kappa=[\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa]$ and $\kappa\ll\min(d,N-1)$. Note that eigenvectors $\hat{\mathbf{v}}_i$ are computed from the centered residuals $\mathbf{E}_c$ (characterizing covariance structure), but the projection is applied to the uncentered residuals $\mathbf{E}$ (containing both mean mismatch and fluctuations). This allows correction of both systematic bias (captured by $\bar{\mathbf{e}}$) and random fluctuations about the mean, but only to the extent that these components lie in the retained $\kappa$-dimensional eigenspace. Components of the mean mismatch orthogonal to $\{\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa\}$ are not corrected, which can introduce bias if the mean mismatch does not align well with the leading covariance directions. This truncation implements hard spectral regularization in observation space, retaining dominant mismatch directions while suppressing noise-dominated components.
+
+Because $\mathbf{Q}_{\mathrm{PCA}}$ is defined in whitened coordinates, we unwhiten to obtain the stacked observation-space increment
+\begin{equation}
+\boldsymbol{\Delta}_{\mathrm{obs}}
+:=
+(\mathbf{R}^{(L)})^{1/2}\mathbf{Q}_{\mathrm{PCA}}
+=
+-(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top\mathbf{E}.
+\label{eq:qpca_delta_obs}
+\end{equation}
+The increment $\boldsymbol{\Delta}_{\mathrm{obs}}$ is then mapped back to state space via the empirical cross-covariance gain matrix $\mathbf{K}^{\mathrm{DC}}=\mathbf{P}_{xy}\mathbf{P}_{yy}^{\dagger}$, which projects observation-space innovations onto the state-space ensemble covariance structure, and the resulting state-space increments are applied deterministically to the ensemble (see Definition~\ref{def:endcf_gain_ensemble} and Algorithm~\ref{alg:qpca_endcf} for details).
 
 Because the update is deterministic, it introduces no additional sampling noise from perturbed observations. Each ensemble member is corrected by a deterministic function of its whitened residual, and the correction acts only in the $\kappa$-dimensional subspace spanned by the leading empirical eigenmodes, leaving the complementary $(d-\kappa)$-dimensional subspace unchanged. In typical configurations, this implies that the vast majority of observation-space directions remain unaffected by the update, concentrating corrections on the dominant mismatch mode while avoiding noise-dominated directions. This stands in sharp contrast to stochastic filters, in which random perturbations can distort ensemble geometry in directions unrelated to posterior uncertainty. The adaptive nature of the spectral truncation is central to the method’s regularization properties. By selecting modes based on the realized eigenvalue spectrum, QPCA-EnDCF balances data fidelity against noise suppression without introducing fixed inflation or localization parameters. Although the truncation level $\kappa$ must be chosen, we show in subsequent sections that performance is relatively insensitive to its precise value over a broad range, and that simple spectral heuristics provide effective guidance. The theoretical analysis that follows formalizes these geometric and statistical considerations, establishing rigorous results on variance preservation, sampling-error reduction, and asymptotic calibration for spectrally regularized ensemble methods.
 
@@ -366,6 +377,8 @@ In four-dimensional methods, two distinct time indices within a window must be d
 \item \textbf{Window-endpoint states} $\mathbf{x}_L^{(j),f}$: These are the forecast states at the end of the window ($\ell=L$), obtained by propagating $\mathbf{x}_0^{(j),f}$ through $L$ applications of $\mathcal{M}$ (i.e., over $L$ observation intervals of length $T_{\mathrm{obs}}$). The EnDCF gain $\mathbf{K}^{\mathrm{DC}}$ (Definition~\ref{def:endcf_gain_ensemble}) maps observation-space corrections to state-space increments that are applied to $\mathbf{x}_L^{(j),f}$ to produce the analysis $\mathbf{x}_L^{(j),a}$.
 \end{enumerate}
 Throughout this paper, we use the subscript convention explicitly: $\mathbf{x}_0^{(j),f}$ always denotes the window-initial state (used for residual and $\mathbf{Y}_{\mathrm{stack}}$ computation), while $\mathbf{x}_L^{(j),f}$ denotes the window-endpoint state (to which the gain is applied). When $\mathbf{x}^{(j),f}$ appears without a time subscript in theoretical statements, it refers to the window-initial state unless the gain matrix $\mathbf{K}$ appears in the same expression, in which case it refers to the window-endpoint state.
+\par\smallskip
+\noindent We use the corresponding notation for forecast means: $\boldsymbol{\mu}_0^{f}:=\mathbb{E}[\mathbf{x}_0^{(j),f}]$ and $\boldsymbol{\mu}_L^{f}:=\mathbb{E}[\mathbf{x}_L^{(j),f}]$.
 \par\smallskip
 
 
@@ -403,9 +416,9 @@ In practice, $P_{\mathcal{X}}$ represents the algorithmic forecast distribution 
 \label{ass:gaussian_forecast}
 When explicit covariance and higher-moment identities are required, we specialize to the Gaussian case and assume
 \[
-P_{\mathcal{X}}=\mathcal{N}(\boldsymbol{\mu}^{f},\mathbf{P}^{f}),
+P_{\mathcal{X}}=\mathcal{N}(\boldsymbol{\mu}_0^{f},\mathbf{P}^{f}),
 \]
-so that $\mathbb{E}[\mathbf{x}^{(j),f}]=\boldsymbol{\mu}^{f}$ and $\mathrm{Cov}(\mathbf{x}^{(j),f})=\mathbf{P}^{f}$.
+so that $\mathbb{E}[\mathbf{x}_0^{(j),f}]=\boldsymbol{\mu}_0^{f}$ and $\mathrm{Cov}(\mathbf{x}_0^{(j),f})=\mathbf{P}^{f}$.
 This assumption is invoked only when necessary and does not otherwise restrict the general formulation.
 \end{assumption}
 
@@ -475,8 +488,8 @@ The corresponding population mean and covariance, conditional on the realized ob
 &:=
 \mathbb{E}[\mathbf{e}^{(j)}\mid\mathbf{z}^{(w)}]
 =
-(\mathbf{R}^{(L)})^{-1/2}
-\bigl(\mathbf{H}^{(L)}\boldsymbol{\mu}^{f}-\mathbf{z}^{(w)}\bigr),\\
+	(\mathbf{R}^{(L)})^{-1/2}
+	\bigl(\mathbf{H}^{(L)}\boldsymbol{\mu}_0^{f}-\mathbf{z}^{(w)}\bigr),\\
 \boldsymbol{\Sigma}_E
 &:=
 \mathrm{Cov}(\mathbf{e}^{(j)}\mid\mathbf{z}^{(w)})
@@ -1225,10 +1238,10 @@ where
 
 	Moreover, the bias satisfies
 	\[
-	\mathrm{Bias}_{\mathrm{base}}^{2}(s)
-	:=
-	\bigl\|\boldsymbol{\mu}^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}\bigr\|^2,
-	\]
+		\mathrm{Bias}_{\mathrm{base}}^{2}(s)
+		:=
+		\bigl\|\boldsymbol{\mu}_L^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}\bigr\|^2,
+		\]
 	\begin{align}
 	\mathrm{Bias}^2(\kappa,s)
 	&\le
@@ -1260,7 +1273,7 @@ The variance satisfies
 \begin{align}
 \mathrm{Var}(N,\kappa,s)
 &\le
-\frac{2}{N}\,\mathbb{E}\!\left[\|\mathbf{x}^{(1),f}-\boldsymbol{\mu}^f\|^2\right]
+\frac{2}{N}\,\mathbb{E}\!\left[\|\mathbf{x}_L^{(1),f}-\boldsymbol{\mu}_L^f\|^2\right]
 +
 \frac{2\|\mathbf{R}^{(L)}\|_2}{N}\,
 \mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
@@ -1306,7 +1319,7 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 \label{eq:mean_update_projector_main}
 \bar{\mathbf{x}}^{a,s}
 =
-\bar{\mathbf{x}}^{f}
+\bar{\mathbf{x}}_L^{f}
 -
 \mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,\bar{\mathbf{e}}^{\,s}.
 \end{equation}
@@ -1314,11 +1327,11 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 \smallskip
 	\noindent Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main} and decompose $\bar{\mathbf{e}}^{\,s}=\boldsymbol{\mu}_E^{\,s}+(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})$ to obtain
 	\[
-	\mathbb{E}[\bar{\mathbf{x}}^{a,s}]
-	=
-	\boldsymbol{\mu}^f
-	-
-	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]
+		\mathbb{E}[\bar{\mathbf{x}}^{a,s}]
+		=
+		\boldsymbol{\mu}_L^f
+		-
+		\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]
 	-
 	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right]
 	-
@@ -1326,10 +1339,10 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 	\]
 	Add and subtract the untruncated population correction $\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}$ to isolate the residual (``base'') analysis bias:
 	\[
-	\mathbf{b}_{\mathrm{base}}^{\,s}
-	:=
-	\boldsymbol{\mu}^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}.
-	\]
+		\mathbf{b}_{\mathrm{base}}^{\,s}
+		:=
+		\boldsymbol{\mu}_L^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}.
+		\]
 	Using $\mathbb{E}[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}]=\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}$, we obtain
 	\begin{align*}
 	\mathbb{E}[\bar{\mathbf{x}}^{a,s}]-\mathbf{x}^{\mathrm{true}}
@@ -1394,7 +1407,7 @@ Finally, the map-approximation term $C_{\mathrm{m}}\|Q_s-Q\|_{L^2(P_{\mathcal{X}
 \smallskip
 \noindent Subtract $\mathbb{E}[\bar{\mathbf{x}}^{a,s}]$ from \eqref{eq:mean_update_projector_main} and apply Young's inequality (i.e., $2ab\le a^2+b^2$) to separate (i) the fluctuation of the forecast mean and (ii) the fluctuation of the projected residual term. Using the standard identities
 \[
-\mathbb{E}\|\bar{\mathbf{x}}^f-\boldsymbol{\mu}^f\|^2=\frac{1}{N}\mathbb{E}\|\mathbf{x}^{(1),f}-\boldsymbol{\mu}^f\|^2,
+\mathbb{E}\|\bar{\mathbf{x}}_L^f-\boldsymbol{\mu}_L^f\|^2=\frac{1}{N}\mathbb{E}\|\mathbf{x}_L^{(1),f}-\boldsymbol{\mu}_L^f\|^2,
 \qquad
 \mathbb{E}\|\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}\|^2=\frac{1}{N}\mathrm{tr}\!\bigl(\boldsymbol{\Sigma}_E^{\,s}\bigr),
 \]

@@ -1,0 +1,344 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\title{Summary of Section~4: Convergence Analysis for QPCA-EnDCF}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Purpose of the Section}
+
+Section~4 establishes the main theoretical convergence guarantees for the
+QPCA-EnDCF (Quantitative Principal Component Analysis--Ensemble Data-Consistent
+Filtering) algorithm. Its central goal is to provide a rigorous bias--variance
+decomposition for the mean-squared error (MSE) of the analysis ensemble mean,
+making explicit how two distinct sources of error---spectral truncation and
+finite-ensemble sampling---jointly determine performance.
+
+The development proceeds in three stages:
+\begin{enumerate}
+  \item \textbf{Concentration estimates.} Baseline identities and moment-based
+    bounds quantify how empirical covariance operators fluctuate around their
+    population counterparts.
+  \item \textbf{Spectral perturbation.} Deterministic matrix perturbation
+    theory translates covariance deviations into stability results for
+    eigenvalues and eigenspaces, controlling the accuracy of empirical spectral
+    projectors.
+  \item \textbf{Bias--variance decomposition.} The main theorem provides an
+    explicit MSE decomposition that cleanly separates truncation effects
+    (governed by the truncation level~$\kappa$ and alignment of the mean
+    innovation with the retained subspace) from sampling effects (governed by
+    ensemble size~$N$ and the stability of the empirical projector).
+\end{enumerate}
+
+
+%=======================================================================
+\section*{Subsection 4.1: Regularity Assumptions}
+%=======================================================================
+
+\subsection*{Assumption~1 (Regularity conditions)}
+
+This assumption collects four mild conditions that underpin the entire
+convergence analysis:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Finite second moment.} The forecast distribution has
+    $\mathbb{E}\|\mathbf{x}\|^2 < \infty$, ensuring all first- and
+    second-moment quantities in the filter are well defined.
+  \item \textbf{Positive-definite observation error covariance.} The stacked
+    covariance $\mathbf{R}^{(L)}$ satisfies
+    $\lambda_{\min}(\mathbf{R}^{(L)}) \ge r_{\min} > 0$, guaranteeing that
+    the whitening transformation is well posed.
+  \item \textbf{Finite fourth moment of whitened residuals.} The i.i.d.\
+    whitened residuals satisfy
+    $\mathbb{E}\|\mathbf{e}^{(1)}\|^4 < \infty$. This is strictly weaker
+    than Gaussianity and provides the probabilistic input for all covariance
+    concentration estimates.
+  \item \textbf{Spectral decomposition.} The population covariance
+    $\boldsymbol{\Sigma}_E$ admits a spectral decomposition with ordered
+    eigenvalues. No spectral gap or decay condition is imposed unless
+    explicitly stated later.
+\end{enumerate}
+
+\noindent
+A remark on the scope of the i.i.d.\ assumption explains that while the formal
+analysis requires independent ensemble members, practical cycling experiments
+(where the analysis from one window becomes the forecast for the next) violate
+this. Nevertheless, under ergodic dynamics and sufficient mixing, the
+theoretical predictions---particularly the $\mathcal{O}(1/N)$ variance scaling
+and the role of the cutoff gap $\delta_\kappa$---remain empirically valid.
+
+
+%=======================================================================
+\section*{Subsection 4.2: Fundamental Concentration Results}
+%=======================================================================
+
+This subsection establishes the elementary probabilistic identities and
+concentration estimates that form the backbone of the convergence analysis.
+
+\subsection*{Lemma~1 (Bias--variance decomposition for the analysis mean)}
+
+This is the foundational identity: the MSE of the analysis mean decomposes
+exactly into the squared deterministic bias and the variance:
+\[
+  \mathbb{E}\|\bar{\mathbf{x}}^a - \mathbf{x}^{\mathrm{true}}\|^2
+  =
+  \underbrace{\|\mathbb{E}[\bar{\mathbf{x}}^a] - \mathbf{x}^{\mathrm{true}}\|^2}
+    _{\text{Bias}^2}
+  +
+  \underbrace{\mathbb{E}\|\bar{\mathbf{x}}^a - \mathbb{E}[\bar{\mathbf{x}}^a]\|^2}
+    _{\text{Variance}}.
+\]
+The proof follows from the orthogonality of the deterministic bias vector and
+the zero-mean fluctuation (i.e., the cross-term vanishes because
+$\mathbb{E}[\boldsymbol{\xi}] = \mathbf{0}$). This identity is exact and holds
+without any distributional assumptions beyond integrability.
+
+\subsection*{Lemma~2 (Unbiasedness of the sample covariance)}
+
+Under the i.i.d.\ sampling assumption and for $N \ge 2$,
+$\mathbb{E}[\mathbf{C}_E] = \boldsymbol{\Sigma}_E$. That is, the Bessel-corrected
+sample covariance is an unbiased estimator of the population covariance. This
+ensures that deviations $\mathbf{C}_E - \boldsymbol{\Sigma}_E$ are purely
+sampling fluctuations with zero mean.
+
+\subsection*{Lemma~3 (Mean-square Frobenius deviation of the sample covariance)}
+
+This lemma quantifies the rate at which the sample covariance concentrates
+around the population covariance in the Frobenius norm:
+\[
+  \mathbb{E}\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F^2
+  \le
+  \frac{C_{\mathrm{cov}}}{N-1}\,
+  \mathrm{tr}(\boldsymbol{\Sigma}_E^2).
+\]
+The bound scales as $\mathcal{O}(N^{-1})$ and is proportional to
+$\mathrm{tr}(\boldsymbol{\Sigma}_E^2)$, which measures the ``effective
+dimensionality'' of the covariance. The constant $C_{\mathrm{cov}}$ depends on
+dimension~$d$ and standardized fourth moments.
+
+\subsection*{Lemma~4 (Fourth-moment bound for the sample mean)}
+
+For i.i.d.\ samples with finite fourth moment, the fourth moment of the
+centered sample mean satisfies
+\[
+  \mathbb{E}\|\bar{\mathbf{e}} - \boldsymbol{\mu}_E\|^4
+  \le
+  \frac{C_{\mathrm{mean}}}{N^2}\bigl(\mathbb{E}\|\mathbf{e}^{(1)} -
+    \boldsymbol{\mu}_E\|^4 + (\mathbb{E}\|\mathbf{e}^{(1)} -
+    \boldsymbol{\mu}_E\|^2)^2\bigr).
+\]
+This gives a $(\mathbb{E}\|\cdot\|^4)^{1/2} = \mathcal{O}(N^{-1})$ rate. The
+result is used later in Cauchy--Schwarz arguments to control the variance term
+involving the product of projector error and sample-mean fluctuation.
+
+
+%=======================================================================
+\section*{Subsection 4.3: Spectral Perturbation Bounds}
+%=======================================================================
+
+This subsection converts matrix-level covariance deviations into spectral
+stability estimates. The results are deterministic inequalities; randomness
+enters only through the perturbation $\mathbf{C}_E - \boldsymbol{\Sigma}_E$.
+
+\subsection*{Lemma~5 (Spectral perturbation and projector stability)}
+
+This is a four-part lemma drawing on classical perturbation theory:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Weyl's inequality.} Each empirical eigenvalue
+    $\hat{\lambda}_i$ satisfies
+    $|\hat{\lambda}_i - \lambda_i| \le \|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_2$.
+    That is, eigenvalue perturbations are bounded by the spectral norm of the
+    covariance deviation.
+
+  \item \textbf{Davis--Kahan $\sin\Theta$ theorem (individual eigenvectors).}
+    If the $i$-th population eigenvalue $\lambda_i$ is isolated with spectral
+    gap $\delta_i > 0$, then
+    $\sin\angle(\hat{\mathbf{v}}_i, \mathbf{v}_i) \le
+      \|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_2 / \delta_i$.
+    Larger spectral gaps yield more stable eigenvector estimates.
+
+  \item \textbf{Davis--Kahan for projectors.} If the cutoff gap satisfies
+    $\lambda_\kappa - \lambda_{\kappa+1} \ge \delta_\kappa > 0$, then
+    \[
+      \|\hat{\mathbf{P}}_\kappa - \mathbf{P}_\kappa\|_F
+      \le
+      \frac{\sqrt{2\kappa}}{\delta_\kappa}\,
+      \|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F.
+    \]
+    This is the critical bound for QPCA-EnDCF, whose update is governed by the
+    rank-$\kappa$ empirical projector.
+
+  \item \textbf{Projected covariance perturbation.} The Frobenius deviation
+    between the truncated empirical and population covariances decomposes via
+    the triangle inequality into a ``direct'' covariance perturbation term and
+    two ``cross'' terms involving $\hat{\mathbf{P}}_\kappa - \mathbf{P}_\kappa$.
+\end{enumerate}
+
+\noindent
+A key insight is that spectral separation is intrinsic to eigenspace stability:
+when eigenvalues are nearly repeated, small perturbations can cause large
+rotations within the invariant subspace. For QPCA-EnDCF, projector stability is
+strongest when the cutoff gap $\lambda_\kappa - \lambda_{\kappa+1}$ is large.
+
+\subsection*{Lemma~6 (Fourth-moment bound for sample covariance error, Gaussian case)}
+
+Under the additional assumption of Gaussian whitened residuals, the
+fourth moment of the Frobenius covariance error satisfies
+\[
+  \mathbb{E}\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F^4
+  \le
+  \frac{C_{\mathrm{W}}}{(N-1)^2}\,
+  \bigl(\mathrm{tr}(\boldsymbol{\Sigma}_E^2)\bigr)^2.
+\]
+The proof leverages the Wishart distribution of $(N-1)\mathbf{C}_E$ by showing
+that the centering matrix is an orthogonal projector, so right-multiplication
+by an orthogonal matrix preserves the Gaussian distribution of the data matrix.
+This gives $(\mathbb{E}\|\cdot\|_F^4)^{1/2} = \mathcal{O}(N^{-1})$, which is
+needed for sharp Cauchy--Schwarz arguments in the main theorem.
+
+
+%=======================================================================
+\section*{Subsection 4.4: Main Theorem---Bias--Variance Decomposition}
+%=======================================================================
+
+\subsection*{Theorem~1 (Bias--variance decomposition with spectral truncation)}
+
+This is the central result of the section. Under the regularity assumptions and
+a cutoff gap condition $\lambda_\kappa^{\,s} - \lambda_{\kappa+1}^{\,s} \ge
+\delta_\kappa > 0$, the MSE decomposes exactly as
+\[
+  \mathbb{E}\|\bar{\mathbf{x}}^{a,s} - \mathbf{x}^{\mathrm{true}}\|^2
+  =
+  \mathrm{Bias}^2(\kappa, s) + \mathrm{Var}(N, \kappa, s).
+\]
+
+The theorem provides explicit upper bounds for both components:
+
+\paragraph{Bias bound.} The squared bias is bounded by a sum of four terms:
+\begin{enumerate}
+  \item $\mathrm{Bias}_{\mathrm{base}}^2(s)$: the residual analysis bias after
+    applying the (untruncated) population mean correction.
+  \item A \textbf{truncation term} proportional to
+    $\|(\mathbf{I} - \mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2$,
+    measuring how much of the mean innovation is discarded by restricting to
+    rank~$\kappa$.
+  \item A \textbf{map-approximation term} proportional to
+    $\|Q_s - Q\|_{L^2(P_{\mathcal{X}})}^2$, capturing the error from using an
+    approximate QoI map $Q_s$ instead of the exact $Q$.
+  \item A \textbf{projector-estimation term} scaling as
+    $\kappa / \delta_\kappa^2 \cdot \mathbb{E}\|\mathbf{C}_E^{\,s} -
+      \boldsymbol{\Sigma}_E^{\,s}\|_F^2$,
+    reflecting the cost of estimating the spectral projector from finite samples.
+\end{enumerate}
+
+\paragraph{Variance bound.} The variance is bounded by:
+\begin{enumerate}
+  \item An $\mathcal{O}(1/N)$ term from forecast-mean fluctuation.
+  \item An $\mathcal{O}(1/N)$ term proportional to
+    $\mathrm{tr}(\boldsymbol{\Sigma}_E^{\,s})$ from the sample-mean residual
+    fluctuation.
+  \item A \textbf{joint projector--sample-mean term} capturing the interaction
+    between the projector estimation error and the sample-mean fluctuation.
+    This term is controlled via Cauchy--Schwarz combined with the projector
+    stability bound and fourth-moment estimates.
+\end{enumerate}
+
+\noindent
+The pseudoinverse gain is essential in the small-ensemble regime ($N - 1 < d$),
+and Assumption~2 (gain-moment condition) is the only probabilistic requirement
+on the gain needed for these bounds.
+
+A remark following the theorem notes that the truncation contribution depends on
+the alignment of $\boldsymbol{\mu}_E^{\,s}$ with the discarded subspace and
+that generic spectral tail bounds do not apply without additional structural
+assumptions (e.g., source/RKHS-type conditions).
+
+
+%=======================================================================
+\section*{Subsection 4.5: Corollaries and Practical Implications}
+%=======================================================================
+
+\subsection*{Corollary~1 (Scaling of the projector-estimation term, Gaussian case)}
+
+Under Gaussian whitened residuals, the joint projector--sample-mean variance
+contribution scales as
+\[
+  \mathcal{O}\!\left(\frac{\kappa}{\delta_\kappa^2 \, N^2}\right).
+\]
+The proof combines the Cauchy--Schwarz-based marginal bound from the main
+theorem with the Wishart fourth-moment bound (Lemma~6) and the sample-mean
+fourth-moment bound (Lemma~4). The resulting $N^{-2}$ rate (rather than
+$N^{-1}$) shows that this ``higher-order'' variance contribution is dominated
+by the leading $\mathcal{O}(1/N)$ terms.
+
+\subsection*{Corollary~2 (Comparison to stochastic EnKF observation perturbations)}
+
+This corollary provides a direct theoretical comparison between QPCA-EnDCF and
+the stochastic (perturbed-observation) EnKF. The stochastic update introduces
+an irreducible variance floor:
+\[
+  \mathrm{Var}_{\mathrm{stoch}}
+  \ge
+  \frac{1}{N}\,
+  \mathrm{tr}\!\bigl(\mathbf{K}^{(w)}\mathbf{R}^{(L)}(\mathbf{K}^{(w)})^\top\bigr),
+\]
+which scales as $\mathcal{O}(d/N)$ for isotropic observation noise
+$\mathbf{R}^{(L)} = \bar{r}\,\mathbf{I}$. By contrast, QPCA-EnDCF avoids this
+perturbation-induced variance source entirely. QPCA-EnDCF instead incurs
+variability through estimation of the low-rank projector, but this is controlled
+by the cutoff gap $\delta_\kappa$ and the covariance concentration rate, and
+does not grow with observation-space dimension~$d$.
+
+\subsection*{Corollary~3 (Principled selection of the truncation level)}
+
+This corollary formulates the selection of the truncation level $\kappa$ as a
+proxy optimization problem. The optimal $\kappa^\ast$ minimizes an upper-bound
+objective that balances:
+\begin{itemize}
+  \item The \textbf{truncation remainder}
+    $\mathcal{T}_\kappa^{\,s} = \|(\mathbf{I} -
+      \mathbf{P}_\kappa^{\,s})\boldsymbol{\mu}_E^{\,s}\|^2$,
+    which decreases as $\kappa$ increases (less information discarded).
+  \item The \textbf{projector-estimation cost}
+    $\kappa / \delta_\kappa^2$, which generally increases with $\kappa$ (more
+    eigenvectors to estimate, potentially with smaller gaps).
+\end{itemize}
+The map-approximation and forecast-fluctuation terms are independent of
+$\kappa$ and do not affect the minimizer. In practice, $\kappa^\ast$ is
+determined by this truncation-vs-estimation tradeoff.
+
+
+%=======================================================================
+\section*{Summary of Main Contributions}
+%=======================================================================
+
+\begin{enumerate}
+  \item \textbf{Exact bias--variance decomposition.} The MSE splits cleanly
+    into squared bias and variance, with explicit dependence on the truncation
+    level~$\kappa$, ensemble size~$N$, cutoff gap~$\delta_\kappa$, and
+    QoI-map approximation quality.
+
+  \item \textbf{$\mathcal{O}(1/N)$ variance scaling.} The canonical Monte
+    Carlo rate is preserved, with a stability prefactor
+    $\kappa / \delta_\kappa^2$ that quantifies the cost of empirical projector
+    estimation.
+
+  \item \textbf{Elimination of perturbation-induced variance.} Unlike the
+    stochastic EnKF, QPCA-EnDCF does not inject observation noise into the
+    analysis mean, removing an $\mathcal{O}(d/N)$ variance floor.
+
+  \item \textbf{Principled truncation selection.} The theory provides a
+    rigorous proxy objective for choosing $\kappa$ by balancing truncation bias
+    against projector-estimation variance.
+
+  \item \textbf{Mild assumptions.} The results require only finite fourth
+    moments (weaker than Gaussianity) for the general bounds, with sharper
+    rates available under Gaussian assumptions.
+\end{enumerate}
+
+\end{document}

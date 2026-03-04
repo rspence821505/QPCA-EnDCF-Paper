@@ -1,0 +1,166 @@
+% This file is intended to be \input{} into paper/uq_paper_draft.tex (no preamble).
+% It summarizes notation changes if one replaces the windowed index pair (w,\ell)
+% by a single global observation-time index k=(w-1)L+\ell.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument{paper/uq_paper_draft}
+
+\definecolor{severe}{RGB}{180,0,0}
+\definecolor{moderate}{RGB}{180,120,0}
+\definecolor{minor}{RGB}{0,100,0}
+
+\newcommand{\severity}[1]{%
+  \ifx#1H\textcolor{severe}{\textbf{[High]}}\fi
+  \ifx#1M\textcolor{moderate}{\textbf{[Moderate]}}\fi
+  \ifx#1L\textcolor{minor}{\textbf{[Low]}}\fi
+}
+
+\title{Notation in \texttt{uq\_paper\_draft.tex}}
+\author{Automated Review}
+\date{\today}
+
+\begin{document}
+\section*{Notation changes under $k=(w-1)L+\ell$}
+
+This note records the systematic notational changes implied by identifying the global observation-time index $k$ with the window index pair $(w,\ell)$ via
+\begin{equation}
+k=k(w,\ell):=(w-1)L+\ell,
+\qquad
+w\in\{1,\ldots,W\},\ \ \ell\in\{1,\ldots,L\}.
+\label{eq:k_w_ell_mapping}
+\end{equation}
+With $K:=WL$, this mapping is a bijection between $\{1,\ldots,W\}\times\{1,\ldots,L\}$ and $\{1,\ldots,K\}$.
+The inverse mapping is
+\begin{equation}
+w=\left\lceil \frac{k}{L}\right\rceil,
+\qquad
+\ell=k-(w-1)L.
+\label{eq:w_ell_from_k}
+\end{equation}
+Window endpoints correspond to $\ell=L$, i.e.,
+\begin{equation}
+k_w:=wL=k(w,L).
+\label{eq:k_window_endpoint}
+\end{equation}
+The corresponding physical times satisfy $t_k=kT_{\mathrm{obs}}$ and therefore
+\[
+t_{(w,\ell)}=t_{k(w,\ell)}=\bigl((w-1)L+\ell\bigr)T_{\mathrm{obs}}.
+\]
+
+\paragraph{1. States, observations, and noise.}
+Every object indexed by $(w,\ell)$ can be re-indexed by $k$ using \eqref{eq:k_w_ell_mapping}. Concretely,
+\begin{align}
+\mathbf{x}_{(w,\ell)} &\longleftrightarrow \mathbf{x}_{k(w,\ell)}, &
+\mathbf{z}_{(w,\ell)} &\longleftrightarrow \mathbf{z}_{k(w,\ell)}, &
+\boldsymbol{\eta}_{(w,\ell)} &\longleftrightarrow \boldsymbol{\eta}_{k(w,\ell)}.
+\label{eq:pair_to_k_basic}
+\end{align}
+Thus the windowed observation model
+\[
+\mathbf{z}_{(w,\ell)}=\mathbf{H}\mathbf{x}_{(w,\ell)}+\boldsymbol{\eta}_{(w,\ell)}
+\]
+may be written in the same form as the global-index model
+\[
+\mathbf{z}_{k}=\mathbf{H}\mathbf{x}_{k}+\boldsymbol{\eta}_{k},
+\]
+with the understanding that $k=k(w,\ell)$ when emphasizing window structure.
+Equivalently, the \emph{non-windowed} (global-index) observation model remains
+\[
+\mathbf{z}_{k}=\mathbf{H}\mathbf{x}_{k}+\boldsymbol{\eta}_{k},
+\qquad k=1,\ldots,K,
+\]
+and the \emph{windowed} notation $\mathbf{z}_{(w,\ell)}$ is simply a re-indexing of the same per-time observation via $k=k(w,\ell)$. As a consistency check, when $L=1$ one has $k=w$ and $\ell=1$, so $\mathbf{z}_{(w,1)}$ and $\mathbf{z}_{k}$ coincide.
+
+\paragraph{2. Window stacking.}
+The stacked observation vector for window $w$ remains most naturally indexed by $w$, since it lives in the augmented space $\mathbb{R}^{d}$ with $d=mL$:
+\begin{equation}
+\mathbf{z}^{(w)}
+=
+\begin{bmatrix}
+\mathbf{z}_{(w-1)L+1}\\
+\vdots\\
+\mathbf{z}_{wL}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\mathbf{z}_{k(w,1)}\\
+\vdots\\
+\mathbf{z}_{k(w,L)}
+\end{bmatrix}
+\in\mathbb{R}^{d}.
+\label{eq:stacked_z_k}
+\end{equation}
+The corresponding block-diagonal covariance is unchanged,
+\[
+\mathbf{R}^{(L)}=\mathrm{diag}(\mathbf{R},\ldots,\mathbf{R})\in\mathbb{R}^{d\times d},
+\]
+but one can interpret its blocks as being associated with observation times $k(w,1),\ldots,k(w,L)$.
+
+\paragraph{3. Window-initial vs.\ window-endpoint indices.}
+In four-dimensional methods we also use the window-initial state at $\ell=0$. Under the $k$-indexing convention it is convenient to define
+\begin{equation}
+k_0(w):=(w-1)L,
+\qquad\text{so that}\qquad
+k(w,\ell)=k_0(w)+\ell.
+\label{eq:k0_def}
+\end{equation}
+Then
+\[
+\mathbf{x}^{f}_{0}\ \text{(window-initial)}\ \equiv\ \mathbf{x}^{f}_{k_0(w)},
+\qquad
+\mathbf{x}^{f}_{L}\ \text{(window-endpoint)}\ \equiv\ \mathbf{x}^{f}_{k_w}.
+\]
+The same translation applies to ensembles and ensemble means, e.g.,
+\[
+\mathbf{X}_0^{f}\equiv \mathbf{X}_{k_0(w)}^{f},
+\qquad
+\mathbf{X}_L^{f}\equiv \mathbf{X}_{k_w}^{f},
+\qquad
+\bar{\mathbf{x}}_L^{f}\equiv \bar{\mathbf{x}}_{k_w}^{f}.
+\]
+
+\paragraph{4. Sequential vs.\ windowed assimilation updates.}
+Under the unified $k$ notation:
+\begin{itemize}
+\item Sequential methods update at every observation time $k=1,\ldots,K$ and naturally use $\mathbf{X}_k^{f}$, $\mathbf{X}_k^{a}$ and (when needed) $\mathbf{K}_k$.
+\item Windowed methods update once per window, at $k=k_w=wL$. The window index $w$ can be replaced by the endpoint index $k_w$ when convenient, e.g.\ $\mathbf{K}^{(w)}$ may be written as $\mathbf{K}_{k_w}$ (provided it is clear that $\mathbf{K}_{k_w}\in\mathbb{R}^{n\times d}$ acts on stacked innovations in $\mathbb{R}^{d}$).
+\end{itemize}
+
+\paragraph{5. Stacked forecast observations and residuals.}
+The stacked forecast observation matrix $\mathbf{Z}^{(w)}\in\mathbb{R}^{d\times N}$ (columns are ensemble members) already encodes the time ordering within window $w$. With the $k$ convention, its blocks correspond to the global indices $k(w,1),\ldots,k(w,L)$. Accordingly, the whitened residual matrix becomes
+\begin{equation}
+\mathbf{E}
+=(\mathbf{R}^{(L)})^{-1/2}\bigl(\mathbf{Z}^{(w)}-\mathbf{z}^{(w)}\mathbf{1}^\top\bigr),
+\label{eq:E_k_interpretation}
+\end{equation}
+where the $j$th column is the per-member stacked residual
+\[
+\mathbf{e}^{(j)}=(\mathbf{R}^{(L)})^{-1/2}\Bigl(Q(\mathbf{x}^{(j),f}_{k_0(w)})-\mathbf{z}^{(w)}\Bigr),
+\]
+and $Q$ is the stacked quantity-of-interest map (or its tangent-linear approximation) producing predictions at times $k(w,1),\ldots,k(w,L)$ from a window-initial state.
+
+\paragraph{6. Evaluation at window endpoints.}
+Any expression written at indices $wL$ can be written using $k_w$. For example,
+\[
+\widehat{\mathbf{P}}_{wL}^{\,a}\equiv \widehat{\mathbf{P}}_{k_w}^{\,a},
+\qquad
+\bar{\mathbf{x}}_{wL}^{a}\equiv \bar{\mathbf{x}}_{k_w}^{a},
+\qquad
+\mathbf{x}_{wL}^{\mathrm{true}}\equiv \mathbf{x}_{k_w}^{\mathrm{true}}.
+\]
+This is particularly useful when mixing sequential and windowed methods while evaluating diagnostics only at analysis times for 4D methods.
+
+\paragraph{7. Summary replacement rules.}
+When adopting $k=(w-1)L+\ell$:
+\begin{itemize}
+\item Replace subscripts $(w,\ell)$ by $k(w,\ell)$ whenever the object lives at a single observation time (state, observation, noise, ensembles at an instant).
+\item Keep the superscript $(w)$ on stacked objects (e.g., $\mathbf{z}^{(w)}$, $\mathbf{Z}^{(w)}$, $\mathbf{R}^{(L)}$) since these live in $\mathbb{R}^{d}$ and intrinsically refer to an entire window.
+\item Use $k_0(w)=(w-1)L$ for window-initial states and $k_w=wL$ for window-endpoint (analysis) states to translate between $(0,L)$ window subscripts and global indices.
+\end{itemize}
+\end{document}

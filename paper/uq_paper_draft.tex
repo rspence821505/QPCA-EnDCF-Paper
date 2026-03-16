@@ -6,6 +6,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{graphicx}
+\graphicspath{{figures/}{paper/figures/}}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{geometry}
@@ -112,7 +113,18 @@ Finally, we specify the three data assimilation algorithms under comparison, hig
 % ================================================================================
 
 
-Observation times are indexed by $k$, with $t_k=kT_{\mathrm{obs}}$ and corresponding states $\mathbf{x}_{t_k}$ (or $\mathbf{x}_k$ when the time dependence is implicit). For four-dimensional methods, we group $L$ consecutive observation times into windows indexed by $w$, and use $\ell\in\{1,\ldots,L\}$ for within-window indices. The state dimension is $n$, the number of observed components is $m$, the stacked observation dimension is $d:=mL$, the ensemble size is $N$, and the spectral truncation rank is $\kappa$. Superscripts $f$ and $a$ denote forecast and analysis quantities, respectively; for windowed methods we use subscripts $0$ and $L$ to distinguish window-initial and window-endpoint ensembles when needed (a precise convention is stated in Remark~\ref{rem:timing_convention}).
+Observation times are indexed by a single global index $k$, with $t_k=kT_{\mathrm{obs}}$ and corresponding states $\mathbf{x}_{t_k}$ (or $\mathbf{x}_k$ when the time dependence is implicit). For four-dimensional methods, we group $L$ consecutive observation times into windows indexed by $w\in\{1,\ldots,W\}$, so the total number of observation times is $K:=WL$. Within window $w$, we use a local within-window index $\ell\in\{1,\ldots,L\}$ and identify it with the global time index via
+\begin{equation}
+k=k(w,\ell):=(w-1)L+\ell,
+\qquad
+k_0(w):=(w-1)L,
+\qquad
+k_w:=wL.
+\label{eq:k_w_ell_mapping}
+\end{equation}
+Thus window $w$ contains the global indices $k=k_0(w)+1,\ldots,k_w$. In particular, any single-time object (state, observation, or observation noise) is indexed by the global $k$ (e.g., $\mathbf{x}_k$, $\mathbf{z}_k$, $\boldsymbol{\eta}_k$), and window structure is expressed by writing $k=k(w,\ell)$ or by using the window endpoints $k_0(w)$ and $k_w$ rather than by introducing a separate subscript pair $(w,\ell)$. Stacked window-level objects retain the window superscript $(w)$, e.g., $\mathbf{z}^{(w)}$, $\mathbf{Z}^{(w)}$, and $\mathbf{R}^{(L)}$.
+
+The state dimension is $n$, the number of observed components is $m$, the stacked observation dimension is $d:=mL$, the ensemble size is $N$, and the spectral truncation rank is $\kappa$. Superscripts $f$ and $a$ denote forecast and analysis quantities, respectively; for windowed methods we distinguish window-initial quantities at $k_0(w)$ from window-endpoint quantities at $k_w$ (a precise convention is stated in Remark~\ref{rem:timing_convention}).
 
 
 % ================================================================================
@@ -129,16 +141,7 @@ Observations provide partial and noisy information about the system state at dis
 \boldsymbol{\eta}_k\sim\mathcal{N}(\mathbf{0},\mathbf{R}),
 \label{eq:obs_model}
 \end{equation}
-
-\begin{equation}
-\mathbf{z}_{(w,\ell)}
-=
-\mathbf{H}\mathbf{x}_{(w,\ell)}+\boldsymbol{\eta}_{(w,\ell)},
-\qquad
-\boldsymbol{\eta}_{(w,\ell)}\sim\mathcal{N}(\mathbf{0},\mathbf{R}),
-\label{eq:obs_model_windowed}
-\end{equation}
-with observation error covariance $\mathbf{R}=\sigma_{\mathrm{obs}}^2\mathbf{I}_m$ and $\sigma_{\mathrm{obs}}=1.5$. The noise variables $\{\boldsymbol{\eta}_{k}\}$ and $\{\boldsymbol{\eta}_{(w,\ell)}\}$ are independent across time and independent of the state respectively, representing measurement error and unresolved representativeness effects.
+with observation error covariance $\mathbf{R}=\sigma_{\mathrm{obs}}^2\mathbf{I}_m$ and $\sigma_{\mathrm{obs}}=1.5$. For windowed methods, the observation at within-window index $\ell$ in window $w$ is simply the same per-time observation at global index $k(w,\ell)$; that is, $\mathbf{z}_{k(w,\ell)}=\mathbf{H}\mathbf{x}_{k(w,\ell)}+\boldsymbol{\eta}_{k(w,\ell)}$ with the indexing convention \eqref{eq:k_w_ell_mapping}. The noise variables $\{\boldsymbol{\eta}_{k}\}$ are independent across time and independent of the state, representing measurement error and unresolved representativeness effects.
 
 This $50\%$ spatial subsampling makes the instantaneous inverse problem ill-posed. The null space $\ker(\mathbf{H})$ has dimension $20$, so infinitely many states are consistent with a single observation vector $\mathbf{z}_k$ in the noise-free case. With Gaussian observation noise \eqref{eq:obs_model}, the likelihood depends only on $\mathbf{H}\mathbf{x}$ and provides no information about components in $\ker(\mathbf{H})$.
 Consequently, when combined with the forecast distribution used by an assimilation algorithm, represented in practice by the forecast ensemble and formalized in Section~\ref{subsec:practical_considerations}, that has full support (e.g., a Gaussian approximation, as opposed to the singular Lorenz–96 invariant measure), the posterior remains supported on all of $\mathbb{R}^n$, with mass in the unobserved directions determined by the prior marginal, and the unobserved components cannot be meaningfully inferred from a single observation time without additional structure.
@@ -159,14 +162,14 @@ To exploit temporal correlations, windowed methods condition jointly on observat
 \mathbf{z}^{(w)}
 =
 \begin{bmatrix}
-\mathbf{z}_{(w-1)L+1}\\
+\mathbf{z}_{k_0(w)+1}\\
 \vdots\\
-\mathbf{z}_{wL}
+\mathbf{z}_{k_w}
 \end{bmatrix}
 \in\mathbb{R}^{d},
 \label{eq:stacked_obs}
 \end{equation}
-where $w$ indexes the window and $(w-1)L+1,\ldots,wL$ denote the global observation time indices within that window, and $d=mL$. Assuming temporally independent observation errors, the augmented observation covariance is block diagonal,
+where $w$ indexes the window, $k_0(w)=(w-1)L$ and $k_w=wL$ are the corresponding global window endpoints from \eqref{eq:k_w_ell_mapping}, and $d=mL$. Assuming temporally independent observation errors, the augmented observation covariance is block diagonal,
 \begin{equation}
 \mathbf{R}^{(L)}
 =
@@ -244,23 +247,23 @@ Empirical gains are then formed from cross-covariances between state anomalies a
 
 \begin{definition}[EnDCF ensemble covariances and empirical gain]
 \label{def:endcf_gain_ensemble}
-Let $\mathbf{X}_0^{f}\in\mathbb{R}^{n\times N}$ denote the window-initial forecast ensemble, and let $\mathbf{X}_L^{f}\in\mathbb{R}^{n\times N}$ denote the forecast ensemble at the window endpoint (assimilation time). For four-dimensional methods, $\mathbf{X}_L^{f}$ is obtained by propagating $\mathbf{X}_0^{f}$ forward through $L$ observation times; for sequential methods, $\mathbf{X}_L^{f}=\mathbf{X}_0^{f}$. Let $\mathbf{Z}^{(w)}\in\mathbb{R}^{d\times N}$ denote the corresponding stacked forecast observations,
+Fix a window index $w\in\{1,\ldots,W\}$ and let $k_0(w)$ and $k_w$ denote its global start and end indices as in \eqref{eq:k_w_ell_mapping}. Let $\mathbf{X}_{k_0(w)}^{f}\in\mathbb{R}^{n\times N}$ denote the window-initial forecast ensemble and let $\mathbf{X}_{k_w}^{f}\in\mathbb{R}^{n\times N}$ denote the forecast ensemble at the window endpoint (assimilation time). For four-dimensional methods, $\mathbf{X}_{k_w}^{f}$ is obtained by propagating $\mathbf{X}_{k_0(w)}^{f}$ forward through $L$ observation times; for sequential methods, $\mathbf{X}_{k_w}^{f}=\mathbf{X}_{k_0(w)}^{f}$. Let $\mathbf{Z}^{(w)}\in\mathbb{R}^{d\times N}$ denote the corresponding stacked forecast observations,
 \begin{equation}
 \mathbf{Z}^{(w)}
 :=
 \bigl[
-\mathbf{H}^{(L)}\mathbf{x}_0^{(1),f},
+\mathbf{H}^{(L)}\mathbf{x}_{k_0(w)}^{(1),f},
 \ldots,
-\mathbf{H}^{(L)}\mathbf{x}_0^{(N),f}
+\mathbf{H}^{(L)}\mathbf{x}_{k_0(w)}^{(N),f}
 \bigr]
 \in\mathbb{R}^{d\times N},
 \end{equation}
 where $\mathbf{H}^{(L)}$ is the linear stacked observation operator from Definition~\ref{def:data_space}.
 Define the sample means
 \begin{equation}
-\bar{\mathbf{x}}_L^{f}
+\bar{\mathbf{x}}_{k_w}^{f}
 :=
-\frac{1}{N}\mathbf{X}_L^{f}\mathbf{1}\in\mathbb{R}^{n},
+\frac{1}{N}\mathbf{X}_{k_w}^{f}\mathbf{1}\in\mathbb{R}^{n},
 \qquad
 \bar{\mathbf{y}}_{\mathrm{stack}}
 :=
@@ -270,7 +273,7 @@ and the corresponding anomaly matrices
 \begin{equation}
 \mathbf{A}_x
 :=
-\mathbf{X}_L^{f}-\bar{\mathbf{x}}_L^{f}\mathbf{1}^\top
+\mathbf{X}_{k_w}^{f}-\bar{\mathbf{x}}_{k_w}^{f}\mathbf{1}^\top
 \in\mathbb{R}^{n\times N},
 \qquad
 \mathbf{A}_z
@@ -305,12 +308,12 @@ where $(\cdot)^{\dagger}$ denotes the Moore--Penrose pseudoinverse.
 \label{rem:timing_convention}
 In four-dimensional methods, two distinct time indices within a window must be distinguished:
 \begin{enumerate}[label=(\roman*),nosep]
-\item \textbf{Window-initial states} $\mathbf{x}_0^{(j),f}$: These are the forecast states at the beginning of a window ($\ell=0$). The stacked observation operator $\mathbf{H}^{(L)}$ (Definition~\ref{def:data_space}) is applied to $\mathbf{x}_0^{(j),f}$ to produce predicted observations at times $\ell=1,\ldots,L$ via the tangent-linear propagation. The whitened residuals $\mathbf{e}^{(j)}$ are functions of these window-initial states.
-\item \textbf{Window-endpoint states} $\mathbf{x}_L^{(j),f}$: These are the forecast states at the end of the window ($\ell=L$), obtained by propagating $\mathbf{x}_0^{(j),f}$ through $L$ applications of $\mathcal{M}$ (i.e., over $L$ observation intervals of length $T_{\mathrm{obs}}$). The EnDCF gain $\mathbf{K}^{\mathrm{DC}}$ (Definition~\ref{def:endcf_gain_ensemble}) maps observation-space corrections to state-space increments that are applied to $\mathbf{x}_L^{(j),f}$ to produce the analysis $\mathbf{x}_L^{(j),a}$.
+\item \textbf{Window-initial states} $\mathbf{x}_{k_0(w)}^{(j),f}$: These are the forecast states at the beginning of window $w$ (corresponding to within-window index $\ell=0$), at the global time index $k_0(w)=(w-1)L$. The stacked observation operator $\mathbf{H}^{(L)}$ (Definition~\ref{def:data_space}) is applied to $\mathbf{x}_{k_0(w)}^{(j),f}$ to produce predicted observations at global times $k=k_0(w)+1,\ldots,k_w$ via tangent-linear propagation. The whitened residuals $\mathbf{e}^{(j)}$ are functions of these window-initial states.
+\item \textbf{Window-endpoint states} $\mathbf{x}_{k_w}^{(j),f}$: These are the forecast states at the end of window $w$ (corresponding to within-window index $\ell=L$), at the global time index $k_w=wL$, obtained by propagating $\mathbf{x}_{k_0(w)}^{(j),f}$ through $L$ applications of $\mathcal{M}$ (i.e., over $L$ observation intervals of length $T_{\mathrm{obs}}$). The EnDCF gain $\mathbf{K}^{\mathrm{DC}}$ (Definition~\ref{def:endcf_gain_ensemble}) maps observation-space corrections to state-space increments that are applied to $\mathbf{x}_{k_w}^{(j),f}$ to produce the analysis $\mathbf{x}_{k_w}^{(j),a}$.
 \end{enumerate}
-Throughout this paper, we use the subscript convention explicitly: $\mathbf{x}_0^{(j),f}$ always denotes the window-initial state (used for residual and $\mathbf{Z}^{(w)}$ computation), while $\mathbf{x}_L^{(j),f}$ denotes the window-endpoint state (to which the gain is applied). When $\mathbf{x}^{(j),f}$ appears without a time subscript in theoretical statements, it refers to the window-initial state unless the gain matrix $\mathbf{K}$ appears in the same expression, in which case it refers to the window-endpoint state.
+Throughout this paper, we use the subscript convention explicitly: $\mathbf{x}_{k_0(w)}^{(j),f}$ always denotes the window-initial state (used for residual and $\mathbf{Z}^{(w)}$ computation), while $\mathbf{x}_{k_w}^{(j),f}$ denotes the window-endpoint state (to which the gain is applied). When $\mathbf{x}^{(j),f}$ appears without a time subscript in theoretical statements, it refers to the window-initial state unless the gain matrix $\mathbf{K}$ appears in the same expression, in which case it refers to the window-endpoint state.
 \par\smallskip
-\noindent We use the corresponding notation for forecast means: $\boldsymbol{\mu}_0^{f}:=\mathbb{E}[\mathbf{x}_0^{(j),f}]$ and $\boldsymbol{\mu}_L^{f}:=\mathbb{E}[\mathbf{x}_L^{(j),f}]$.
+\noindent We use the corresponding notation for forecast means: $\boldsymbol{\mu}_{k_0(w)}^{f}:=\mathbb{E}[\mathbf{x}_{k_0(w)}^{(j),f}]$ and $\boldsymbol{\mu}_{k_w}^{f}:=\mathbb{E}[\mathbf{x}_{k_w}^{(j),f}]$.
 \par\smallskip
 
 The computational efficiency of ensemble methods comes with intrinsic limitations on uncertainty representation. In the small-ensemble regime $N\ll n$ typical of operational applications, ensemble covariances have rank at most $N-1$, which can lead to variance collapse and filter divergence if unmitigated (see Section~\ref{sec:inflation}). In particular, $\mathbf{P}_{zz}$ has rank at most $\min(d,N-1)$ and is therefore singular whenever $N-1<d$, which is the regime of primary interest in this work. In such cases, the gain \eqref{eq:endcf_gain_pinv} remains well defined, whereas the inverse $\mathbf{P}_{zz}^{-1}$ does not exist. More generally, one may replace $\mathbf{P}_{zz}^{\dagger}$ with a stabilized inverse, such as Tikhonov regularization $(\mathbf{P}_{zz}+\varepsilon\mathbf{I})^{-1}$; the analysis extends verbatim provided the implemented gain is uniformly controlled in operator norm (a mild moment condition is stated later in Section~\ref{subsec:regularity_assumptions}).
@@ -355,7 +358,7 @@ Regularization in the stochastic EnKF arises implicitly through the additive obs
 
 \subsection{Four-Dimensional Stochastic Ensemble Kalman Filter}
 
-The four-dimensional stochastic ensemble Kalman filter (4D-EnKF) \citep{hunt2004four,evensen2009book} extends the sequential formulation by conditioning jointly on observations collected over an assimilation window of length $L$. The ensemble is propagated forward through $L$ observation times, generating forecasts $\{\mathbf{x}_\ell^{(j),f}\}_{\ell=1}^L$ for each member $j$. The update targets the window-final state $\mathbf{x}_L^{(j),f}$ using information from all $L$ observations. Within each window, ensemble members are updated using stacked, perturbed observations
+The four-dimensional stochastic ensemble Kalman filter (4D-EnKF) \citep{hunt2004four,evensen2009book} extends the sequential formulation by conditioning jointly on observations collected over an assimilation window of length $L$. For a given window $w$, the ensemble is propagated forward through $L$ observation times, generating forecasts $\{\mathbf{x}_{k(w,\ell)}^{(j),f}\}_{\ell=1}^L$ for each member $j$ at global indices $k(w,\ell)=k_0(w)+\ell$. The update targets the window-endpoint state $\mathbf{x}_{k_w}^{(j),f}$ using information from all $L$ observations in the window. Within each window, ensemble members are updated using stacked, perturbed observations
 \begin{equation}
 \tilde{\mathbf{z}}^{(w,j)}
 =
@@ -425,12 +428,12 @@ We now introduce the covariance objects that underlie the QPCA-EnDCF update. The
 \label{def:whitened_residual_covariances}
 Let $\mathbf{R}^{(L)}\in\mathbb{R}^{d\times d}$ be symmetric positive definite. Consider a fixed realization of the observation vector $\mathbf{z}^{(w)}\in\mathbb{R}^{d}$, which we treat as deterministic throughout this definition. Let $\mathbf{e}^{(j)}\in\mathbb{R}^{d}$ denote the $j$th column of the whitened residual matrix $\mathbf{E}$ defined in \eqref{eq:whitening_problem}. The corresponding population mean and covariance, conditional on the realized observations $\mathbf{z}^{(w)}$, are given by
 \begin{align*}
-\boldsymbol{\mu}_E
-&:=
-\mathbb{E}[\mathbf{e}^{(j)}\mid\mathbf{z}^{(w)}]
-=
-(\mathbf{R}^{(L)})^{-1/2}
-\bigl(\mathbf{H}^{(L)}\boldsymbol{\mu}_0^{f}-\mathbf{z}^{(w)}\bigr),\\
+	\boldsymbol{\mu}_E
+	&:=
+	\mathbb{E}[\mathbf{e}^{(j)}\mid\mathbf{z}^{(w)}]
+	=
+	(\mathbf{R}^{(L)})^{-1/2}
+	\bigl(\mathbf{H}^{(L)}\boldsymbol{\mu}_{k_0(w)}^{f}-\mathbf{z}^{(w)}\bigr),\\
 \boldsymbol{\Sigma}_E
 &:=
 \mathrm{Cov}(\mathbf{e}^{(j)}\mid\mathbf{z}^{(w)})
@@ -586,28 +589,28 @@ We quantify posterior uncertainty by the time-averaged ensemble spread
 \sigma_{\mathrm{ens}}
 =
 \left[
-\frac{1}{W}\sum_{w=1}^W \frac{1}{n}\,\tr\!\bigl(\widehat{\mathbf{P}}_{wL}^{\,a}\bigr)
+\frac{1}{W}\sum_{w=1}^W \frac{1}{n}\,\tr\!\bigl(\widehat{\mathbf{P}}_{k_w}^{\,a}\bigr)
 \right]^{1/2},
 \label{eq:spread_framework}
 \end{equation}
-where $\widehat{\mathbf{P}}_{wL}^{\,a} = \frac{1}{N-1}{\mathbf{A}^{a}_{wL}}{\mathbf{A}^{a}_{wL}}^{\!\top}$ is the empirical analysis covariance at the endpoint $k=wL$, formed from ensemble anomalies $\mathbf{A}^{a}_{wL} = \mathbf{X}_{wL}^a - \bar{\mathbf{x}}_{wL}^a\mathbf{1}^{\top}$. Estimation accuracy is quantified by the root-mean-square error
+where $\widehat{\mathbf{P}}_{k_w}^{\,a} = \frac{1}{N-1}{\mathbf{A}^{a}_{k_w}}{\mathbf{A}^{a}_{k_w}}^{\!\top}$ is the empirical analysis covariance at the window endpoint $k=k_w$, formed from ensemble anomalies $\mathbf{A}^{a}_{k_w} = \mathbf{X}_{k_w}^a - \bar{\mathbf{x}}_{k_w}^a\mathbf{1}^{\top}$. Estimation accuracy is quantified by the root-mean-square error
 \begin{equation}
 \mathrm{RMSE}
 =
 \left[
-\frac{1}{W}\sum_{w=1}^W \frac{1}{n}\|\bar{\mathbf{x}}_{wL}^a - \mathbf{x}_{wL}^{\mathrm{true}}\|^2
+\frac{1}{W}\sum_{w=1}^W \frac{1}{n}\|\bar{\mathbf{x}}_{k_w}^a - \mathbf{x}_{k_w}^{\mathrm{true}}\|^2
 \right]^{1/2},
 \label{eq:rmse_framework}
 \end{equation}
-where $\bar{\mathbf{x}}_{wL}^a$ is the ensemble mean analysis at the endpoint $k=wL$ and $\mathbf{x}_{wL}^{\mathrm{true}}$ is the corresponding true state.
+where $\bar{\mathbf{x}}_{k_w}^a$ is the ensemble mean analysis at the endpoint $k=k_w$ and $\mathbf{x}_{k_w}^{\mathrm{true}}$ is the corresponding true state.
 
 Dynamic tracking is assessed by examining the cycle-wise (per-window) spread and RMSE sequences. Define the per-cycle spread
 \begin{equation}
-\sigma_w := \left[\frac{1}{n}\,\tr\!\bigl(\widehat{\mathbf{P}}_{wL}^{\,a}\bigr)\right]^{1/2}
+\sigma_w := \left[\frac{1}{n}\,\tr\!\bigl(\widehat{\mathbf{P}}_{k_w}^{\,a}\bigr)\right]^{1/2}
 \end{equation}
 and the per-cycle RMSE
 \begin{equation}
-\mathrm{RMSE}_w := \left[\frac{1}{n}\|\bar{\mathbf{x}}_{wL}^a - \mathbf{x}_{wL}^{\mathrm{true}}\|^2\right]^{1/2}.
+\mathrm{RMSE}_w := \left[\frac{1}{n}\|\bar{\mathbf{x}}_{k_w}^a - \mathbf{x}_{k_w}^{\mathrm{true}}\|^2\right]^{1/2}.
 \end{equation}
 Calibration is summarized by the cycle-wise spread--skill ratios
 \begin{equation}
@@ -638,7 +641,7 @@ QPCA-EnDCF achieves $\bar{\gamma}=0.811\pm0.101$, close to ideal calibration wit
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig04a_spread_vs_rmse_temporal.png}
+\includegraphics[width=\textwidth]{fig04a_spread_vs_rmse_temporal.png}
 \caption{Temporal evolution of ensemble spread (solid) and RMSE (dashed) over the 50-window sequence; shaded regions denote the 25th--75th percentile range (IQR band) across five trials. QPCA-EnDCF exhibits coherent covariation between spread and RMSE throughout. Sequential EnKF shows persistently low spread with no tracking of RMSE, while 4D-EnKF displays weak positive correlation but remains underdispersed.}
 \label{fig:temporal_calibration}
 \end{figure}
@@ -647,7 +650,7 @@ QPCA-EnDCF maintains coherent tracking, with spread and RMSE fluctuating togethe
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig04_combined_calibration_analysis.png}
+\includegraphics[width=\textwidth]{fig04_combined_calibration_analysis.png}
 \caption{Probabilistic calibration diagnostics. \textbf{(A)} Spread--skill ratio $\gamma_w$ across assimilation windows; the dashed line indicates perfect calibration. \textbf{(B)} Reliability diagram plotting window-level ensemble spread $\sigma_w$ against window-level $\mathrm{RMSE}_w$ for all windows and trials, with the diagonal denoting $\sigma_w=\mathrm{RMSE}_w$.}
 \label{fig:reliability}
 \end{figure}
@@ -1192,6 +1195,8 @@ Spectral separation is intrinsic to eigenspace stability: when eigenvalues are r
 \section{Bias--Variance Decomposition and Main Theorem}
 \label{sec:bv_decomposition}
 
+Throughout this section we analyze a single, fixed assimilation window $w$ and use the global window endpoints $k_0(w)$ and $k_w$ from \eqref{eq:k_w_ell_mapping}. In particular, the forecast measure $P_{\mathcal{X}}$ is interpreted as the algorithmic forecast distribution of the window-initial state at time $k_0(w)$, and analysis quantities pertain to the window endpoint at time $k_w$.
+
 
 % -----------------------------------------------------------------------------
 
@@ -1225,11 +1230,11 @@ In practice, $P_{\mathcal{X}}$ represents the algorithmic forecast distribution 
 
 \begin{assumption}[Gaussian forecast model]
 \label{ass:gaussian_forecast}
-When explicit covariance and higher-moment identities are required, we specialize to the Gaussian case and assume
+When explicit covariance and higher-moment identities are required, we specialize to the Gaussian case. Fix a window index $w$ and consider the forecast distribution at the window-initial time $k_0(w)$. We assume
 \begin{equation}
-P_{\mathcal{X}}=\mathcal{N}(\boldsymbol{\mu}_0^{f},\mathbf{P}^{f}),
+P_{\mathcal{X}}=\mathcal{N}(\boldsymbol{\mu}_{k_0(w)}^{f},\mathbf{P}^{f}),
 \end{equation}
-so that $\mathbb{E}[\mathbf{x}_0^{(j),f}]=\boldsymbol{\mu}_0^{f}$ and $\mathrm{Cov}(\mathbf{x}_0^{(j),f})=\mathbf{P}^{f}$.
+so that $\mathbb{E}[\mathbf{x}_{k_0(w)}^{(j),f}]=\boldsymbol{\mu}_{k_0(w)}^{f}$ and $\mathrm{Cov}(\mathbf{x}_{k_0(w)}^{(j),f})=\mathbf{P}^{f}$.
 This assumption is invoked only when necessary and does not otherwise restrict the general formulation.
 \end{assumption}
 
@@ -1349,7 +1354,7 @@ where
 \begin{equation}
 		\mathrm{Bias}_{\mathrm{base}}^{2}(s)
 		:=
-		\bigl\|\boldsymbol{\mu}_L^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}\bigr\|^2,
+		\bigl\|\boldsymbol{\mu}_{k_w}^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}\bigr\|^2,
 \end{equation}
 	\begin{align}
 	\mathrm{Bias}^2(\kappa,s)
@@ -1396,19 +1401,19 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 \label{eq:mean_update_projector_main}
 \bar{\mathbf{x}}^{a,s}
 =
-\bar{\mathbf{x}}_L^{f}
+\bar{\mathbf{x}}_{k_w}^{f}
 -
 \mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa^{\,s}\,\bar{\mathbf{e}}^{\,s}.
 \end{equation}
 
 \smallskip
 	\noindent Insert and subtract the population-truncated correction $(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\boldsymbol{\mu}_E^{\,s}$ in \eqref{eq:mean_update_projector_main} and decompose $\bar{\mathbf{e}}^{\,s}=\boldsymbol{\mu}_E^{\,s}+(\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s})$ to obtain
-	\begin{align*}
-		\mathbb{E}[\bar{\mathbf{x}}^{a,s}]
-		&=
-		\boldsymbol{\mu}_L^f
-		-
-		\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]\\
+		\begin{align*}
+			\mathbb{E}[\bar{\mathbf{x}}^{a,s}]
+			&=
+			\boldsymbol{\mu}_{k_w}^f
+			-
+			\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\mathbf{P}_\kappa^{\,s}\,\boldsymbol{\mu}_E^{\,s}\right]\\
 	&\quad-
 	\mathbb{E}\!\left[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}(\hat{\mathbf{P}}_\kappa^{\,s}-\mathbf{P}_\kappa^{\,s})\,\boldsymbol{\mu}_E^{\,s}\right]\\
 	&\quad-
@@ -1418,7 +1423,7 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 \begin{equation}
 		\mathbf{b}_{\mathrm{base}}^{\,s}
 		:=
-		\boldsymbol{\mu}_L^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}.
+			\boldsymbol{\mu}_{k_w}^f-\mathbf{x}^{\mathrm{true}}-\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}.
 \end{equation}
 	Using $\mathbb{E}[\mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}]=\mathbb{E}[\mathbf{K}^{\mathrm{DC}}](\mathbf{R}^{(L)})^{1/2}\boldsymbol{\mu}_E^{\,s}$, we obtain
 	\begin{align*}
@@ -1456,7 +1461,7 @@ Averaging over $j$ gives the corresponding relation for the analysis mean,
 \begin{align}
 \mathrm{Var}(N,\kappa,s)
 &\le
-\frac{2}{N}\,\mathbb{E}\!\left[\|\mathbf{x}_L^{(1),f}-\boldsymbol{\mu}_L^f\|^2\right]
+\frac{2}{N}\,\mathbb{E}\!\left[\|\mathbf{x}_{k_w}^{(1),f}-\boldsymbol{\mu}_{k_w}^f\|^2\right]
 +
 \frac{2\|\mathbf{R}^{(L)}\|_2}{N}\,
 \mathbb{E}\!\left[\|\mathbf{K}^{\mathrm{DC}}\|_2^2\right]\,
@@ -1524,7 +1529,7 @@ Finally, the map-approximation term $C_{\mathrm{m}}\|Q_s-Q\|_{L^2(P_{\mathcal{X}
 \smallskip
 \noindent Subtract $\mathbb{E}[\bar{\mathbf{x}}^{a,s}]$ from \eqref{eq:mean_update_projector_main} and apply Young's inequality (i.e., $2ab\le a^2+b^2$) to separate (i) the fluctuation of the forecast mean and (ii) the fluctuation of the projected residual term. Using the standard identities
 \begin{equation}
-\mathbb{E}\|\bar{\mathbf{x}}_L^f-\boldsymbol{\mu}_L^f\|^2=\frac{1}{N}\mathbb{E}\|\mathbf{x}_L^{(1),f}-\boldsymbol{\mu}_L^f\|^2,
+\mathbb{E}\|\bar{\mathbf{x}}_{k_w}^f-\boldsymbol{\mu}_{k_w}^f\|^2=\frac{1}{N}\mathbb{E}\|\mathbf{x}_{k_w}^{(1),f}-\boldsymbol{\mu}_{k_w}^f\|^2,
 \qquad
 \mathbb{E}\|\bar{\mathbf{e}}^{\,s}-\boldsymbol{\mu}_E^{\,s}\|^2=\frac{1}{N}\mathrm{tr}\!\bigl(\boldsymbol{\Sigma}_E^{\,s}\bigr),
 \end{equation}
@@ -1691,7 +1696,7 @@ Figure~\ref{fig:bias_variance_evolution} shows the window-wise bias--variance de
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig07a_bias_variance_evolution.png}
+\includegraphics[width=\textwidth]{fig07a_bias_variance_evolution.png}
 \caption{Window-wise bias--variance decomposition over 50 assimilation windows (left to right: Sequential EnKF, 4D-EnKF, QPCA-EnDCF). Solid fill shows $\widehat{\mathrm{Bias}}_{w}^2$ and hatched fill shows $\widehat{\mathrm{Variance}}_{w}$; the total height is $\widehat{\mathrm{MSE}}_{w}=\widehat{\mathrm{Bias}}_{w}^2+\widehat{\mathrm{Variance}}_{w}$. Estimates use $N_{\mathrm{trial}}=10$ independent initial-ensemble realizations.}
 \label{fig:bias_variance_evolution}
 \end{figure}
@@ -1700,7 +1705,7 @@ QPCA-EnDCF attains MSE $\approx13$, compared to $\approx22$ for Sequential EnKF 
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig07b_mse_decomposition_bars.png}
+\includegraphics[width=\textwidth]{fig07b_mse_decomposition_bars.png}
 \caption{Stacked-bar MSE decomposition. Left: absolute contributions of squared bias and variance. Right: percentage contributions normalized to unit height. QPCA-EnDCF exhibits comparable bias but markedly reduced variance relative to stochastic methods.}
 \label{fig:mse_decomposition_bars}
 \end{figure}
@@ -1775,7 +1780,7 @@ Figure~\ref{fig:mult_inflation} reports RMSE as a function of the multiplicative
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig_inflation_multiplicative.png}
+\includegraphics[width=\textwidth]{fig_inflation_multiplicative.png}
 \caption{Sensitivity of RMSE to multiplicative inflation. Time-averaged RMSE versus inflation factor $\lambda_{\mathrm{infl}}$ for Sequential EnKF (blue circles), 4D-EnKF (orange squares), and QPCA-EnDCF (green triangles). Panels correspond to $N \in \{5,10,25\}$. Means are averaged over 50 assimilation windows and three trials; shading indicates $\pm1$ standard deviation across trials.}
 \label{fig:mult_inflation}
 \end{figure}
@@ -1784,7 +1789,7 @@ QPCA-EnDCF exhibits a roughly uniform response across ensemble sizes. Performanc
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig_inflation_additive.png}
+\includegraphics[width=\textwidth]{fig_inflation_additive.png}
 \caption{Sensitivity of RMSE to additive inflation. Time-averaged RMSE versus additive inflation magnitude $\alpha_{\mathrm{add}}$ for Sequential EnKF, 4D-EnKF, and QPCA-EnDCF, with panels for $N \in \{5,10,25\}$. Plotting conventions match Figure~\ref{fig:mult_inflation}; shading indicates $\pm1$ standard deviation across three trials.}
 \label{fig:add_inflation}
 \end{figure}
@@ -1814,7 +1819,7 @@ Figure~\ref{fig:noise_distributions} illustrates representative samples. Despite
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/noise_distributions.png}
+\includegraphics[width=\textwidth]{noise_distributions.png}
 \caption{Representative non-Gaussian observation error distributions used in the robustness study (Gaussian reference shown as a dashed curve). Student-$t$ and Laplace errors are symmetric and heavy-tailed; Gamma and Log-normal errors are right-skewed with increasingly heavy upper tails. All distributions are standardized to mean zero and variance $\sigma_{\mathrm{obs}}^2=2.25$, so comparisons isolate sensitivity to distributional shape.}
 \label{fig:noise_distributions}
 \end{figure}
@@ -1854,7 +1859,7 @@ QPCA-EnDCF is essentially insensitive to distributional shape: RMSE remains in t
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/mean_rmse_comparison_nongaussian.png}
+\includegraphics[width=\textwidth]{mean_rmse_comparison_nongaussian.png}
 \caption{Mean RMSE under non-Gaussian observation errors (bars: mean; error bars: $\pm1$ standard deviation across $n=3$ trials). QPCA-EnDCF maintains consistently lower RMSE and smaller variability across all nine distributions, with 18.3--24.5\% improvement over Sequential EnKF and 17.3--22.7\% improvement over 4D-EnKF.}
 \label{fig:mean_rmse_comparison}
 \end{figure}
@@ -1863,7 +1868,7 @@ Temporal behavior is equally consistent. Figure~\ref{fig:rmse_trajectories} show
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/rmse_trajectories_nongaussian.png}
+\includegraphics[width=\textwidth]{rmse_trajectories_nongaussian.png}
 \caption{RMSE evolution over 50 assimilation windows (after 10-window initialization) under each non-Gaussian error distribution (curves: mean; shading: 95\% confidence intervals across $n=3$ trials). QPCA-EnDCF maintains consistently lower RMSE than both stochastic methods across all distributions and time steps.}
 \label{fig:rmse_trajectories}
 \end{figure}
@@ -1903,7 +1908,7 @@ with $\ell_{\mathrm{corr}}=4$ is severely ill-conditioned, $\mathrm{cond}(\mathb
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/correlation_structures.png}
+\includegraphics[width=\textwidth]{correlation_structures.png}
 \caption{Representative observation error covariance structures $\mathbf{R}$ used in the correlation robustness study (left to right: diagonal baseline, exponential correlation, and Gaussian correlation), constructed using periodic index distances to avoid boundary effects. All cases share the same marginal variance $\sigma_{\mathrm{obs}}^2=2.25$; colors indicate covariance magnitude.}
 \label{fig:correlation_structures}
 \end{figure}
@@ -1912,7 +1917,7 @@ For each structure we compare QPCA-EnDCF with Cholesky whitening against 4D-EnKF
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/reconstruction_errors.png}
+\includegraphics[width=\textwidth]{reconstruction_errors.png}
 \caption{Reconstruction error under correlated observation errors. Points show mean RMSE over 50 assimilation windows from a single realization for QPCA-EnDCF with Cholesky whitening (green) and 4D-EnKF (red) under three covariance structures: diagonal baseline ($\mathrm{cond}(\mathbf{R})=1$), exponential correlation ($\mathrm{cond}(\mathbf{R})=649$), and Gaussian correlation ($\mathrm{cond}(\mathbf{R})\approx 3.7\times10^5$). Annotated percentages indicate the RMSE reduction of QPCA-EnDCF relative to 4D-EnKF; the advantage grows with correlation strength, reaching approximately $32\%$ under severe ill-conditioning.}
 \label{fig:reconstruction_errors}
 \end{figure}
@@ -1953,7 +1958,7 @@ Stochastic filters further introduce variance from observation perturbations, sc
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/performance_degradation.png}
+\includegraphics[width=\textwidth]{performance_degradation.png}
 \caption{Reconstruction accuracy versus ensemble size $N \in \{5,10,15,20,30,50,100\}$. Curves show mean RMSE across three trials; shading indicates $\pm1$ standard deviation. \textbf{(A)} Absolute RMSE versus $N$ (logarithmic horizontal axis). \textbf{(B)} Relative degradation: percent increase in RMSE relative to $N=100$. QPCA-EnDCF degrades modestly from 3.33 ($N=100$) to 4.27 ($N=5$), whereas Sequential EnKF and 4D-EnKF degrade much more severely at small $N$.}
 \label{fig:performance_degradation}
 \end{figure}
@@ -1964,7 +1969,7 @@ Two operational patterns emerge. First, QPCA-EnDCF remains viable even under ext
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig_ensemble_size_spread_skill.png}
+\includegraphics[width=\textwidth]{fig_ensemble_size_spread_skill.png}
 \caption{Spread--skill ratio $\bar{\gamma}$ versus ensemble size $N \in \{5,10,15,20,30,50,100\}$. The dashed line marks the ideal target $\bar{\gamma}=1$. QPCA-EnDCF approaches ideal calibration as $N$ increases and is substantially closer to $\bar{\gamma}=1$ than the stochastic baselines at small and moderate ensemble sizes.}
 \label{fig:ensemble_calibration}
 \end{figure}
@@ -1986,7 +1991,7 @@ Window length $L$ controls how many observation times are assimilated jointly, a
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/combined_window_rmse_analysis.png}
+\includegraphics[width=\textwidth]{combined_window_rmse_analysis.png}
 \caption{Window-length sensitivity for $L\in\{1,3,5,7,10,15\}$ with $LW\approx 400$ held approximately constant. Shading denotes $\pm1$ standard deviation across three trials. \textbf{(A)} RMSE versus $L$ for Sequential EnKF (blue circles), 4D-EnKF (purple squares), and QPCA-EnDCF (orange triangles). \textbf{(B)} Percent RMSE improvement of QPCA-EnDCF relative to Sequential EnKF (green bars) and 4D-EnKF (orange bars) versus $L$.}
 \label{fig:rmse_vs_L}
 \end{figure}
@@ -2080,23 +2085,25 @@ The four-dimensional stochastic ensemble Kalman filter accumulates information f
 \Ensure Analysis ensemble at window ends
 \State $\mathbf{X} \gets \mathbf{X}_0$, \quad $\mathbf{R}^{(L)} \gets \mathbf{I}_L \otimes \mathbf{R}$
 \For{$w = 1$ to $W$}
-    \State Initialize $\{\mathbf{X}_\ell\}_{\ell=0}^{L}$ with $\mathbf{X}_0 \gets \mathbf{X}$
+    \State $k_0 \gets (w-1)L$, \quad $k_w \gets wL$ \Comment{Global window endpoints}
+    \State Initialize $\{\mathbf{X}_k\}_{k=k_0}^{k_w}$ with $\mathbf{X}_{k_0} \gets \mathbf{X}$
     \For{$\ell = 1$ to $L$}
+        \State $k \gets k_0 + \ell$
         \For{$j = 1$ to $N$}
             \State $\mathbf{x}^{(j)} \gets \mathcal{M}(\mathbf{x}^{(j)})$
         \EndFor
-        \State $\mathbf{X}_\ell \gets \mathbf{X}$, \quad $\mathbf{Y}_\ell \gets \mathbf{H}\mathbf{X}_\ell$
+        \State $\mathbf{X}_k \gets \mathbf{X}$, \quad $\mathbf{Y}_k \gets \mathbf{H}\mathbf{X}_k$
     \EndFor
-    \State $\mathbf{z}^{(w)} \gets [\mathbf{z}_{(w-1)L+1}^{\top}, \ldots, \mathbf{z}_{wL}^{\top}]^{\top}$, \quad $\mathbf{Z}^{(w)} \gets [\mathbf{Y}_1^{\top}, \ldots, \mathbf{Y}_L^{\top}]^{\top}$
-    \State $\bar{\mathbf{x}}_L^f \gets \frac{1}{N}\mathbf{X}_L\mathbf{1}$, \quad $\bar{\mathbf{y}}_{\mathrm{stack}} \gets \frac{1}{N}\mathbf{Z}^{(w)}\mathbf{1}$ \Comment{Ensemble means}
-    \State $\mathbf{A}_x \gets \mathbf{X}_L - \bar{\mathbf{x}}_L^f\mathbf{1}^{\top}$, \quad $\mathbf{A}_z \gets \mathbf{Z}^{(w)} - \bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^{\top}$ \Comment{Forecast anomalies}
+    \State $\mathbf{z}^{(w)} \gets [\mathbf{z}_{k_0+1}^{\top}, \ldots, \mathbf{z}_{k_w}^{\top}]^{\top}$, \quad $\mathbf{Z}^{(w)} \gets [\mathbf{Y}_{k_0+1}^{\top}, \ldots, \mathbf{Y}_{k_w}^{\top}]^{\top}$
+    \State $\bar{\mathbf{x}}_{k_w}^f \gets \frac{1}{N}\mathbf{X}_{k_w}\mathbf{1}$, \quad $\bar{\mathbf{y}}_{\mathrm{stack}} \gets \frac{1}{N}\mathbf{Z}^{(w)}\mathbf{1}$ \Comment{Ensemble means}
+    \State $\mathbf{A}_x \gets \mathbf{X}_{k_w} - \bar{\mathbf{x}}_{k_w}^f\mathbf{1}^{\top}$, \quad $\mathbf{A}_z \gets \mathbf{Z}^{(w)} - \bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^{\top}$ \Comment{Forecast anomalies}
     \State $\mathbf{P}_{xz} \gets \frac{1}{N-1}\mathbf{A}_x\mathbf{A}_z^{\top}$, \quad $\mathbf{P}_{zz} \gets \frac{1}{N-1}\mathbf{A}_z\mathbf{A}_z^{\top}$
     \State $\mathbf{K}^{(w)} \gets \mathbf{P}_{xz}(\mathbf{P}_{zz} + \mathbf{R}^{(L)})^{-1}$
     \For{$j = 1$ to $N$}
         \State $\boldsymbol{\epsilon}_{w}^{(j)} \sim \mathcal{N}(\mathbf{0}, \mathbf{R}^{(L)})$
-        \State $\mathbf{x}_L^{(j)} \gets \mathbf{x}_L^{(j)} + \mathbf{K}^{(w)}(\mathbf{z}^{(w)} + \boldsymbol{\epsilon}_{w}^{(j)} - \mathbf{Z}^{(w,j)})$
+        \State $\mathbf{x}^{(j)} \gets \mathbf{x}^{(j)} + \mathbf{K}^{(w)}(\mathbf{z}^{(w)} + \boldsymbol{\epsilon}_{w}^{(j)} - \mathbf{Z}^{(w,j)})$ \Comment{Update at $k=k_w$}
     \EndFor
-    \State $\mathbf{X} \gets \mathbf{X}_L$
+    \State $\mathbf{X} \gets \mathbf{X}_{k_w}$
     \State $\bar{\mathbf{x}}^a \gets \frac{1}{N}\mathbf{X}\mathbf{1}$
     \State $\mathbf{x}^{(j)} \gets \bar{\mathbf{x}}^a + \lambda_{\mathrm{infl}}(\mathbf{x}^{(j)} - \bar{\mathbf{x}}^a)$ for $j=1,\ldots,N$ \Comment{Post-update inflation}
 \EndFor
@@ -2120,17 +2127,19 @@ The QPCA ensemble data consistency filter implements deterministic residual filt
 \State $\mathbf{X} \gets \mathbf{X}_0$, \quad $\mathbf{R}^{(L)} \gets \mathbf{I}_L \otimes \mathbf{R}$
 \For{$w = 1$ to $W$}
     \State \textit{// Forecast phase}
-    \State Initialize $\{\mathbf{X}_\ell\}_{\ell=0}^{L}$ with $\mathbf{X}_0 \gets \mathbf{X}$
+    \State $k_0 \gets (w-1)L$, \quad $k_w \gets wL$ \Comment{Global window endpoints}
+    \State Initialize $\{\mathbf{X}_k\}_{k=k_0}^{k_w}$ with $\mathbf{X}_{k_0} \gets \mathbf{X}$
     \For{$\ell = 1$ to $L$}
+        \State $k \gets k_0 + \ell$
         \For{$j = 1$ to $N$}
             \State $\mathbf{x}^{(j)} \gets \mathcal{M}(\mathbf{x}^{(j)})$
         \EndFor
-        \State $\mathbf{X}_\ell \gets \mathbf{X}$, \quad $\mathbf{Y}_\ell \gets \mathbf{H}\mathbf{X}_\ell$
+        \State $\mathbf{X}_k \gets \mathbf{X}$, \quad $\mathbf{Y}_k \gets \mathbf{H}\mathbf{X}_k$
     \EndFor
     \State
     \State \textit{// Whitened residual computation}
-    \State $\mathbf{z}^{(w)} \gets [\mathbf{z}_{(w-1)L+1}^{\top}, \ldots, \mathbf{z}_{wL}^{\top}]^{\top}$, \quad $\mathbf{Z}^{(w)} \gets [\mathbf{Y}_1^{\top}, \ldots, \mathbf{Y}_L^{\top}]^{\top}$
-    \State $\bar{\mathbf{x}}_L^f \gets \frac{1}{N}\mathbf{X}_L\mathbf{1}$, \quad $\bar{\mathbf{y}}_{\mathrm{stack}} \gets \frac{1}{N}\mathbf{Z}^{(w)}\mathbf{1}$ \Comment{Ensemble means}
+    \State $\mathbf{z}^{(w)} \gets [\mathbf{z}_{k_0+1}^{\top}, \ldots, \mathbf{z}_{k_w}^{\top}]^{\top}$, \quad $\mathbf{Z}^{(w)} \gets [\mathbf{Y}_{k_0+1}^{\top}, \ldots, \mathbf{Y}_{k_w}^{\top}]^{\top}$
+    \State $\bar{\mathbf{x}}_{k_w}^f \gets \frac{1}{N}\mathbf{X}_{k_w}\mathbf{1}$, \quad $\bar{\mathbf{y}}_{\mathrm{stack}} \gets \frac{1}{N}\mathbf{Z}^{(w)}\mathbf{1}$ \Comment{Ensemble means}
     \State $\mathbf{D} \gets \mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^{\top}$
     \State $\mathbf{E} \gets (\mathbf{R}^{(L)})^{-1/2}\mathbf{D}$ \Comment{Whitening}
     \State $\mathbf{E}_c \gets \mathbf{E} - \frac{1}{N}(\mathbf{E}\mathbf{1})\mathbf{1}^{\top}$ \Comment{Centering}
@@ -2147,12 +2156,12 @@ The QPCA ensemble data consistency filter implements deterministic residual filt
 	    \State $\boldsymbol{\Delta}_{\mathrm{obs}} \gets (\mathbf{R}^{(L)})^{1/2}\mathbf{Q}_{\mathrm{PCA}}$
     \State
     \State \textit{// Update}
-	    \State $\mathbf{A}_x \gets \mathbf{X}_L - \bar{\mathbf{x}}_L^f\mathbf{1}^{\top}$
-	    \State $\mathbf{A}_z \gets \mathbf{Z}^{(w)} - \bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^{\top}$
-	    \State $\mathbf{P}_{xz} \gets \frac{1}{N-1}\mathbf{A}_x\mathbf{A}_z^{\top}$, \quad $\mathbf{P}_{zz} \gets \frac{1}{N-1}\mathbf{A}_z\mathbf{A}_z^{\top}$
-	    \State $\mathbf{K}^{\mathrm{DC}} \gets \mathbf{P}_{xz}(\mathbf{P}_{zz})^{\dagger}$
-	    \State $\mathbf{X}_L \gets \mathbf{X}_L + \mathbf{K}^{\mathrm{DC}}\boldsymbol{\Delta}_{\mathrm{obs}}$
-    \State $\mathbf{X} \gets \mathbf{X}_L$
+		    \State $\mathbf{A}_x \gets \mathbf{X}_{k_w} - \bar{\mathbf{x}}_{k_w}^f\mathbf{1}^{\top}$
+		    \State $\mathbf{A}_z \gets \mathbf{Z}^{(w)} - \bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^{\top}$
+		    \State $\mathbf{P}_{xz} \gets \frac{1}{N-1}\mathbf{A}_x\mathbf{A}_z^{\top}$, \quad $\mathbf{P}_{zz} \gets \frac{1}{N-1}\mathbf{A}_z\mathbf{A}_z^{\top}$
+		    \State $\mathbf{K}^{\mathrm{DC}} \gets \mathbf{P}_{xz}(\mathbf{P}_{zz})^{\dagger}$
+		    \State $\mathbf{X}_{k_w} \gets \mathbf{X}_{k_w} + \mathbf{K}^{\mathrm{DC}}\boldsymbol{\Delta}_{\mathrm{obs}}$
+    \State $\mathbf{X} \gets \mathbf{X}_{k_w}$
 \EndFor
 \State \Return $\mathbf{X}$
 \end{algorithmic}
@@ -2199,7 +2208,7 @@ Ranks are computed at each algorithm's analysis times. Aggregating across all st
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{figures/fig04d_rank_histograms.png}
+\includegraphics[width=\textwidth]{fig04d_rank_histograms.png}
 \caption{Rank histogram analysis aggregated over all state components, analysis times, and trials. The dashed line indicates the expected uniform count $E_b=M_{\mathrm{rank}}/(N+1)$ in each panel (here $E_b\approx 4545$ for Seq-EnKF and $E_b\approx 909$ for 4D-EnKF and QPCA-EnDCF, corresponding to uniform relative frequency $1/11$), and the shaded band denotes the 95\% confidence interval under the uniformity null. Left: Sequential EnKF exhibits severe U-shaped distortion ($\chi^2=173{,}195$, flatness $1.861$). Center: 4D-EnKF shows substantial but reduced departure from uniformity ($\chi^2=32{,}269$, flatness $1.796$). Right: QPCA-EnDCF shows near-uniformity ($\chi^2=396.8$, flatness $0.199$).}
 \label{fig:rank_histograms}
 \end{figure}
@@ -2279,7 +2288,7 @@ Sequential EnKF is strongly miscalibrated ($\chi^2=173{,}195$, flatness $1.861$)
 % $\boldsymbol{\mu}^f$ & $\mathbb{R}^n$ & Population forecast mean \\
 % $\mathbf{x}^{\mathrm{true}}$ & $\mathbb{R}^n$ & True state (time subscript $\mathbf{x}^{\mathrm{true}}_k$ or $\mathbf{x}_{t_k}$ used when emphasizing time dependence) \\
 % $\mathbf{z}_k$ & $\mathbb{R}^m$ & Observation at time $k$ (global time index) \\
-% 	$\mathbf{z}^{(w)}$ & $\mathbb{R}^{d}$ & Stacked observations over window $w$, $\mathbf{z}^{(w)}=[\mathbf{z}_{(w-1)L+1}^\top,\ldots,\mathbf{z}_{wL}^\top]^\top$ \\
+% 	$\mathbf{z}^{(w)}$ & $\mathbb{R}^{d}$ & Stacked observations over window $w$, $\mathbf{z}^{(w)}=[\mathbf{z}_{k_0(w)+1}^\top,\ldots,\mathbf{z}_{k_w}^\top]^\top$ \\
 % 	$\boldsymbol{\eta}_k$ & $\mathbb{R}^m$ & Observation noise (physical), $\boldsymbol{\eta}_k\sim \mathcal{N}(\mathbf{0},\mathbf{R})$ \\
 % 	$\boldsymbol{\epsilon}_{k}^{(j)}$ & $\mathbb{R}^{m}$ & \textbf{Algorithmic} perturbed observation for member $j$ at time $k$, $\boldsymbol{\epsilon}_{k}^{(j)}\sim \mathcal{N}(\mathbf{0},\mathbf{R})$ \\
 % 	$\boldsymbol{\epsilon}_{w}^{(j)}$ & $\mathbb{R}^{d}$ & \textbf{Algorithmic} perturbed observation for member $j$ in window $w$, $\boldsymbol{\epsilon}_{w}^{(j)}\sim \mathcal{N}(\mathbf{0},\mathbf{R}^{(L)})$ \\
@@ -2334,9 +2343,9 @@ $\hat{\mathbf{P}}_\kappa$ & $\mathbb{R}^{d\times d}$ & Sample rank-$\kappa$ proj
 $\mathbf{K}_k$ & $\mathbb{R}^{n\times m}$ & Sequential Kalman gain at time $k$ (using sample covariance $\widehat{\mathbf{P}}^{\,f}$) \\
 $\mathbf{K}^{(w)}$ & $\mathbb{R}^{n\times d}$ & Windowed Kalman gain for window $w$ ($d=mL$, from sample covariances) \\
 $\mathbf{K}^{\mathrm{DC}}$ & $\mathbb{R}^{n\times d}$ & \textbf{Empirical} EnDCF gain (random), defined via a pseudoinverse \\
-$\mathbf{X}_L$ & $\mathbb{R}^{n\times N}$ & Forecast ensemble at assimilation time / window endpoint \\
-$\mathbf{Z}^{(w)}$ & $\mathbb{R}^{d\times N}$ & Stacked forecast observations, columns $Q(\mathbf{x}^{(j),f})=\mathbf{H}^{(L)}\mathbf{x}^{(j),f}$ \\
-$\mathbf{A}_x$ & $\mathbb{R}^{n\times N}$ & State anomalies at endpoint, $\mathbf{A}_x=\mathbf{X}_L-\bar{\mathbf{x}}_L^f\mathbf{1}^\top$ \\
+$\mathbf{X}_{k_w}$ & $\mathbb{R}^{n\times N}$ & Forecast ensemble at window endpoint time $k=k_w$ \\
+$\mathbf{Z}^{(w)}$ & $\mathbb{R}^{d\times N}$ & Stacked forecast observations for window $w$, columns $Q(\mathbf{x}_{k_0(w)}^{(j),f})=\mathbf{H}^{(L)}\mathbf{x}_{k_0(w)}^{(j),f}$ \\
+$\mathbf{A}_x$ & $\mathbb{R}^{n\times N}$ & State anomalies at endpoint, $\mathbf{A}_x=\mathbf{X}_{k_w}-\bar{\mathbf{x}}_{k_w}^f\mathbf{1}^\top$ \\
 $\mathbf{A}_z$ & $\mathbb{R}^{d\times N}$ & Obs anomalies, $\mathbf{A}_z=\mathbf{Z}^{(w)}-\bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^\top$ \\
 $\mathbf{P}_{xz}$ & $\mathbb{R}^{n\times d}$ & Cross-covariance, $\mathbf{P}_{xz}=\frac{1}{N-1}\mathbf{A}_x\mathbf{A}_z^\top$ \\
 $\mathbf{P}_{zz}$ & $\mathbb{R}^{d\times d}$ & Auto-covariance, $\mathbf{P}_{zz}=\frac{1}{N-1}\mathbf{A}_z\mathbf{A}_z^\top$ \\
@@ -2467,10 +2476,10 @@ $\hat{\mathbf{V}}_\kappa$ & $\mathbb{R}^{d\times \kappa}$ & Matrix of first $\ka
 % \]
 
 % \item \textbf{Empirical EnDCF covariances and gain (pseudoinverse form):}
-% Let $\mathbf{X}_L\in\mathbb{R}^{n\times N}$ be the forecast ensemble at the assimilation time (or window endpoint) and
+% Let $\mathbf{X}_{k_w}\in\mathbb{R}^{n\times N}$ be the forecast ensemble at the assimilation time (or window endpoint) and
 % $\mathbf{Z}^{(w)}\in\mathbb{R}^{d\times N}$ the stacked forecast observations. Define
 % \[
-% \mathbf{A}_x := \mathbf{X}_L-\bar{\mathbf{x}}_L^f\mathbf{1}^\top,
+% \mathbf{A}_x := \mathbf{X}_{k_w}-\bar{\mathbf{x}}_{k_w}^f\mathbf{1}^\top,
 % \qquad
 % \mathbf{A}_z := \mathbf{Z}^{(w)}-\bar{\mathbf{y}}_{\mathrm{stack}}\mathbf{1}^\top,
 % \]
@@ -2516,6 +2525,6 @@ $\hat{\mathbf{V}}_\kappa$ & $\mathbb{R}^{d\times \kappa}$ & Matrix of first $\ka
 % ================================================================================
 % Bibliography commented out until citations are added
 \bibliographystyle{plainnat}
-\bibliography{references}
+\IfFileExists{references.bib}{\bibliography{references}}{\bibliography{paper/references}}
 
 \end{document}

@@ -104,11 +104,11 @@ Why should we care about calibration? Because downstream decisions depend on it.
 
 Standard EnKF adds random noise to preserve variance:
 
-$$\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}(\mathbf{z} + \boldsymbol{\epsilon}^{(j)} - \mathbf{H}\mathbf{x}^{(j),f})$$
+<div>$$\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}(\mathbf{z} + \boldsymbol{\epsilon}^{(j)} - \mathbf{H}\mathbf{x}^{(j),f})$$</div>
 
 **Two costs of perturbations:**
 
-1. Irreducible variance: $\mathcal{O}(\|\mathbf{K}\|^2 \cdot d / N)$
+1. Irreducible variance: O(‖K‖² d / N)
 2. Noise distributed across all dimensions — no adaptivity
 
 <!-- .notes:
@@ -158,7 +158,7 @@ The method I propose — QPCA-EnDCF — takes a fundamentally different approach
 
 Normalize residuals by observation uncertainty:
 
-$$\mathbf{E} = (\mathbf{R}^{(L)})^{-1/2}(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^\top)$$
+<div>$$\mathbf{E} = (\mathbf{R}^{(L)})^{-1/2}(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^\top)$$</div>
 
 - Each column: one ensemble member's mismatch
 - Whitening makes noise isotropic (unit covariance)
@@ -176,7 +176,7 @@ Stage 1 is whitening. We take each ensemble member's forecast observations, subt
 
 Decompose centered whitened residual covariance:
 
-$$\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top = \sum_{i=1}^{r} \hat{\lambda}_i \hat{\mathbf{v}}_i \hat{\mathbf{v}}_i^\top$$
+<div>$$\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top = \sum_{i=1}^{r} \hat{\lambda}_i \hat{\mathbf{v}}_i \hat{\mathbf{v}}_i^\top$$</div>
 
 - Large λᵢ → coherent dynamical mismatch (signal)
 - Small λᵢ → sampling noise

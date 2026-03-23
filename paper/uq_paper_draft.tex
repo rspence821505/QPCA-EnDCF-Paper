@@ -6,7 +6,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{graphicx}
-\graphicspath{{figures/}{paper/figures/}}
+\graphicspath{{final_figures/}}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{geometry}
@@ -641,7 +641,7 @@ QPCA-EnDCF achieves $\bar{\gamma}=0.811\pm0.101$, close to ideal calibration wit
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fig04a_spread_vs_rmse_temporal.png}
+\includegraphics[width=\textwidth]{spread_vs_rmse_temporal.png}
 \caption{Temporal evolution of ensemble spread (solid) and RMSE (dashed) over the 50-window sequence; shaded regions denote the 25th--75th percentile range (IQR band) across five trials. QPCA-EnDCF exhibits coherent covariation between spread and RMSE throughout. Sequential EnKF shows persistently low spread with no tracking of RMSE, while 4D-EnKF displays weak positive correlation but remains underdispersed.}
 \label{fig:temporal_calibration}
 \end{figure}
@@ -650,7 +650,7 @@ QPCA-EnDCF maintains coherent tracking, with spread and RMSE fluctuating togethe
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fig04_combined_calibration_analysis.png}
+\includegraphics[width=\textwidth]{combined_calibration_analysis.png}
 \caption{Probabilistic calibration diagnostics. \textbf{(A)} Spread--skill ratio $\gamma_w$ across assimilation windows; the dashed line indicates perfect calibration. \textbf{(B)} Reliability diagram plotting window-level ensemble spread $\sigma_w$ against window-level $\mathrm{RMSE}_w$ for all windows and trials, with the diagonal denoting $\sigma_w=\mathrm{RMSE}_w$.}
 \label{fig:reliability}
 \end{figure}
@@ -1696,7 +1696,7 @@ Figure~\ref{fig:bias_variance_evolution} shows the window-wise bias--variance de
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fig07a_bias_variance_evolution.png}
+\includegraphics[width=\textwidth]{bias_variance_evolution.png}
 \caption{Window-wise bias--variance decomposition over 50 assimilation windows (left to right: Sequential EnKF, 4D-EnKF, QPCA-EnDCF). Solid fill shows $\widehat{\mathrm{Bias}}_{w}^2$ and hatched fill shows $\widehat{\mathrm{Variance}}_{w}$; the total height is $\widehat{\mathrm{MSE}}_{w}=\widehat{\mathrm{Bias}}_{w}^2+\widehat{\mathrm{Variance}}_{w}$. Estimates use $N_{\mathrm{trial}}=10$ independent initial-ensemble realizations.}
 \label{fig:bias_variance_evolution}
 \end{figure}
@@ -1705,7 +1705,7 @@ QPCA-EnDCF attains MSE $\approx13$, compared to $\approx22$ for Sequential EnKF 
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fig07b_mse_decomposition_bars.png}
+\includegraphics[width=\textwidth]{mse_decomposition_bars.png}
 \caption{Stacked-bar MSE decomposition. Left: absolute contributions of squared bias and variance. Right: percentage contributions normalized to unit height. QPCA-EnDCF exhibits comparable bias but markedly reduced variance relative to stochastic methods.}
 \label{fig:mse_decomposition_bars}
 \end{figure}
@@ -1780,7 +1780,7 @@ Figure~\ref{fig:mult_inflation} reports RMSE as a function of the multiplicative
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fig_inflation_multiplicative.png}
+\includegraphics[width=\textwidth]{inflation_multiplicative_20.png}
 \caption{Sensitivity of RMSE to multiplicative inflation. Time-averaged RMSE versus inflation factor $\lambda_{\mathrm{infl}}$ for Sequential EnKF (blue circles), 4D-EnKF (orange squares), and QPCA-EnDCF (green triangles). Panels correspond to $N \in \{5,10,25\}$. Means are averaged over 50 assimilation windows and three trials; shading indicates $\pm1$ standard deviation across trials.}
 \label{fig:mult_inflation}
 \end{figure}
@@ -1789,7 +1789,7 @@ QPCA-EnDCF exhibits a roughly uniform response across ensemble sizes. Performanc
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fig_inflation_additive.png}
+\includegraphics[width=\textwidth]{inflation_additive_20.png}
 \caption{Sensitivity of RMSE to additive inflation. Time-averaged RMSE versus additive inflation magnitude $\alpha_{\mathrm{add}}$ for Sequential EnKF, 4D-EnKF, and QPCA-EnDCF, with panels for $N \in \{5,10,25\}$. Plotting conventions match Figure~\ref{fig:mult_inflation}; shading indicates $\pm1$ standard deviation across three trials.}
 \label{fig:add_inflation}
 \end{figure}
@@ -2208,7 +2208,7 @@ Ranks are computed at each algorithm's analysis times. Aggregating across all st
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fig04d_rank_histograms.png}
+\includegraphics[width=\textwidth]{rank_histograms.png}
 \caption{Rank histogram analysis aggregated over all state components, analysis times, and trials. The dashed line indicates the expected uniform count $E_b=M_{\mathrm{rank}}/(N+1)$ in each panel (here $E_b\approx 4545$ for Seq-EnKF and $E_b\approx 909$ for 4D-EnKF and QPCA-EnDCF, corresponding to uniform relative frequency $1/11$), and the shaded band denotes the 95\% confidence interval under the uniformity null. Left: Sequential EnKF exhibits severe U-shaped distortion ($\chi^2=173{,}195$, flatness $1.861$). Center: 4D-EnKF shows substantial but reduced departure from uniformity ($\chi^2=32{,}269$, flatness $1.796$). Right: QPCA-EnDCF shows near-uniformity ($\chi^2=396.8$, flatness $0.199$).}
 \label{fig:rank_histograms}
 \end{figure}

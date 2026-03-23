@@ -76,6 +76,25 @@ Each slide MUST include:
 - suggested visual
 - 60–90 second speaker notes
 
+MATH FORMATTING (CRITICAL — math will break if rules are not followed):
+
+Display math (block equations):
+- Use `<div>$$\frac{a}{b}$$</div>` or bare `$$\frac{a}{b}$$`
+- Use display math for any equation with `&` alignment
+
+Inline math:
+- Use `<span>$\alpha$</span>` for ANY inline math (most reliable)
+- Bare `$\mathbf{x}_i$` works IF content contains `\`, `^`, `_`, `{`, or `}`
+- Bare `$N$` (no TeX metachar) does NOT work — must use `<span>$N$</span>` or `\(N\)`
+
+Math in tables:
+- Use `$\mathcal{O}(d/N)$` not plain text `O(d/N)`
+- Use `$\delta_\kappa$` not Unicode `δ_κ`
+- For norms, use `$\|x\|$` (backslash-pipe) — bare `|` breaks table parsing
+
+Math in speaker notes:
+- Same rules as slides — write inside `<!-- .notes: ... -->` blocks
+
 ---
 
 ## AGENT 3 — NARRATIVE EDITOR
@@ -104,6 +123,10 @@ Requirements:
   - system architecture
   - methodology flow
   - data pipeline
+- Mermaid diagrams: write as .mmd files, pre-render to SVG, reference as `![alt](diagrams_rendered/file.svg)`
+- Paper figures: reference as `![alt](figures/file.png)` (via symlink to paper/final_figures/)
+- Mathematical notation in visuals: use TeX in slide text near the figure, not embedded in images
+- Tables with math: use proper `$...$` TeX delimiters (see AGENT 2 math rules)
 
 ---
 
@@ -153,20 +176,62 @@ REQUIRED STRUCTURE:
 presentation_repo/
 
 - slides/deck.md
+- slides/build.js (Node.js build script — converts deck.md → presentation.html)
+- slides/test_build.js (post-build math validation)
+- slides/math_test.md (math rendering torture test — 30 test cases)
 - slides/theme.css
+- slides/package.json (dependency: marked 17.0.5)
+- slides/diagrams_rendered/*.svg (pre-rendered Mermaid diagrams)
+- slides/figures/ (symlink → paper/final_figures/)
 - diagrams/\*.mmd
 - charts/chart_specs.json
 - scripts/generate_charts.py
 - appendix/backup_slides.md
+- appendix/committee_qa.md
 - config/presentation.yaml
 - README.md
 
 Standards:
 
-- reveal.js markdown slides
+- reveal.js 5.1.0 (loaded from CDN)
+- MathJax 3 for math rendering (loaded from CDN)
 - speaker notes in <!-- .notes: -->
-- Mermaid diagrams as standalone files
+- Mermaid diagrams as standalone .mmd files, pre-rendered to SVG
 - Vega-Lite specs for charts
+
+BUILD COMMANDS:
+
+- `cd slides && node build.js` — build main deck (outputs presentation.html)
+- `node build.js --backup ../appendix/backup_slides.md` — build with backup slides
+- `node test_build.js` — validate math rendering (checks for placeholder leaks, entity encoding, emphasis leaks)
+- `open presentation.html` — view in browser
+
+MATH RENDERING PIPELINE:
+
+The build script (`build.js`) uses a 7-phase extraction pipeline to protect math from markdown parser mangling:
+1. Fenced code blocks extracted first (prevent false math matches)
+2. Display math (`<div>$$...$$</div>`, bare `$$...$$`, `\[...\]`) extracted
+3. Inline math (`<span>$...$</span>`, bare `$...$` with TeX metachar, `\(...\)`) extracted
+4. Code blocks restored, then `marked` parses markdown to HTML
+5. Math restored as `\[...\]` (display) and `\(...\)` (inline)
+6. MathJax 3 renders math client-side in the browser
+
+KNOWN LIMITATIONS:
+- `$N$` (no TeX metachar) must use `<span>$N$</span>` or `\(N\)`
+- `$|x|$` (bare pipe in table) breaks table parser — use `$\|x\|$`
+- `&` alignment only works inside `$$...$$` display math
+- `\begin{equation}` without `$$` wrapper is fragile — always wrap in `$$`
+
+TABLE RENDERING:
+- Standard markdown pipe tables
+- Math in cells: use `$\mathcal{O}(d/N)$` not plain `O(d/N)`
+- Use TeX notation consistently: `$\delta_\kappa$` not `δ_κ`
+
+DIAGRAM RENDERING:
+- Mermaid source files in diagrams/*.mmd
+- Pre-render to SVG in slides/diagrams_rendered/
+- Reference in deck.md as `![alt](diagrams_rendered/file.svg)`
+- Paper figures via symlink: `![alt](figures/file.png)`
 
 ==================================================
 EXECUTION PLAN (MANDATORY ORDER)

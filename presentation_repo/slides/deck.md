@@ -108,7 +108,7 @@ Standard EnKF adds random noise to preserve variance:
 
 **Two costs of perturbations:**
 
-1. Irreducible variance: O(‖K‖² d / N)
+1. Irreducible variance: $\mathcal{O}(\|\mathbf{K}\|^2 d / N)$
 2. Noise distributed across all dimensions — no adaptivity
 
 <!-- .notes:
@@ -278,9 +278,9 @@ Now that I've described what the method does, the natural question is: why does 
 
 Three-stage analysis:
 
-1. **Covariance concentration** → sample C_E approximates population Σ_E
+1. **Covariance concentration** → sample $\mathbf{C}_E$ approximates population $\boldsymbol{\Sigma}_E$
 2. **Spectral perturbation** → empirical projector approximates population projector
-3. **Bias-variance decomposition** → MSE = Bias²(κ) + Variance(N,κ)
+3. **Bias-variance decomposition** → $\mathrm{MSE} = \mathrm{Bias}^2(\kappa) + \mathrm{Var}(N,\kappa)$
 
 **Goal: explain WHY spectral regularization yields calibration**
 
@@ -371,11 +371,11 @@ You might ask: doesn't truncation always introduce bias? In classical Tikhonov o
 
 | Property | Stochastic EnKF | QPCA-EnDCF |
 |---|---|---|
-| Variance scaling | O(d/N) | O(κ/N) |
+| Variance scaling | $\mathcal{O}(d/N)$ | $\mathcal{O}(\kappa/N)$ |
 | Perturbation noise | Irreducible | Eliminated |
 | Regularization | Uniform via R | Adaptive spectral |
 | Bias-variance | Classical tradeoff | Favorable under spectral decay |
-| Projector stability | N/A | Controlled by δ_κ |
+| Projector stability | N/A | Controlled by $\delta_\kappa$ |
 
 <!-- .notes:
 To summarize the theory: stochastic EnKF has variance scaling with observation dimension over N, irreducible perturbation noise, and uniform regularization. QPCA-EnDCF has variance scaling with effective rank over N, no perturbation noise, adaptive spectral regularization, and a favorable bias-variance tradeoff under spectral decay. The projector stability is controlled by the cutoff gap delta-kappa, which is intrinsic to the problem spectrum, not a tuning parameter.
@@ -439,7 +439,7 @@ The calibration diagnostics make this visually clear. Panel A shows the spread-s
 
 ![Bias Variance Evolution](figures/bias_variance_evolution.png)
 
-| Method | MSE | Bias² | Variance | Bias²/MSE |
+| Method | MSE | $\mathrm{Bias}^2$ | Variance | $\mathrm{Bias}^2/\mathrm{MSE}$ |
 |---|---|---|---|---|
 | Seq-EnKF | 22 | ~10 | ~12 | 45% |
 | 4D-EnKF | 21 | ~10 | ~11 | 47% |

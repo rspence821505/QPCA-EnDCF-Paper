@@ -19,8 +19,9 @@
     .reveal ul, .reveal ol { display: block; }
     .reveal pre { background: #0a0a1a; border-left: 3px solid #4ecdc4; font-size: 0.55em; }
     .reveal code { color: #4ecdc4; }
-    .MathJax, .MathJax_Display, .MathJax span { color: #e8e8e8 !important; }
-    .MathJax_Display { overflow-x: auto; overflow-y: hidden; }
+    mjx-container { color: #e8e8e8 !important; }
+    mjx-container[jax="CHTML"][display="true"] { display: block; margin: 0.8em 0; overflow-x: auto; }
+    mjx-container[jax="CHTML"] { overflow-x: auto; }
   </style>
 </head>
 <body>
@@ -46,7 +47,7 @@
 <li>Practical for operational weather, ocean, climate</li>
 <li>Avoid explicit covariance manipulation</li>
 </ul>
-<p><strong>But: what happens when N is small?</strong></p>
+<p class="fragment"><strong>But: what happens when N is small?</strong></p>
 
 <aside class="notes">Ensemble Kalman filtering is the backbone of operational data assimilation — used in weather prediction, ocean modeling, and climate science. The idea is elegant: represent posterior uncertainty through a small collection of state vectors, avoiding the need to store or manipulate full covariance matrices. But operational constraints force us to use very small ensembles — often 10 to 50 members for systems with millions of unknowns. What happens to uncertainty quantification in that regime is the central question of this work.</aside>
 </section>
@@ -109,10 +110,10 @@
 <section >
 <h2>The Stochastic Perturbation Problem</h2>
 <p>Standard EnKF adds random noise to preserve variance:</p>
-<p><div class="math-display">\[\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}(\mathbf{z} + \boldsymbol{\epsilon}^{(j)} - \mathbf{H}\mathbf{x}^{(j),f})\]</div></p>
+\[\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}(\mathbf{z} + \boldsymbol{\epsilon}^{(j)} - \mathbf{H}\mathbf{x}^{(j),f})\]
 <p><strong>Two costs of perturbations:</strong></p>
 <ol>
-<li>Irreducible variance: O(‖K‖² d / N)</li>
+<li>Irreducible variance: \(\mathcal{O}(\|\mathbf{K}\|^2 d / N)\)</li>
 <li>Noise distributed across all dimensions — no adaptivity</li>
 </ol>
 
@@ -166,7 +167,7 @@
 <section >
 <h2>Stage 1: Whitening</h2>
 <p>Normalize residuals by observation uncertainty:</p>
-<p><div class="math-display">\[\mathbf{E} = (\mathbf{R}^{(L)})^{-1/2}(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^\top)\]</div></p>
+\[\mathbf{E} = (\mathbf{R}^{(L)})^{-1/2}(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^\top)\]
 <ul>
 <li>Each column: one ensemble member&#39;s mismatch</li>
 <li>Whitening makes noise isotropic (unit covariance)</li>
@@ -179,7 +180,7 @@
 <section >
 <h2>Stage 2: Spectral Decomposition</h2>
 <p>Decompose centered whitened residual covariance:</p>
-<p><div class="math-display">\[\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top = \sum_{i=1}^{r} \hat{\lambda}_i \hat{\mathbf{v}}_i \hat{\mathbf{v}}_i^\top\]</div></p>
+\[\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top = \sum_{i=1}^{r} \hat{\lambda}_i \hat{\mathbf{v}}_i \hat{\mathbf{v}}_i^\top\]
 <ul>
 <li>Large λᵢ → coherent dynamical mismatch (signal)</li>
 <li>Small λᵢ → sampling noise</li>
@@ -192,9 +193,9 @@
 <section >
 <h2>Stage 3: Truncated Correction</h2>
 <p>Project onto leading κ modes and correct:</p>
-<p><div class="math-display">\[\mathbf{Q}_{\mathrm{PCA}} = -\hat{\mathbf{V}}_\kappa \hat{\mathbf{V}}_\kappa^\top \mathbf{E}\]</div></p>
-<p><div class="math-display">\[\boldsymbol{\Delta}_{\mathrm{obs}} = (\mathbf{R}^{(L)})^{1/2} \mathbf{Q}_{\mathrm{PCA}}\]</div></p>
-<p><div class="math-display">\[\mathbf{X}_{k_w}^a = \mathbf{X}_{k_w}^f + \mathbf{K}^{\mathrm{DC}} \boldsymbol{\Delta}_{\mathrm{obs}}\]</div></p>
+\[\mathbf{Q}_{\mathrm{PCA}} = -\hat{\mathbf{V}}_\kappa \hat{\mathbf{V}}_\kappa^\top \mathbf{E}\]
+\[\boldsymbol{\Delta}_{\mathrm{obs}} = (\mathbf{R}^{(L)})^{1/2} \mathbf{Q}_{\mathrm{PCA}}\]
+\[\mathbf{X}_{k_w}^a = \mathbf{X}_{k_w}^f + \mathbf{K}^{\mathrm{DC}} \boldsymbol{\Delta}_{\mathrm{obs}}\]
 <ul>
 <li>κ = 1 in all experiments (leading mode only)</li>
 <li>No perturbations → no perturbation noise</li>
@@ -290,9 +291,9 @@ Now that I've described what the method does, the natural question is: why does 
 <h2>Theoretical Framework: Overview</h2>
 <p>Three-stage analysis:</p>
 <ol>
-<li><strong>Covariance concentration</strong> → sample C_E approximates population Σ_E</li>
+<li><strong>Covariance concentration</strong> → sample \(\mathbf{C}_E\) approximates population \(\boldsymbol{\Sigma}_E\)</li>
 <li><strong>Spectral perturbation</strong> → empirical projector approximates population projector</li>
-<li><strong>Bias-variance decomposition</strong> → MSE = Bias²(κ) + Variance(N,κ)</li>
+<li><strong>Bias-variance decomposition</strong> → \(\mathrm{MSE} = \mathrm{Bias}^2(\kappa) + \mathrm{Var}(N,\kappa)\)</li>
 </ol>
 <p><strong>Goal: explain WHY spectral regularization yields calibration</strong></p>
 
@@ -316,20 +317,20 @@ Now that I've described what the method does, the natural question is: why does 
 </section>
 <section >
 <h2>Main Theorem: Bias-Variance Decomposition</h2>
-<p><div class="math-display">\[\mathbb{E}\|\bar{\mathbf{x}}^a - \mathbf{x}^{\mathrm{true}}\|^2 = \mathrm{Bias}^2(\kappa) + \mathrm{Var}(N, \kappa)\]</div></p>
+\[\mathbb{E}\|\bar{\mathbf{x}}^a - \mathbf{x}^{\mathrm{true}}\|^2 = \mathrm{Bias}^2(\kappa) + \mathrm{Var}(N, \kappa)\]
 <p><strong>Bias bound:</strong></p>
-<p><div class="math-display">\[\mathrm{Bias}^2 \leq 2\,\mathrm{Bias}_{\mathrm{base}}^2 + 4\,\mathbb{E}[\|\mathbf{K}\|^2]\|\mathbf{R}\|\,\|(\mathbf{I} - \mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2 + \text{sampling, approx}\]</div></p>
+\[\mathrm{Bias}^2 \leq 2\,\mathrm{Bias}_{\mathrm{base}}^2 + 4\,\mathbb{E}[\|\mathbf{K}\|^2]\|\mathbf{R}\|\,\|(\mathbf{I} - \mathbf{P}_\kappa)\boldsymbol{\mu}_E\|^2 + \text{sampling, approx}\]
 <p><strong>Variance bound:</strong></p>
-<p><div class="math-display">\[\mathrm{Var} \leq \frac{2}{N}\mathbb{E}[\|\mathbf{x}^f - \boldsymbol{\mu}^f\|^2] + \frac{2\|\mathbf{R}\|}{N}\mathbb{E}[\|\mathbf{K}\|^2]\,\mathrm{tr}(\boldsymbol{\Sigma}_E) + \text{projector term}\]</div></p>
+\[\mathrm{Var} \leq \frac{2}{N}\mathbb{E}[\|\mathbf{x}^f - \boldsymbol{\mu}^f\|^2] + \frac{2\|\mathbf{R}\|}{N}\mathbb{E}[\|\mathbf{K}\|^2]\,\mathrm{tr}(\boldsymbol{\Sigma}_E) + \text{projector term}\]
 
 <aside class="notes">Here's the main theorem. The MSE decomposes exactly into squared bias and variance. The bias has several contributions: a base term reflecting how well the untruncated correction would do, a truncation term depending on how much of the mean innovation is discarded — that's the I minus P-kappa mu-E norm — and sampling and approximation terms. The variance has two main pieces: forecast variance scaled by 1/N, and observation-space variance also scaled by 1/N with a gain-dependent prefactor. The projector estimation term involves kappa over delta-kappa-squared, connecting projector stability directly to variance.</aside>
 </section>
 <section >
 <h2>The Critical Comparison</h2>
 <p><strong>Stochastic EnKF variance (lower bound):</strong></p>
-<p><div class="math-display">\[\mathrm{Var}_{\mathrm{stoch}} \geq \frac{\|\mathbf{K}\|^2 \cdot \mathrm{tr}(\mathbf{R}^{(L)})}{N} = \mathcal{O}\!\left(\frac{d}{N}\right)\]</div></p>
+\[\mathrm{Var}_{\mathrm{stoch}} \geq \frac{\|\mathbf{K}\|^2 \cdot \mathrm{tr}(\mathbf{R}^{(L)})}{N} = \mathcal{O}\!\left(\frac{d}{N}\right)\]
 <p><strong>QPCA-EnDCF variance:</strong></p>
-<p><div class="math-display">\[\mathrm{Var}_{\mathrm{QPCA}} = \mathcal{O}\!\left(\frac{1}{N}\right) \text{ with } \frac{\kappa}{\delta_\kappa^2} \text{ prefactor}\]</div></p>
+\[\mathrm{Var}_{\mathrm{QPCA}} = \mathcal{O}\!\left(\frac{1}{N}\right) \text{ with } \frac{\kappa}{\delta_\kappa^2} \text{ prefactor}\]
 <ul>
 <li>Stochastic: perturbation variance scales with <strong>d = mL</strong></li>
 <li>QPCA-EnDCF: no perturbation term; projector term scales with <strong>κ</strong></li>
@@ -366,8 +367,8 @@ Moving from theory to evidence, the bias-variance decomposition will show this p
 </thead>
 <tbody><tr>
 <td>Variance scaling</td>
-<td>O(d/N)</td>
-<td>O(κ/N)</td>
+<td>\(\mathcal{O}(d/N)\)</td>
+<td>\(\mathcal{O}(\kappa/N)\)</td>
 </tr>
 <tr>
 <td>Perturbation noise</td>
@@ -387,7 +388,7 @@ Moving from theory to evidence, the bias-variance decomposition will show this p
 <tr>
 <td>Projector stability</td>
 <td>N/A</td>
-<td>Controlled by δ_κ</td>
+<td>Controlled by \(\delta_\kappa\)</td>
 </tr>
 </tbody></table>
 
@@ -471,9 +472,9 @@ That's the theory. Now let me show you the experiments that test these predictio
 <tr>
 <th>Method</th>
 <th>MSE</th>
-<th>Bias²</th>
+<th>\(\mathrm{Bias}^2\)</th>
 <th>Variance</th>
-<th>Bias²/MSE</th>
+<th>\(\mathrm{Bias}^2/\mathrm{MSE}\)</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -651,6 +652,358 @@ I want to end with what I think is the most important open question: does this m
 
 <aside class="notes">Thank you for your attention. I'm happy to take any questions.</aside>
 </section>
+<section >
+<!-- BACKUP SLIDE 1: Full Theorem Proof Sketch -->
+
+</section>
+<section >
+<h2>Backup 1: Theorem Proof Sketch</h2>
+<p><strong>Step 1:</strong> Bias-variance identity (Lemma 1)
+\[\mathbb{E}\|\bar{\mathbf{x}}^a - \mathbf{x}^{\mathrm{true}}\|^2 = \|\mathbb{E}[\bar{\mathbf{x}}^a] - \mathbf{x}^{\mathrm{true}}\|^2 + \mathbb{E}\|\bar{\mathbf{x}}^a - \mathbb{E}[\bar{\mathbf{x}}^a]\|^2\]</p>
+<p><strong>Step 2:</strong> Express analysis mean via projector
+\[\bar{\mathbf{x}}^a = \bar{\mathbf{x}}^f - \mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{P}}_\kappa \bar{\mathbf{e}}\]</p>
+<p><strong>Step 3:</strong> Insert/subtract population projector, decompose \(\bar{\mathbf{e}} = \boldsymbol{\mu}_E + (\bar{\mathbf{e}} - \boldsymbol{\mu}_E)\)</p>
+<p><strong>Step 4:</strong> Apply submultiplicativity, Jensen, Cauchy-Schwarz to each term</p>
+
+<aside class="notes">The proof proceeds in four steps. First, the standard bias-variance identity. Second, express the analysis mean through the empirical projector. Third, insert and subtract the population projector and decompose the sample mean into its expectation plus fluctuation. Fourth, bound each resulting term using submultiplicativity, Jensen's inequality, and Cauchy-Schwarz. The key technical ingredient is that the projector error and sample mean are dependent — both computed from the same ensemble — so we use Cauchy-Schwarz on fourth moments rather than independence.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 2: Davis-Kahan Details -->
+
+
+<h2>Backup 2: Davis-Kahan Projector Stability</h2>
+<p><strong>Weyl&#39;s inequality:</strong> \(|\hat{\lambda}_i - \lambda_i| \leq \|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_2\)</p>
+<p><strong>Davis-Kahan sin Θ theorem:</strong>
+\[\sin\angle(\hat{\mathbf{v}}_i, \mathbf{v}_i) \leq \frac{\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_2}{\delta_i}\]</p>
+<p><strong>Projector form (rank-κ):</strong>
+\[\|\hat{\mathbf{P}}_\kappa - \mathbf{P}_\kappa\|_F \leq \frac{\sqrt{2\kappa}}{\delta_\kappa}\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F\]</p>
+<ul>
+<li>Gap δ_κ controls stability</li>
+<li>When κ=1 and gap is large → stable projector</li>
+<li>Empirically: leading eigenvalue is well-separated</li>
+</ul>
+
+<aside class="notes">Davis-Kahan is the workhorse of the spectral perturbation analysis. Weyl's inequality gives pointwise eigenvalue stability. The sin-theta theorem controls eigenvector perturbation, inversely proportional to the spectral gap. For rank-kappa projectors, we get Frobenius control with a square-root-kappa prefactor divided by the cutoff gap. When kappa is 1 and the gap is large — as empirically observed — the projector is very stable under sampling perturbations.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 3: Covariance Concentration Details -->
+
+
+<h2>Backup 3: Covariance Concentration</h2>
+<p><strong>Unbiasedness:</strong> \(\mathbb{E}[\mathbf{C}_E] = \boldsymbol{\Sigma}_E\) (Bessel correction)</p>
+<p><strong>Mean-square Frobenius deviation:</strong>
+\[\mathbb{E}\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F^2 \leq \frac{C_{\mathrm{cov}}}{N-1}\mathrm{tr}(\boldsymbol{\Sigma}_E^2)\]</p>
+<p><strong>Gaussian sharpening (Wishart):</strong>
+\[\mathbb{E}\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F^2 = \frac{(\mathrm{tr}(\boldsymbol{\Sigma}_E))^2 + \mathrm{tr}(\boldsymbol{\Sigma}_E^2)}{N-1}\]</p>
+<p><strong>Fourth-moment bound (needed for variance):</strong>
+\[\mathbb{E}\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F^4 \leq \frac{C_W}{(N-1)^2}(\mathrm{tr}(\boldsymbol{\Sigma}_E^2))^2\]</p>
+
+<aside class="notes">Three concentration results underpin the theory. The sample covariance is unbiased by the Bessel correction — this is standard but important. The mean-square Frobenius deviation is O(1/(N-1)) with a trace-of-sigma-squared prefactor — this is the backbone. Under Gaussianity, we get the exact Wishart expression with sharper constants. The fourth-moment bound is needed for the variance analysis because the projector and sample mean are dependent, requiring Cauchy-Schwarz on fourth moments.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 4: Rank Histogram Analysis -->
+
+
+<h2>Backup 4: Rank Histogram Analysis</h2>
+<p><img src="figures/rank_histograms.png" alt="Rank Histograms"></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>χ²</th>
+<th>Flatness</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Seq-EnKF</td>
+<td>173,195</td>
+<td>1.861</td>
+</tr>
+<tr>
+<td>4D-EnKF</td>
+<td>32,269</td>
+<td>1.796</td>
+</tr>
+<tr>
+<td>QPCA-EnDCF</td>
+<td>396.8</td>
+<td>0.199</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Flatness: normalized std of bin frequencies</li>
+<li>QPCA-EnDCF: ~10× better than stochastic methods</li>
+<li>U-shape in EnKF = severe underdispersion</li>
+</ul>
+
+<aside class="notes">Rank histograms test full distributional calibration beyond second moments. Under perfect calibration, the truth should be uniformly distributed among ensemble members. QPCA-EnDCF achieves flatness of 0.199 — nearly uniform. Stochastic methods show severe U-shaped histograms with flatness near 2, indicating the truth frequently falls outside the ensemble support. The chi-squared values confirm: QPCA-EnDCF's departure from uniformity is two to three orders of magnitude smaller.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 5: Additive Inflation Results -->
+
+
+<h2>Backup 5: Additive Inflation Analysis</h2>
+<p><img src="figures/inflation_additive_20.png" alt="Additive Inflation"></p>
+<ul>
+<li>QPCA-EnDCF optimal at α_add = 0 for all N</li>
+<li>Additive inflation degrades QPCA-EnDCF (disrupts correlations)</li>
+<li>For stochastic: additive underperforms multiplicative by 5-10%</li>
+<li>Isotropic noise lacks dynamical structure</li>
+</ul>
+
+<aside class="notes">Additive inflation results tell the same story as multiplicative. QPCA-EnDCF is optimal with zero additive inflation for every ensemble size. Adding isotropic noise actually hurts because it disrupts the dynamically consistent correlation structure that spectral regularization preserves. For stochastic methods, additive inflation provides marginal improvement over no inflation but consistently underperforms multiplicative inflation, because isotropic perturbations inject variance in dynamically irrelevant directions.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 6: Non-Gaussian Full Table -->
+
+
+<h2>Backup 6: Full Non-Gaussian Results</h2>
+<table>
+<thead>
+<tr>
+<th>Distribution</th>
+<th>QPCA</th>
+<th>Seq-EnKF</th>
+<th>4D-EnKF</th>
+<th>vs Seq</th>
+<th>vs 4D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Gaussian</td>
+<td><strong>3.63</strong></td>
+<td>4.45</td>
+<td>4.51</td>
+<td>−18.3%</td>
+<td>−19.4%</td>
+</tr>
+<tr>
+<td>Student-t (ν=3)</td>
+<td><strong>3.67</strong></td>
+<td>4.68</td>
+<td>4.46</td>
+<td>−21.6%</td>
+<td>−17.8%</td>
+</tr>
+<tr>
+<td>Student-t (ν=5)</td>
+<td><strong>3.55</strong></td>
+<td>4.48</td>
+<td>4.58</td>
+<td>−20.7%</td>
+<td>−22.4%</td>
+</tr>
+<tr>
+<td>Student-t (ν=10)</td>
+<td><strong>3.51</strong></td>
+<td>4.54</td>
+<td>4.40</td>
+<td>−22.8%</td>
+<td>−20.3%</td>
+</tr>
+<tr>
+<td>Laplace</td>
+<td><strong>3.69</strong></td>
+<td>4.51</td>
+<td>4.49</td>
+<td>−18.3%</td>
+<td>−18.0%</td>
+</tr>
+<tr>
+<td>Gamma (k=2)</td>
+<td><strong>3.56</strong></td>
+<td>4.72</td>
+<td>4.45</td>
+<td>−24.5%</td>
+<td>−19.9%</td>
+</tr>
+<tr>
+<td>Gamma (k=5)</td>
+<td><strong>3.66</strong></td>
+<td>4.51</td>
+<td>4.43</td>
+<td>−18.8%</td>
+<td>−17.3%</td>
+</tr>
+<tr>
+<td>LogNorm (σ=0.5)</td>
+<td><strong>3.60</strong></td>
+<td>4.44</td>
+<td>4.66</td>
+<td>−18.9%</td>
+<td>−22.7%</td>
+</tr>
+<tr>
+<td>LogNorm (σ=0.8)</td>
+<td><strong>3.61</strong></td>
+<td>4.49</td>
+<td>4.55</td>
+<td>−19.6%</td>
+<td>−20.6%</td>
+</tr>
+</tbody></table>
+<p>Cross-distribution std: QPCA 0.052, Seq 0.092, 4D 0.131</p>
+
+<aside class="notes">The full non-Gaussian table. Nine distributions, three trials each. QPCA-EnDCF wins every single comparison, with improvements ranging from 17.3 to 24.5 percent. Its cross-distribution standard deviation is 0.052 — half that of sequential EnKF and a third of 4D-EnKF. The largest improvement is 24.5 percent against sequential EnKF under Gamma(k=2) errors, and the most consistent advantage is the approximately 20 percent mean improvement across all distributions.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 7: Correlated Error Implementation -->
+
+
+<h2>Backup 7: Correlated Observation Error Details</h2>
+<p><strong>Three covariance structures:</strong></p>
+<ul>
+<li>Diagonal: cond(R) = 1 (baseline)</li>
+<li>Exponential: R_ij = σ² exp(−d_ij/ℓ), cond(R) = 649</li>
+<li>Gaussian: R_ij = σ² exp(−d_ij²/2ℓ²), cond(R) ≈ 3.7×10⁵</li>
+</ul>
+<p><strong>Whitening implementation:</strong> Cholesky factorization R = LL^T, W = L^{−T}</p>
+<p><strong>Key results:</strong></p>
+<ul>
+<li>QPCA-EnDCF degradation: &lt;7% across 5 orders of magnitude</li>
+<li>4D-EnKF degradation: 15.3% under Gaussian correlation</li>
+<li>QPCA advantage grows: 25.2% → 24.7% → 31.9%</li>
+<li>Regularization ε = 10⁻³ tr(R) for Gaussian case</li>
+</ul>
+
+<aside class="notes">The correlated error study tests three covariance structures with condition numbers from 1 to 370,000. We use Cholesky whitening — R equals L L-transpose, W equals L-inverse-transpose. QPCA-EnDCF stays within 7 percent of the uncorrelated baseline, while 4D-EnKF degrades by 15 percent under severe ill-conditioning. The advantage of QPCA-EnDCF actually increases with correlation strength because whitening effectively decorrelates the observation space, restoring the favorable spectral structure.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 8: MUD/QPCA Correspondence -->
+
+
+<h2>Backup 8: MUD/QPCA Algebraic Correspondence</h2>
+<p><strong>MUD equation (10):</strong>
+\[\lambda_{\mathrm{MUD}} = \lambda_{\mathrm{init}} + \Sigma_{\mathrm{init}}A^\top\Sigma_{\mathrm{pred}}^{-1}(-b - A\lambda_{\mathrm{init}})\]</p>
+<p><strong>QPCA-EnDCF update:</strong>
+\[\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top(\mathbf{R}^{(L)})^{-1/2}(\mathbf{z}^{(w)} - \mathbf{z}_f^{(j)})\]</p>
+<p><strong>Correspondence:</strong></p>
+<ul>
+<li>λ_init ↔ x^f (prior/forecast state)</li>
+<li>Σ_init A^T Σ_pred^{−1} ↔ K^DC (covariance pullback)</li>
+<li>−b − Aλ_init ↔ projected innovation (truncated residual)</li>
+</ul>
+
+<aside class="notes">The similarity document establishes a formal algebraic correspondence between the QPCA/MUD parameter estimation framework and QPCA-EnDCF. Both follow the same template: prior state plus covariance-weighted pullback of a low-dimensional projected innovation. The MUD paper works with population covariances for parameter estimation; QPCA-EnDCF works with empirical ensemble quantities for state filtering. This connection is important because it grounds the ensemble filtering method in the established MUD inverse problem theory.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 9: Window Length Table -->
+
+
+<h2>Backup 9: Window Length Detailed Results</h2>
+<table>
+<thead>
+<tr>
+<th>L</th>
+<th>Seq-EnKF</th>
+<th>4D-EnKF</th>
+<th>QPCA-EnDCF</th>
+<th>QPCA vs 4D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>4.72</td>
+<td>4.64</td>
+<td>4.87</td>
+<td>−5.1%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4.58</td>
+<td>4.44</td>
+<td>3.69</td>
+<td>+16.9%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>4.63</td>
+<td>4.48</td>
+<td>3.64</td>
+<td>+18.8%</td>
+</tr>
+<tr>
+<td>7</td>
+<td>4.61</td>
+<td>4.49</td>
+<td>3.68</td>
+<td>+18.0%</td>
+</tr>
+<tr>
+<td>10</td>
+<td>4.67</td>
+<td>4.42</td>
+<td>3.66</td>
+<td>+17.2%</td>
+</tr>
+<tr>
+<td>15</td>
+<td>4.59</td>
+<td>4.40</td>
+<td>3.72</td>
+<td>+15.5%</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Sharp transition between L=1 and L=3</li>
+<li>L=1: spectral regularization underperforms (insufficient temporal structure)</li>
+<li>L≥3: consistent 16-21% advantage</li>
+<li>Diminishing returns beyond L≈10</li>
+</ul>
+
+<aside class="notes">The detailed window length table shows the sharp transition. At L=1, QPCA-EnDCF actually underperforms 4D-EnKF by 5 percent. At L=3, it outperforms by 17 percent. This transition occurs because at L=1, the residual covariance is only 20-by-20 with rank at most 9, insufficient for reliable spectral separation. At L=3, the residual space is 60-dimensional, providing enough structure for the leading mode to be stably identified. Beyond L=10, returns diminish as additional observations exceed the decorrelation timescale.</aside>
+</section>
+<section >
+<!-- BACKUP SLIDE 10: Computational Cost Analysis -->
+
+
+<h2>Backup 10: Computational Cost Comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Seq-EnKF</th>
+<th>4D-EnKF</th>
+<th>QPCA-EnDCF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Model propagation</td>
+<td>N × K × O(n²)</td>
+<td>N × K × O(n²)</td>
+<td>N × K × O(n²)</td>
+</tr>
+<tr>
+<td>Gain computation</td>
+<td>K × O(nm²)</td>
+<td>W × O(nd²)</td>
+<td>W × O(nd²)</td>
+</tr>
+<tr>
+<td>Eigendecomposition</td>
+<td>—</td>
+<td>—</td>
+<td>W × O(d³)</td>
+</tr>
+<tr>
+<td>Perturbation sampling</td>
+<td>K × N × O(m)</td>
+<td>W × N × O(d)</td>
+<td><strong>None</strong></td>
+</tr>
+<tr>
+<td>Inflation</td>
+<td>K × O(nN)</td>
+<td>W × O(nN)</td>
+<td><strong>None</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Dominant cost:</strong> model propagation (identical across methods)</p>
+<p><strong>QPCA-EnDCF overhead:</strong> one d×d eigendecomposition per window</p>
+<p><strong>QPCA-EnDCF savings:</strong> no perturbation RNG, no inflation tuning</p>
+
+<aside class="notes">Computational cost comparison. The dominant cost for all methods is model propagation — identical. QPCA-EnDCF adds one d-by-d eigendecomposition per window, which is O(d-cubed). For d=100, this is negligible relative to model propagation. It saves on perturbation sampling — no random number generation needed — and eliminates inflation, removing both the computational cost and the tuning burden. The net overhead is minimal; the net benefit from smaller viable ensemble sizes is substantial.</aside>
+</section>
     </div>
   </div>
 
@@ -660,21 +1013,22 @@ I want to end with what I think is the most important open question: does this m
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/zoom/zoom.js"></script>
 
   <script>
-    // MathJax config MUST be set before loading MathJax
     window.MathJax = {
-      tex2jax: {
-        inlineMath: [['\\(','\\)'], ['$','$']],
-        displayMath: [['\\[','\\]'], ['$$','$$']],
-        processEscapes: true,
-        processEnvironments: true,
-        skipTags: ['script','noscript','style','textarea','pre','code']
+      tex: {
+        inlineMath: [['\\(','\\)']],
+        displayMath: [['\\[','\\]']],
+        processEscapes: true
       },
-      messageStyle: 'none',
-      skipStartupTypeset: true
+      options: {
+        skipHtmlTags: ['script','noscript','style','textarea','pre','code']
+      },
+      chtml: {
+        scale: 1
+      }
     };
   </script>
-  <script type="text/javascript"
-    src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_HTML-full">
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
   </script>
 
   <script>
@@ -689,20 +1043,6 @@ I want to end with what I think is the most important open question: does this m
       height: 1080,
       margin: 0.06,
       plugins: [RevealHighlight, RevealNotes, RevealZoom]
-    }).then(function() {
-      // Typeset all math after Reveal is fully ready
-      if (typeof MathJax !== 'undefined') {
-        MathJax.Hub.Queue(['Typeset', MathJax.Hub, document.querySelector('.reveal .slides')]);
-        MathJax.Hub.Queue(function() { Reveal.layout(); });
-        console.log('MathJax typeset queued');
-      }
-    });
-
-    // Re-typeset on slide change
-    Reveal.on('slidechanged', function(event) {
-      if (typeof MathJax !== 'undefined' && MathJax.Hub) {
-        MathJax.Hub.Queue(['Typeset', MathJax.Hub, event.currentSlide]);
-      }
     });
   </script>
 </body>

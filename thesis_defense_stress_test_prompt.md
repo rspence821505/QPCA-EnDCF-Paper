@@ -231,20 +231,70 @@ presentation_repo/
 - minimal text
 - include speaker notes using:
   <!-- .notes: -->
+- slides are built via: `node build.js` (in slides/ directory)
+- validate math rendering via: `node test_build.js`
+- append backup slides via: `node build.js --backup ../appendix/backup_slides.md`
+
+---
+
+## MATH RENDERING RULES (CRITICAL)
+
+The build pipeline (`build.js`) uses `marked` for markdown → HTML, then MathJax 3 for TeX rendering. Math must be written correctly to survive the markdown parser.
+
+**Display math (block equations):**
+- `<div>$$\frac{a}{b}$$</div>` — wrapped form (most reliable)
+- `$$\frac{a}{b}$$` — bare form (also works)
+- `\[x = y\]` — backslash-bracket form (also works)
+- Always use display math for equations with `&` alignment (e.g., `\begin{aligned}`)
+
+**Inline math:**
+- `<span>$\alpha + \beta$</span>` — wrapped form (always works, any content)
+- `$\mathbf{x}_i^2$` — bare form (works if content contains `\`, `^`, `_`, `{`, or `}`)
+- `\(\alpha\)` — backslash-paren form (also works)
+- **IMPORTANT:** Simple math like `$N$` without a TeX metacharacter must use `<span>$N$</span>` or `\(N\)` — bare `$N$` will NOT render
+
+**Math in tables:**
+- `$\mathcal{O}(d/N)$` works in table cells
+- For norm bars, use `$\|x\|$` (backslash-pipe), NOT `$|x|$` (bare pipe breaks the table)
+- Avoid `$...$` with bare `|` inside table cells
+
+**Math in speaker notes:**
+- Notes support the same math syntax as slides
+- Notes are inside `<!-- .notes: ... -->` blocks
+
+**What NOT to do:**
+- Do NOT put bare `>` or `<` in inline math — use `\gt`, `\lt`, `\geq`, `\leq` or put the expression in display math
+- Do NOT use `&` alignment in inline math — only works in display math `$$\begin{aligned}...$$`
+- Do NOT put `\begin{equation}` without wrapping in `$$`
+
+---
+
+## TABLES
+
+- Standard markdown pipe tables: `| Header | Value |\n|---|---|\n| data | data |`
+- Math in cells must follow the inline math rules above
+- Use TeX notation for mathematical content in tables (e.g., `$\mathcal{O}(d/N)$` not `O(d/N)`)
+- Use `$\delta_\kappa$` not `δ_κ` for consistency with rendered equations
+- Bold values with `**text**` for emphasis
 
 ---
 
 ## DIAGRAMS
 
-- ALL system/process visuals must be MERMAID
-- stored as standalone .mmd files
-- referenced in slides
+- System/process visuals should be MERMAID where appropriate
+- stored as standalone .mmd files in diagrams/
+- pre-rendered to SVG in slides/diagrams_rendered/
+- referenced in slides as: `![alt text](diagrams_rendered/file.svg)`
 
 Required diagrams:
 
 - system architecture
 - data pipeline
 - methodology flow
+
+**Figures from paper:**
+- Referenced via symlink: `![alt](figures/filename.png)`
+- The `figures/` directory in slides/ symlinks to `paper/final_figures/`
 
 ---
 

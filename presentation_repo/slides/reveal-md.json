@@ -1,0 +1,22 @@
+{
+  "separator": "^---$",
+  "verticalSeparator": "^----$",
+  "revealOptions": {
+    "transition": "slide",
+    "slideNumber": true,
+    "hash": true,
+    "center": false,
+    "width": 1920,
+    "height": 1080,
+    "margin": 0.06,
+    "math": {
+      "mathjax": "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js",
+      "config": "TeX-AMS_HTML-full",
+      "tex2jax": {
+        "inlineMath": [["$","$"],["\\(","\\)"]],
+        "displayMath": [["$$","$$"],["\\[","\\]"]],
+        "skipTags": ["script","noscript","style","textarea","pre"]
+      }
+    }
+  }
+}

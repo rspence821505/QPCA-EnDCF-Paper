@@ -1,0 +1,87 @@
+<html>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <style>
+    /* Force light text on dark background */
+    .reveal, .reveal h1, .reveal h2, .reveal h3, .reveal h4,
+    .reveal p, .reveal li, .reveal td, .reveal th, .reveal span,
+    .reveal strong, .reveal em, .reveal a, .reveal code,
+    .reveal .slides section {
+      color: #e8e8e8 !important;
+    }
+    .reveal h1, .reveal h2, .reveal h3 {
+      color: #ffffff !important;
+    }
+    .reveal h2 {
+      border-bottom: 2px solid #4ecdc4;
+      padding-bottom: 0.2em;
+    }
+    .reveal strong {
+      color: #4ecdc4 !important;
+    }
+    .reveal table th {
+      color: #4ecdc4 !important;
+      background-color: rgba(78, 205, 196, 0.1);
+      border-bottom: 2px solid #4ecdc4;
+    }
+    .reveal table td {
+      border-bottom: 1px solid #444;
+    }
+    .reveal table {
+      border-collapse: collapse;
+      font-size: 0.75em;
+    }
+    .reveal table td, .reveal table th {
+      padding: 0.35em 0.7em;
+      text-align: left;
+    }
+    .reveal pre {
+      background-color: #0a0a1a;
+      border-left: 3px solid #4ecdc4;
+      font-size: 0.55em;
+    }
+    .reveal code {
+      color: #4ecdc4 !important;
+    }
+    .reveal img {
+      max-height: 55vh;
+      border: none !important;
+      box-shadow: none !important;
+      background: none !important;
+    }
+    .reveal .slides section {
+      text-align: left;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+    }
+    /* KaTeX color override */
+    .katex, .katex * {
+      color: #e8e8e8 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">{{{slides}}}</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+    // Run after reveal.js is ready
+    window.addEventListener('load', function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: "$$", right: "$$", display: true},
+          {left: "$", right: "$", display: false},
+          {left: "\\(", right: "\\)", display: false},
+          {left: "\\[", right: "\\]", display: true}
+        ],
+        throwOnError: false,
+        trust: true
+      });
+    });
+  </script>
+</body>
+</html>

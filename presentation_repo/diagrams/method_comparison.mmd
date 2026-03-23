@@ -1,0 +1,25 @@
+%%{init: {'theme': 'dark'}}%%
+
+flowchart TB
+    subgraph STOCHASTIC["Stochastic EnKF"]
+        direction TB
+        S1["Forecast Ensemble"] --> S2["Compute Gain K"]
+        S2 --> S3["Sample perturbations<br/>ε ~ N(0, R)"]
+        S3 --> S4["Update ALL directions<br/>x<sup>a</sup> = x<sup>f</sup> + K(z + ε − Hx<sup>f</sup>)"]
+        S4 --> S5["Apply inflation<br/>λ<sub>infl</sub> ≥ 1.05"]
+        S5 --> S6["❌ Noise in all dims<br/>❌ Requires inflation<br/>❌ Var ~ O(d/N)"]
+    end
+
+    subgraph QPCA["QPCA-EnDCF"]
+        direction TB
+        Q1["Forecast Ensemble"] --> Q2["Whiten Residuals"]
+        Q2 --> Q3["PCA: find signal<br/>subspace (κ modes)"]
+        Q3 --> Q4["Correct ONLY signal dirs<br/>Leave noise dirs unchanged"]
+        Q4 --> Q5["No inflation needed<br/>λ<sub>infl</sub> = 1.0"]
+        Q5 --> Q6["✓ No perturbation noise<br/>✓ Inflation-free<br/>✓ Var ~ O(κ/N)"]
+    end
+
+    style STOCHASTIC fill:#3d1f1f,stroke:#ff6b6b,stroke-width:2px
+    style QPCA fill:#1f3d2f,stroke:#4ecdc4,stroke-width:2px
+    style S6 fill:#ff6b6b22,stroke:#ff6b6b
+    style Q6 fill:#4ecdc422,stroke:#4ecdc4

@@ -1,0 +1,61 @@
+# Presentation Configuration
+title: "Spectral Regularization and Probabilistic Calibration in Ensemble Filtering"
+subtitle: "A Unified Theoretical Framework"
+author: "Rylan Spence"
+date: "2026"
+
+# Reveal.js settings
+reveal:
+  theme: "custom"
+  transition: "slide"
+  transitionSpeed: "default"
+  backgroundTransition: "fade"
+  controls: true
+  progress: true
+  slideNumber: true
+  hash: true
+  center: true
+  width: 1920
+  height: 1080
+  margin: 0.04
+  minScale: 0.2
+  maxScale: 2.0
+
+# Plugin configuration
+plugins:
+  - RevealMath
+  - RevealNotes
+  - RevealHighlight
+  - RevealMermaid
+
+# Math rendering
+math:
+  mathjax: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+
+# Slide structure
+structure:
+  main_slides: 37
+  backup_slides: 10
+  total: 47
+  target_time_minutes: 35-40
+  seconds_per_slide: 60-90
+
+# Figure sources (relative to repo root)
+figures:
+  source_dir: "../paper/final_figures"
+  figures_used:
+    - spread_vs_rmse_temporal.png
+    - combined_calibration_analysis.png
+    - bias_variance_evolution.png
+    - mse_decomposition_bars.png
+    - inflation_multiplicative_20.png
+    - inflation_additive_20.png
+    - mean_rmse_comparison_nongaussian.png
+    - reconstruction_errors.png
+    - performance_degradation.png
+    - fig_ensemble_size_spread_skill.png
+    - combined_window_rmse_analysis.png
+    - rank_histograms.png
+    - noise_distributions.png
+    - correlation_structures.png
+    - rmse_trajectories_nongaussian.png

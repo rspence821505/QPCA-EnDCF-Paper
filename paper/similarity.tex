@@ -1,0 +1,307 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\title{Similarity Between MUD/QPCA Equations and QPCA-EnDCF}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Purpose}
+
+This note records the correspondence between Section 2.3 of \texttt{seq\_mud\_paper.pdf}, especially equations (8) and (10), and Section 3.3, ``Spectral Regularization Through QPCA-EnDCF,'' in \texttt{main.tex}. The goal is not to claim that the two constructions are identical in every respect. Rather, the aim is to show that the ensemble filtering update in QPCA-EnDCF is the natural ensemble counterpart of the residual-based QPCA/MUD construction: both methods are built from whitened forecast--observation residuals, both identify dominant directions in those residuals through PCA, and both apply covariance-weighted corrections based on the resulting low-dimensional structure.
+
+\section*{1. Residual Matrices}
+
+In the MUD paper, equation (8) defines the normalized residual matrix $X \in \mathbb{R}^{k \times n}$ by
+\begin{equation}
+X_{ij}
+=
+\frac{M_j(\lambda^{(i)}, z^{(i)}) - d_j}{\sigma_j},
+\qquad 1 \le i \le k,\quad 1 \le j \le n.
+\label{eq:mud_eq8_note}
+\end{equation}
+Here:
+\begin{itemize}
+\item $i$ indexes parameter samples,
+\item $j$ indexes observed data components,
+\item $M_j(\lambda^{(i)}, z^{(i)})$ is the $j$th predicted datum,
+\item $d_j$ is the corresponding observation,
+\item $\sigma_j$ is the standard deviation used to normalize that datum.
+\end{itemize}
+
+In \texttt{main.tex}, the corresponding object is the whitened residual matrix
+\begin{equation}
+\mathbf{E}
+=
+(\mathbf{R}^{(L)})^{-1/2}\bigl(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^\top\bigr)
+\in \mathbb{R}^{d \times N}.
+\label{eq:endcf_residual_note}
+\end{equation}
+Here:
+\begin{itemize}
+\item the columns index ensemble members $j=1,\dots,N$,
+\item the rows index stacked observation components in the window,
+\item $\mathbf{Z}^{(w)}$ contains stacked forecast observations,
+\item $\mathbf{z}^{(w)}$ is the stacked observed data vector,
+\item $(\mathbf{R}^{(L)})^{-1/2}$ provides the same normalization role as division by $\sigma_j$ in \eqref{eq:mud_eq8_note}.
+\end{itemize}
+
+Thus, after identifying $k$ with $N$ and the MUD data dimension $n$ with the stacked observation dimension $d=mL$, the two residual constructions coincide up to orientation:
+\begin{equation}
+X \quad \text{corresponds to} \quad \mathbf{E}^\top.
+\end{equation}
+Equivalently, each row of $X$ in the MUD paper is the transpose of one column of $\mathbf{E}$ in QPCA-EnDCF. In both cases, the central object is a collection of whitened forecast--observation mismatch vectors.
+
+\section*{2. PCA-Based QoI Maps and Ensemble Projections}
+
+In the MUD paper, equation (9) defines the learned QPCA QoI map by projecting the normalized residuals onto principal directions of $X$. For the $\ell$th component and the $i$th sample,
+\begin{equation}
+\bigl(Q_{\mathrm{PCA}}\bigr)_\ell(\lambda^{(i)})
+=
+\sum_{j=1}^n p_j^{(\ell)}
+\frac{M_j(\lambda^{(i)}, z^{(i)}) - d_j}{\sigma_j},
+\qquad 1 \le \ell \le q.
+\label{eq:mud_eq9_note}
+\end{equation}
+This is precisely a principal-direction projection of the normalized residual vector.
+
+The ensemble counterpart in \texttt{main.tex} first computes the centered residual covariance
+\begin{equation}
+\mathbf{C}_E
+=
+\frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top
+=
+\sum_{i=1}^{r}\hat{\lambda}_i\hat{\mathbf{v}}_i\hat{\mathbf{v}}_i^\top,
+\qquad r=\min(d,N-1),
+\end{equation}
+and then forms the truncated projection
+\begin{equation}
+\mathbf{Q}_{\mathrm{PCA}}
+=
+-\hat{\mathbf{V}}_\kappa \hat{\mathbf{V}}_\kappa^\top \mathbf{E},
+\qquad
+\hat{\mathbf{V}}_\kappa
+=
+\bigl[\hat{\mathbf{v}}_1,\dots,\hat{\mathbf{v}}_\kappa\bigr].
+\label{eq:endcf_qpca_note}
+\end{equation}
+
+For a single ensemble member, with residual vector $\mathbf{e}^{(j)}$, the projected PCA coordinates are
+\begin{equation}
+\hat{\mathbf{v}}_\ell^\top \mathbf{e}^{(j)},
+\qquad \ell=1,\dots,\kappa.
+\end{equation}
+These are the direct ensemble analogue of the scalar QoI components in \eqref{eq:mud_eq9_note}. Put differently:
+\begin{itemize}
+\item the MUD paper learns a QoI map by projecting normalized residuals onto PCA directions;
+\item QPCA-EnDCF constructs the correction by projecting whitened residuals onto PCA directions.
+\end{itemize}
+
+The distinction is that the MUD formulation treats the PCA projections as a learned QoI map for parameter estimation, whereas QPCA-EnDCF uses the same PCA geometry as a deterministic observation-space regularizer for filtering.
+
+\section*{3. Linear-Gaussian MUD Update and the Ensemble Filtering Update}
+
+The strongest comparison is between the linear-Gaussian MUD update and the QPCA-EnDCF correction formula. In the MUD paper, equation (10) gives
+\begin{equation}
+\lambda_{\mathrm{MUD}}
+=
+\lambda_{\mathrm{init}}
++
+\Sigma_{\mathrm{init}}A^\top \Sigma_{\mathrm{pred}}^{-1}
+\bigl(-b - A\lambda_{\mathrm{init}}\bigr),
+\label{eq:mud_eq10_note}
+\end{equation}
+where the learned QPCA map is written in affine form
+\begin{equation}
+Q_{\mathrm{PCA}}(\lambda)=A\lambda+b,
+\end{equation}
+and
+\begin{equation}
+\Sigma_{\mathrm{pred}} = A \Sigma_{\mathrm{init}} A^\top.
+\end{equation}
+
+Equation \eqref{eq:mud_eq10_note} has the standard structure
+\begin{equation}
+\text{prior state}
+\;+\;
+\text{covariance pullback}
+\times
+\text{projected innovation}.
+\end{equation}
+
+The ensemble/filtering counterpart in \texttt{main.tex} is obtained in two stages. First, the PCA-based observation-space increment is
+\begin{equation}
+\boldsymbol{\Delta}_{\mathrm{obs}}
+=
+(\mathbf{R}^{(L)})^{1/2}\mathbf{Q}_{\mathrm{PCA}}
+=
+-(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top \mathbf{E}.
+\label{eq:endcf_delta_obs_note}
+\end{equation}
+Second, this increment is mapped back to state space using the empirical gain
+\begin{equation}
+\mathbf{K}^{\mathrm{DC}}
+=
+\mathbf{P}_{xz}\mathbf{P}_{zz}^\dagger,
+\end{equation}
+yielding the ensemble update
+\begin{equation}
+\mathbf{X}_{k_w}^{a}
+=
+\mathbf{X}_{k_w}^{f}
++
+\mathbf{K}^{\mathrm{DC}}\boldsymbol{\Delta}_{\mathrm{obs}}.
+\label{eq:endcf_update_note}
+\end{equation}
+
+For a single ensemble member $j$, substituting \eqref{eq:endcf_delta_obs_note} into \eqref{eq:endcf_update_note} gives
+\begin{equation}
+\mathbf{x}_{k_w}^{(j),a}
+=
+\mathbf{x}_{k_w}^{(j),f}
+-
+\mathbf{K}^{\mathrm{DC}}
+(\mathbf{R}^{(L)})^{1/2}
+\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top
+\mathbf{e}^{(j)}.
+\label{eq:endcf_member_update_note}
+\end{equation}
+Since
+\begin{equation}
+\mathbf{e}^{(j)}
+=
+(\mathbf{R}^{(L)})^{-1/2}
+\bigl(\mathbf{z}_{f}^{(j)}-\mathbf{z}^{(w)}\bigr),
+\end{equation}
+we may also write
+\begin{equation}
+\mathbf{x}_{k_w}^{(j),a}
+=
+\mathbf{x}_{k_w}^{(j),f}
++
+\mathbf{K}^{\mathrm{DC}}
+(\mathbf{R}^{(L)})^{1/2}
+\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top
+(\mathbf{R}^{(L)})^{-1/2}
+\bigl(\mathbf{z}^{(w)}-\mathbf{z}_{f}^{(j)}\bigr).
+\label{eq:endcf_member_update_expanded_note}
+\end{equation}
+
+This is the filtering analogue of \eqref{eq:mud_eq10_note}. The correspondence is:
+\begin{align}
+\lambda_{\mathrm{init}}
+&\longleftrightarrow
+\mathbf{x}_{k_w}^{(j),f},
+\\
+\lambda_{\mathrm{MUD}}
+&\longleftrightarrow
+\mathbf{x}_{k_w}^{(j),a},
+\\
+\Sigma_{\mathrm{init}}A^\top\Sigma_{\mathrm{pred}}^{-1}
+&\longleftrightarrow
+\mathbf{K}^{\mathrm{DC}},
+\\
+\bigl(-b-A\lambda_{\mathrm{init}}\bigr)
+&\longleftrightarrow
+(\mathbf{R}^{(L)})^{1/2}
+\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top
+(\mathbf{R}^{(L)})^{-1/2}
+\bigl(\mathbf{z}^{(w)}-\mathbf{z}_{f}^{(j)}\bigr).
+\end{align}
+
+The analogy is not accidental. Both updates pull a low-dimensional residual-space correction back into the state or parameter space using covariance information. In the MUD paper this is done in closed form for a linear Gaussian parameter-estimation problem; in QPCA-EnDCF it is done empirically through the ensemble cross-covariance and a truncated PCA projector.
+
+\section*{4. Explicit Identification of the Ensemble QoI Map}
+
+The cleanest way to align the two formulations is to write the QPCA-EnDCF observation-space construction itself as a learned affine QoI map. Define
+\begin{equation}
+Q_{\mathrm{PCA}}^{\mathrm{ens}}(\mathbf{x})
+:=
+\hat{\mathbf{V}}_\kappa^\top
+(\mathbf{R}^{(L)})^{-1/2}
+\bigl(\mathbf{H}^{(L)}\mathbf{x}-\mathbf{z}^{(w)}\bigr).
+\label{eq:ensemble_qoi_map_note}
+\end{equation}
+Then
+\begin{equation}
+Q_{\mathrm{PCA}}^{\mathrm{ens}}(\mathbf{x})
+=
+A\mathbf{x}+b
+\end{equation}
+with
+\begin{equation}
+A
+=
+\hat{\mathbf{V}}_\kappa^\top
+(\mathbf{R}^{(L)})^{-1/2}\mathbf{H}^{(L)},
+\qquad
+b
+=
+-\hat{\mathbf{V}}_\kappa^\top
+(\mathbf{R}^{(L)})^{-1/2}\mathbf{z}^{(w)}.
+\label{eq:ensemble_A_b_note}
+\end{equation}
+
+Under this identification, the MUD equation \eqref{eq:mud_eq10_note} and the QPCA-EnDCF update \eqref{eq:endcf_member_update_expanded_note} become visibly parallel:
+\begin{itemize}
+\item both start from a prior/forecast state,
+\item both construct a low-dimensional PCA residual map,
+\item both update by pulling that residual-space correction back through covariance structure.
+\end{itemize}
+
+\section*{5. Where the Two Constructions Differ}
+
+The correspondence is strong, but there are several important differences.
+
+\subsection*{5.1. Parameter Estimation vs.\ Filtering}
+
+The MUD paper studies parameter estimation. The unknown is a parameter vector $\lambda$, and the update returns a MUD point $\lambda_{\mathrm{MUD}}$. In \texttt{main.tex}, QPCA-EnDCF is a filtering method, so the updated object is the state ensemble at the end of an assimilation window.
+
+\subsection*{5.2. Population Formula vs.\ Empirical Ensemble Formula}
+
+Equation \eqref{eq:mud_eq10_note} is a population linear-Gaussian formula written in terms of exact covariances. QPCA-EnDCF uses empirical ensemble quantities:
+\begin{equation}
+\mathbf{P}_{xz},\qquad \mathbf{P}_{zz},\qquad \hat{\mathbf{V}}_\kappa,\qquad \mathbf{C}_E.
+\end{equation}
+Thus the filtering update is a finite-sample counterpart rather than a closed-form population identity.
+
+\subsection*{5.3. Centered Covariance, Uncentered Correction}
+
+In \texttt{main.tex}, the eigenvectors are computed from the centered residual covariance,
+\begin{equation}
+\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top,
+\end{equation}
+but the projection is applied to the uncentered residual matrix $\mathbf{E}$. This means the correction acts on both the mean mismatch and the fluctuations, provided they lie in the retained eigenspace. That design choice is more specific than the basic MUD/QPCA presentation.
+
+It is therefore \emph{not} the case that replacing $\mathbf{E}$ with $\mathbf{E}_c$ in the QPCA-EnDCF correction would make the two formulations identical. In the MUD/QPCA construction, the learned QoI map is built from the raw normalized residuals, not from mean-centered residuals. Equivalently, the affine term in the linear-Gaussian MUD update,
+\begin{equation}
+-b-A\lambda_{\mathrm{init}},
+\end{equation}
+contains an observation-dependent offset that plays the role of the mean mismatch. Applying the QPCA-EnDCF projection to $\mathbf{E}_c$ instead of $\mathbf{E}$ would remove that offset and therefore eliminate the direct analogue of the affine shift in the MUD formulation. For this reason, using $\mathbf{E}$ in the correction is actually the closer match to the MUD update. The two formulations become genuinely parallel only after identifying the ensemble affine QoI map
+\begin{equation}
+Q_{\mathrm{PCA}}^{\mathrm{ens}}(\mathbf{x}) = A\mathbf{x}+b
+\end{equation}
+from \eqref{eq:ensemble_qoi_map_note}--\eqref{eq:ensemble_A_b_note}, keeping the uncentered residual in the projected innovation, and comparing the empirical ensemble gain with the population covariance pullback in the linear-Gaussian MUD formula.
+
+\subsection*{5.4. Window-Initial Residuals and Window-End State Updates}
+
+The filtering formulation also separates the state used to form the stacked forecast observations from the state to which the update is applied. In particular, the residual construction is tied to the windowed forecast observations, while the gain is applied to the window-endpoint state. This temporal structure has no direct analogue in the static MUD parameter-estimation formula.
+
+\section*{6. Summary}
+
+The most important identifications are:
+\begin{enumerate}
+\item MUD equation (8) and the QPCA-EnDCF whitened residual matrix are the same normalized residual construction, up to transposition and filtering notation.
+\item The MUD learned QPCA map in equation (9) corresponds to the PCA projection of whitened residuals used in QPCA-EnDCF.
+\item MUD equation (10) and the QPCA-EnDCF update share the same algebraic template: prior plus covariance-weighted pullback of a low-dimensional projected innovation.
+\end{enumerate}
+
+Therefore, Section 3.3 of \texttt{main.tex} can be interpreted as the ensemble filtering counterpart of the QPCA/MUD construction in Section 2.3 of \texttt{seq\_mud\_paper.pdf}. The residual geometry is the same. The primary difference is that the MUD paper expresses the update as a parameter-estimation formula in a linear-Gaussian setting, whereas QPCA-EnDCF implements the corresponding idea empirically for ensemble filtering in a windowed data-assimilation setting.
+
+\end{document}

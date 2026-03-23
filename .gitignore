@@ -171,3 +171,11 @@ docs/
 research_plan.md
 proof_ideas.tex 
 proof_ideas*
+
+# ---------------------------
+# Presentations
+# ---------------------------
+*.js
+*.json 
+*.css
+*.ico

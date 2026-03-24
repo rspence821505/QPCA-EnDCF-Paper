@@ -77,7 +77,7 @@ Here's the regime I study. In the Lorenz-96 system with 40 state variables, we o
 ![Spread vs RMSE Temporal](figures/spread_vs_rmse_temporal.png)
 
 - **Stochastic EnKF**: spread ≈ 0.3, RMSE ≈ 4.5
-- Ensemble claims σ = 0.3, actual error = 4.5
+- Ensemble claims $\sigma = 0.3$, actual error = 4.5
 - **15× overconfident** uncertainty estimates
 
 <!-- .notes:
@@ -178,9 +178,9 @@ Decompose centered whitened residual covariance:
 
 <div>$$\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top = \sum_{i=1}^{r} \hat{\lambda}_i \hat{\mathbf{v}}_i \hat{\mathbf{v}}_i^\top$$</div>
 
-- Large λᵢ → coherent dynamical mismatch (signal)
-- Small λᵢ → sampling noise
-- Rank r = min(d, N−1)
+- Large $\lambda_i$ → coherent dynamical mismatch (signal)
+- Small $\lambda_i$ → sampling noise
+- Rank <span>$r$</span> = min(<span>$d$</span>, <span>$N$</span>−1)
 
 **Key insight: eigenspectrum separates signal from noise**
 
@@ -200,7 +200,7 @@ Project onto leading κ modes and correct:
 
 <div>$$\mathbf{X}_{k_w}^a = \mathbf{X}_{k_w}^f + \mathbf{K}^{\mathrm{DC}} \boldsymbol{\Delta}_{\mathrm{obs}}$$</div>
 
-- κ = 1 in all experiments (leading mode only)
+- $\kappa = 1$ in all experiments (leading mode only)
 - No perturbations → no perturbation noise
 - Orthogonal directions left **unchanged**
 
@@ -212,20 +212,28 @@ Stage 3 applies the correction. We project the whitened residuals onto just the 
 
 ## Algorithm Overview
 
+<div style="display: flex; gap: 2em; align-items: flex-start;">
+<div style="flex: 1;">
+
+**For each assimilation window** $\mathbf{w}$:
+
+1. Propagate ensemble through <span>$L$</span> observation times
+2. Stack forecast observations $\mathbf{Z}^{(w)}$
+3. Whiten: $\mathbf{E} = \mathbf{R}^{-1/2}(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)})$
+4. Center: $\mathbf{E}_c = \mathbf{E} - \mathrm{mean}(\mathbf{E})$
+5. Eigendecompose: $\mathbf{C}_E = \mathbf{E}_c\mathbf{E}_c^\top/(N-1)$
+6. Truncate: keep leading $\kappa$ eigenvectors
+7. Project: $\mathbf{Q}_{\mathrm{PCA}} = -\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top\mathbf{E}$
+8. Unwhiten: $\boldsymbol{\Delta}_{\mathrm{obs}} = \mathbf{R}^{1/2}\mathbf{Q}_{\mathrm{PCA}}$
+9. Apply gain: $\mathbf{X}^a = \mathbf{X}^f + \mathbf{K}^{\mathrm{DC}}\boldsymbol{\Delta}_{\mathrm{obs}}$
+
+</div>
+<div style="flex: 1;">
+
 ![QPCA-EnDCF Pipeline](diagrams_rendered/qpca_pipeline.svg)
 
-```
-For each assimilation window w:
-  1. Propagate ensemble through L obs times
-  2. Stack forecast observations Z^(w)
-  3. Whiten: E = R^(-1/2)(Z^(w) - z^(w))
-  4. Center: E_c = E - mean(E)
-  5. Eigendecompose: C_E = E_c E_c^T/(N-1)
-  6. Truncate: keep leading κ eigenvectors
-  7. Project: Q_PCA = -V_κ V_κ^T E
-  8. Unwhiten: Δ_obs = R^(1/2) Q_PCA
-  9. Apply gain: X^a = X^f + K^DC Δ_obs
-```
+</div>
+</div>
 
 <!-- .notes:
 Here's the full algorithm. For each assimilation window, we propagate the ensemble, stack the forecast observations, whiten, center, eigendecompose, truncate to kappa modes, project the whitened residuals, unwhiten, and apply the gain. It's completely deterministic — same inputs always give same outputs. No random number generation beyond the initial ensemble. The computational overhead relative to a standard EnKF is one eigendecomposition of a d-by-d matrix per window, which is negligible relative to model propagation cost.
@@ -256,9 +264,9 @@ QPCA-EnDCF is the **ensemble filtering counterpart** of QPCA parameter estimatio
 | MUD/QPCA | QPCA-EnDCF |
 |---|---|
 | Parameter samples | Ensemble members |
-| Normalized residual X | Whitened residual E^T |
+| Normalized residual <span>$\mathbf{X}$</span> | Whitened residual $\mathbf{E}^\top$ |
 | Learned QoI map | PCA projection |
-| Population covariance pullback | Empirical gain K^DC |
+| Population covariance pullback | Empirical gain $\mathbf{K}^{\mathrm{DC}}$ |
 
 Same algebraic template: **prior + covariance-weighted pullback of projected innovation**
 
@@ -293,7 +301,7 @@ Now let me present the theoretical contribution. The analysis has three stages. 
 ## Key Assumptions
 
 - Forecast ensemble: i.i.d. samples with finite 4th moment
-- Observation covariance R^(L) positive definite
+- Observation covariance $\mathbf{R}^{(L)}$ positive definite
 - Spectral cutoff gap: <span>$\lambda_\kappa - \lambda_{\kappa+1} \geq \delta_\kappa > 0$</span>
 
 **All assumptions are mild:**
@@ -336,9 +344,9 @@ Here's the main theorem. The MSE decomposes exactly into squared bias and varian
 
 <div>$$\mathrm{Var}_{\mathrm{QPCA}} = \mathcal{O}\!\left(\frac{1}{N}\right) \text{ with } \frac{\kappa}{\delta_\kappa^2} \text{ prefactor}$$</div>
 
-- Stochastic: perturbation variance scales with **d = mL**
-- QPCA-EnDCF: no perturbation term; projector term scales with **κ**
-- At κ=1, d=100: up to two orders of magnitude in the perturbation component
+- Stochastic: perturbation variance scales with <span>$d = mL$</span>
+- QPCA-EnDCF: no perturbation term; projector term scales with $\kappa$
+- At $\kappa=1$, <span>$d=100$</span>: up to two orders of magnitude in the perturbation component
 
 <!-- .notes:
 This is the theoretical punchline. The stochastic EnKF variance has an irreducible lower bound — Corollary 2 in the paper — from observation perturbations that scales with d over N. For windowed methods with d = mL = 100, that's a substantial floor. QPCA-EnDCF eliminates this specific variance component entirely. Its variance is still O(1/N), but the prefactor involves the effective rank kappa and the cutoff gap delta-kappa — not the observation dimension d. I want to be careful here: this comparison is between the perturbation-induced variance component in stochastic methods and its absence in QPCA-EnDCF. Both methods still have forecast sampling variance that scales with 1/N. The net advantage depends on how large the perturbation component is relative to the forecast component — and in our experiments, it's the dominant contributor to the variance gap.
@@ -392,10 +400,10 @@ That's the theory. Now let me show you the experiments that test these predictio
 ## Experimental Setup
 
 - **System:** Lorenz-96 (n=40, F=8, chaotic)
-- **Observations:** m=20, every-other component, σ_obs = 1.5
-- **Ensemble:** N=10 (severe undersampling)
-- **Windows:** L=5, spanning 0.83 Lyapunov times
-- **Methods:** Seq-EnKF, 4D-EnKF, QPCA-EnDCF (κ=1)
+- **Observations:** <span>$m=20$</span>, every-other component, $\sigma_{\mathrm{obs}} = 1.5$
+- **Ensemble:** <span>$N=10$</span> (severe undersampling)
+- **Windows:** <span>$L=5$</span>, spanning 0.83 Lyapunov times
+- **Methods:** Seq-EnKF, 4D-EnKF, QPCA-EnDCF ($\kappa=1$)
 - **Trials:** 5 independent Monte Carlo realizations
 
 <!-- .notes:
@@ -412,8 +420,8 @@ All experiments use the Lorenz-96 system — the canonical testbed in the data a
 | 4D-EnKF | 0.45 | 4.42 | 0.120 | 0.219 |
 | **QPCA-EnDCF** | **2.84** | **3.55** | **0.811** | **0.820** |
 
-- QPCA-EnDCF: γ̄ ≈ 0.81 (near-ideal), ρ ≈ 0.82
-- Stochastic: γ̄ ≈ 0.1 (15× overconfident), ρ ≈ 0
+- QPCA-EnDCF: $\bar{\gamma} \approx 0.81$ (near-ideal), $\rho \approx 0.82$
+- Stochastic: $\bar{\gamma} \approx 0.1$ (15× overconfident), $\rho \approx 0$
 - **Simultaneous: 20% lower RMSE + calibrated uncertainty**
 
 <!-- .notes:
@@ -469,7 +477,7 @@ The bar chart summarizes this cleanly. On the left, absolute MSE with bias and v
 
 ![Multiplicative Inflation](figures/inflation_multiplicative_20.png)
 
-- QPCA-EnDCF optimal at λ_infl = 1.0 (no inflation) for all N
+- QPCA-EnDCF optimal at $\lambda_{\mathrm{infl}} = 1.0$ (no inflation) for all <span>$N$</span>
 - Stochastic methods need N-dependent tuning
 - **Eliminates a major source of heuristic calibration**
 
@@ -481,7 +489,18 @@ One of the most practically important results: QPCA-EnDCF needs no inflation. Th
 
 ## Result 4: Robustness — Non-Gaussian Errors
 
+<div style="display: flex; gap: 1.5em; align-items: flex-start;">
+<div style="flex: 1;">
+
+![Noise Distributions](figures/noise_distributions.png)
+
+</div>
+<div style="flex: 1;">
+
 ![Mean RMSE Non-Gaussian](figures/mean_rmse_comparison_nongaussian.png)
+
+</div>
+</div>
 
 - 9 distributions: Gaussian, Student-t, Laplace, Gamma, Log-normal
 - QPCA-EnDCF RMSE: 3.51–3.69 (CV ≈ 1.4%)
@@ -495,7 +514,14 @@ Real observation errors are rarely Gaussian. We tested 9 distributions spanning 
 
 ## Result 4: Robustness — Correlated Errors
 
-![Reconstruction Errors](figures/reconstruction_errors.png)
+<div style="display: flex; gap: 1.5em; align-items: center;">
+<div style="flex: 1;">
+<img src="figures/correlation_structures.png" alt="Correlation Structures" style="max-height: 50vh; max-width: 100%;">
+</div>
+<div style="flex: 1;">
+<img src="figures/reconstruction_errors.png" alt="Reconstruction Errors" style="max-height: 50vh; max-width: 100%;">
+</div>
+</div>
 
 - Condition numbers spanning 5 orders of magnitude
 - QPCA-EnDCF: within 7% of uncorrelated baseline
@@ -525,9 +551,9 @@ This figure shows how methods scale with ensemble size. QPCA-EnDCF degrades grac
 
 ![Ensemble Size Spread Skill](figures/fig_ensemble_size_spread_skill.png)
 
-- QPCA-EnDCF at N=10: γ̄ ≈ 0.77
-- Stochastic at N=50: γ̄ ≈ 0.12
-- **QPCA-EnDCF at N=10 > stochastic at N=50**
+- QPCA-EnDCF at <span>$N=10$</span>: $\bar{\gamma} \approx 0.77$
+- Stochastic at <span>$N=50$</span>: $\bar{\gamma} \approx 0.12$
+- **QPCA-EnDCF at <span>$N=10$</span> > stochastic at <span>$N=50$</span>**
 - → 5× calibration savings
 
 <!-- .notes:
@@ -540,9 +566,9 @@ The calibration story is even more dramatic. QPCA-EnDCF at N=10 achieves a sprea
 
 ![Window RMSE Analysis](figures/combined_window_rmse_analysis.png)
 
-- L=1: QPCA-EnDCF slightly worse (no temporal structure)
-- L≥3: 16–21% improvement over 4D-EnKF
-- Sweet spot: L ∈ [5, 10]
+- <span>$L=1$</span>: QPCA-EnDCF slightly worse (no temporal structure)
+- <span>$L \geq 3$</span>: 16–21% improvement over 4D-EnKF
+- Sweet spot: $L \in [5, 10]$
 
 <!-- .notes:
 Window length matters for QPCA-EnDCF. At L equals 1 — purely sequential — it's slightly worse than 4D-EnKF because there's insufficient temporal residual structure for meaningful spectral analysis. But as soon as L reaches 3, QPCA-EnDCF outperforms by 16 to 21 percent, and performance stabilizes for L between 5 and 10. The practical recommendation is simple: use windows of at least 3 observation times. The sweet spot balances accuracy against computational cost of the larger eigendecomposition.
@@ -559,7 +585,7 @@ Window length matters for QPCA-EnDCF. At L equals 1 — purely sequential — it
 ### Theoretical
 
 1. Bias-variance decomposition for spectral ensemble filters
-2. O(κ/N) vs O(d/N) variance scaling distinction
+2. $\mathcal{O}(\kappa/N)$ vs $\mathcal{O}(d/N)$ variance scaling distinction
 3. Projector stability analysis via Davis-Kahan
 
 ### Empirical
@@ -571,7 +597,7 @@ Window length matters for QPCA-EnDCF. At L equals 1 — purely sequential — it
 ### Practical
 
 7. 2–3× accuracy savings, 5× calibration savings
-8. Operational guidelines: L ≥ 3, κ = 1
+8. Operational guidelines: <span>$L \geq 3$</span>, $\kappa = 1$
 
 <!-- .notes:
 Let me summarize the contributions explicitly. On the theoretical side: the first bias-variance decomposition for spectral ensemble filters, the O(kappa/N) versus O(d/N) variance distinction, and projector stability analysis through Davis-Kahan. Empirically: near-ideal calibration, inflation-free operation, and broad robustness. Practically: 2-3 times ensemble savings for accuracy, 5 times for calibration, and concrete operational guidelines — use windows of at least 3 with kappa equals 1.
@@ -582,7 +608,7 @@ Let me summarize the contributions explicitly. On the theoretical side: the firs
 ## Limitations and Scope
 
 - **Perfect model:** no structural model error (most important gap)
-- **Moderate dimension:** n=40; spectral ops scale as O(dN²), not O(n)
+- **Moderate dimension:** <span>$n=40$</span>; spectral ops scale as $\mathcal{O}(dN^2)$, not $\mathcal{O}(n)$
 - **Linear observations:** nonlinear H handled via ensemble H(x), untested
 - **i.i.d. theory:** standard idealization; cycling experiments validate predictions
 - **Single test system:** Lorenz-96 (standard DA benchmark, 13 positive LEs)
@@ -598,10 +624,10 @@ Let me be direct about what this work does and does not show. The most important
 ## Future Work
 
 1. **Model error:** systematic and stochastic perturbations
-2. **Adaptive κ:** data-driven truncation rank selection
+2. **Adaptive** $\kappa$: data-driven truncation rank selection
 3. **Intermediate-complexity models:** quasi-geostrophic, shallow water
 4. **Nonlinear observations:** satellite radiances, retrievals
-5. **Operational scale:** n ~ 10⁶ with localization
+5. **Operational scale:** $n \sim 10^6$ with localization
 
 <!-- .notes:
 Concretely, the next steps are: first, introducing controlled model error to test robustness beyond the perfect-model setting. Second, developing adaptive selection of the truncation rank — possibly using the eigenvalue gap itself as a criterion. Third, validating on intermediate-complexity models like quasi-geostrophic or shallow water equations. Fourth, testing with nonlinear observation operators. And fifth, the big challenge: scaling to operational dimensions with localization. I believe the spectral regularization principle will translate, but the interaction with localization needs careful study.
@@ -615,8 +641,8 @@ Concretely, the next steps are: first, introducing controlled model error to tes
 
 - Eliminates perturbation-induced variance (Corollary 2)
 - Theory predicts: favorable bias-variance tradeoff under spectral decay
-- Experiments confirm: γ̄ = 0.81 ± 0.10 vs 0.10 ± 0.11, RMSE reduced 20%
-- No inflation needed, robust across 9 noise distributions and 5 orders of cond(R)
+- Experiments confirm: $\bar{\gamma} = 0.81 \pm 0.10$ vs $0.10 \pm 0.11$, RMSE reduced 20%
+- No inflation needed, robust across 9 noise distributions and 5 orders of $\mathrm{cond}(\mathbf{R})$
 
 **In the regime of rapid spectral decay and severe undersampling, deterministic spectral regularization provides calibrated uncertainty quantification where stochastic methods cannot**
 

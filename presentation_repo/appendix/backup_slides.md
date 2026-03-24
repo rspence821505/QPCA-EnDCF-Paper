@@ -37,11 +37,11 @@ The proof proceeds in four steps. First, the standard bias-variance identity. Se
 **Davis-Kahan sin Θ theorem:**
 $$\sin\angle(\hat{\mathbf{v}}_i, \mathbf{v}_i) \leq \frac{\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_2}{\delta_i}$$
 
-**Projector form (rank-κ):**
+**Projector form (rank-**$\kappa$**):**
 $$\|\hat{\mathbf{P}}_\kappa - \mathbf{P}_\kappa\|_F \leq \frac{\sqrt{2\kappa}}{\delta_\kappa}\|\mathbf{C}_E - \boldsymbol{\Sigma}_E\|_F$$
 
-- Gap δ_κ controls stability
-- When κ=1 and gap is large → stable projector
+- Gap $\delta_\kappa$ controls stability
+- When $\kappa=1$ and gap is large → stable projector
 - Empirically: leading eigenvalue is well-separated
 
 <!-- .notes:
@@ -81,7 +81,7 @@ Three concentration results underpin the theory. The sample covariance is unbias
 
 ![Rank Histograms](../paper/final_figures/rank_histograms.png)
 
-| Method | χ² | Flatness |
+| Method | $\chi^2$ | Flatness |
 |--------|-----|----------|
 | Seq-EnKF | 173,195 | 1.861 |
 | 4D-EnKF | 32,269 | 1.796 |
@@ -105,7 +105,7 @@ Rank histograms test full distributional calibration beyond second moments. Unde
 
 ![Additive Inflation](../paper/final_figures/inflation_additive_20.png)
 
-- QPCA-EnDCF optimal at α_add = 0 for all N
+- QPCA-EnDCF optimal at $\alpha_{\mathrm{add}} = 0$ for all <span>$N$</span>
 - Additive inflation degrades QPCA-EnDCF (disrupts correlations)
 - For stochastic: additive underperforms multiplicative by 5-10%
 - Isotropic noise lacks dynamical structure
@@ -125,14 +125,14 @@ Additive inflation results tell the same story as multiplicative. QPCA-EnDCF is 
 | Distribution | QPCA | Seq-EnKF | 4D-EnKF | vs Seq | vs 4D |
 |-------------|------|----------|---------|--------|-------|
 | Gaussian | **3.63** | 4.45 | 4.51 | −18.3% | −19.4% |
-| Student-t (ν=3) | **3.67** | 4.68 | 4.46 | −21.6% | −17.8% |
-| Student-t (ν=5) | **3.55** | 4.48 | 4.58 | −20.7% | −22.4% |
-| Student-t (ν=10) | **3.51** | 4.54 | 4.40 | −22.8% | −20.3% |
+| Student-t ($\nu=3$) | **3.67** | 4.68 | 4.46 | −21.6% | −17.8% |
+| Student-t ($\nu=5$) | **3.55** | 4.48 | 4.58 | −20.7% | −22.4% |
+| Student-t ($\nu=10$) | **3.51** | 4.54 | 4.40 | −22.8% | −20.3% |
 | Laplace | **3.69** | 4.51 | 4.49 | −18.3% | −18.0% |
 | Gamma (k=2) | **3.56** | 4.72 | 4.45 | −24.5% | −19.9% |
 | Gamma (k=5) | **3.66** | 4.51 | 4.43 | −18.8% | −17.3% |
-| LogNorm (σ=0.5) | **3.60** | 4.44 | 4.66 | −18.9% | −22.7% |
-| LogNorm (σ=0.8) | **3.61** | 4.49 | 4.55 | −19.6% | −20.6% |
+| LogNorm ($\sigma=0.5$) | **3.60** | 4.44 | 4.66 | −18.9% | −22.7% |
+| LogNorm ($\sigma=0.8$) | **3.61** | 4.49 | 4.55 | −19.6% | −20.6% |
 
 Cross-distribution std: QPCA 0.052, Seq 0.092, 4D 0.131
 
@@ -149,17 +149,17 @@ The full non-Gaussian table. Nine distributions, three trials each. QPCA-EnDCF w
 ## Backup 7: Correlated Observation Error Details
 
 **Three covariance structures:**
-- Diagonal: cond(R) = 1 (baseline)
-- Exponential: R_ij = σ² exp(−d_ij/ℓ), cond(R) = 649
-- Gaussian: R_ij = σ² exp(−d_ij²/2ℓ²), cond(R) ≈ 3.7×10⁵
+- Diagonal: $\mathrm{cond}(\mathbf{R}) = 1$ (baseline)
+- Exponential: $R_{ij} = \sigma^2 \exp(-d_{ij}/\ell)$, $\mathrm{cond}(\mathbf{R}) = 649$
+- Gaussian: $R_{ij} = \sigma^2 \exp(-d_{ij}^2/2\ell^2)$, $\mathrm{cond}(\mathbf{R}) \approx 3.7 \times 10^5$
 
-**Whitening implementation:** Cholesky factorization R = LL^T, W = L^{−T}
+**Whitening implementation:** Cholesky factorization $\mathbf{R} = \mathbf{L}\mathbf{L}^\top$, $\mathbf{W} = \mathbf{L}^{-\top}$
 
 **Key results:**
-- QPCA-EnDCF degradation: <7% across 5 orders of magnitude
+- QPCA-EnDCF degradation: less than 7% across 5 orders of magnitude
 - 4D-EnKF degradation: 15.3% under Gaussian correlation
 - QPCA advantage grows: 25.2% → 24.7% → 31.9%
-- Regularization ε = 10⁻³ tr(R) for Gaussian case
+- Regularization $\varepsilon = 10^{-3} \,\mathrm{tr}(\mathbf{R})$ for Gaussian case
 
 <!-- .notes:
 The correlated error study tests three covariance structures with condition numbers from 1 to 370,000. We use Cholesky whitening — R equals L L-transpose, W equals L-inverse-transpose. QPCA-EnDCF stays within 7 percent of the uncorrelated baseline, while 4D-EnKF degrades by 15 percent under severe ill-conditioning. The advantage of QPCA-EnDCF actually increases with correlation strength because whitening effectively decorrelates the observation space, restoring the favorable spectral structure.
@@ -180,9 +180,9 @@ $$\lambda_{\mathrm{MUD}} = \lambda_{\mathrm{init}} + \Sigma_{\mathrm{init}}A^\to
 $$\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top(\mathbf{R}^{(L)})^{-1/2}(\mathbf{z}^{(w)} - \mathbf{z}_f^{(j)})$$
 
 **Correspondence:**
-- λ_init ↔ x^f (prior/forecast state)
-- Σ_init A^T Σ_pred^{−1} ↔ K^DC (covariance pullback)
-- −b − Aλ_init ↔ projected innovation (truncated residual)
+- $\lambda_{\mathrm{init}} \leftrightarrow \mathbf{x}^f$ (prior/forecast state)
+- $\Sigma_{\mathrm{init}} A^\top \Sigma_{\mathrm{pred}}^{-1} \leftrightarrow \mathbf{K}^{\mathrm{DC}}$ (covariance pullback)
+- $-b - A\lambda_{\mathrm{init}} \leftrightarrow$ projected innovation (truncated residual)
 
 <!-- .notes:
 The similarity document establishes a formal algebraic correspondence between the QPCA/MUD parameter estimation framework and QPCA-EnDCF. Both follow the same template: prior state plus covariance-weighted pullback of a low-dimensional projected innovation. The MUD paper works with population covariances for parameter estimation; QPCA-EnDCF works with empirical ensemble quantities for state filtering. This connection is important because it grounds the ensemble filtering method in the established MUD inverse problem theory.
@@ -205,10 +205,10 @@ The similarity document establishes a formal algebraic correspondence between th
 | 10 | 4.67 | 4.42 | 3.66 | +17.2% |
 | 15 | 4.59 | 4.40 | 3.72 | +15.5% |
 
-- Sharp transition between L=1 and L=3
-- L=1: spectral regularization underperforms (insufficient temporal structure)
-- L≥3: consistent 16-21% advantage
-- Diminishing returns beyond L≈10
+- Sharp transition between <span>$L=1$</span> and <span>$L=3$</span>
+- <span>$L=1$</span>: spectral regularization underperforms (insufficient temporal structure)
+- <span>$L \geq 3$</span>: consistent 16–21% advantage
+- Diminishing returns beyond $L \approx 10$
 
 <!-- .notes:
 The detailed window length table shows the sharp transition. At L=1, QPCA-EnDCF actually underperforms 4D-EnKF by 5 percent. At L=3, it outperforms by 17 percent. This transition occurs because at L=1, the residual covariance is only 20-by-20 with rank at most 9, insufficient for reliable spectral separation. At L=3, the residual space is 60-dimensional, providing enough structure for the leading mode to be stably identified. Beyond L=10, returns diminish as additional observations exceed the decorrelation timescale.
@@ -224,15 +224,15 @@ The detailed window length table shows the sharp transition. At L=1, QPCA-EnDCF 
 
 | Operation | Seq-EnKF | 4D-EnKF | QPCA-EnDCF |
 |-----------|----------|---------|------------|
-| Model propagation | N × K × O(n²) | N × K × O(n²) | N × K × O(n²) |
-| Gain computation | K × O(nm²) | W × O(nd²) | W × O(nd²) |
-| Eigendecomposition | — | — | W × O(d³) |
-| Perturbation sampling | K × N × O(m) | W × N × O(d) | **None** |
-| Inflation | K × O(nN) | W × O(nN) | **None** |
+| Model propagation | $NK \cdot \mathcal{O}(n^2)$ | $NK \cdot \mathcal{O}(n^2)$ | $NK \cdot \mathcal{O}(n^2)$ |
+| Gain computation | $K \cdot \mathcal{O}(nm^2)$ | $W \cdot \mathcal{O}(nd^2)$ | $W \cdot \mathcal{O}(nd^2)$ |
+| Eigendecomposition | — | — | $W \cdot \mathcal{O}(d^3)$ |
+| Perturbation sampling | $KN \cdot \mathcal{O}(m)$ | $WN \cdot \mathcal{O}(d)$ | **None** |
+| Inflation | $K \cdot \mathcal{O}(nN)$ | $W \cdot \mathcal{O}(nN)$ | **None** |
 
 **Dominant cost:** model propagation (identical across methods)
 
-**QPCA-EnDCF overhead:** one d×d eigendecomposition per window
+**QPCA-EnDCF overhead:** one $d \times d$ eigendecomposition per window
 
 **QPCA-EnDCF savings:** no perturbation RNG, no inflation tuning
 

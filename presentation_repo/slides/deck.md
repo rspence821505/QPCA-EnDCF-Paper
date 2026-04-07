@@ -1,5 +1,5 @@
 ---
-title: "Spectral Regularization and Probabilistic Calibration in Ensemble Filtering"
+title: "A Data-Consistent approach to Ensemble Filtering"
 subtitle: "A Unified Theoretical Framework"
 author: "Rylan Spence"
 date: "2026"
@@ -28,10 +28,12 @@ revealOptions:
 
 **Rylan Spence**
 
-Dissertation Defense — 2026
+<!-- Dissertation Defense — 2026 -->
+
+CHG Presentation - 2026
 
 <!-- .notes:
-Welcome everyone, and thank you for being here. Today I'm presenting my dissertation on spectral regularization for ensemble data assimilation. The core question: can we build ensemble filters that give reliable uncertainty estimates — not just accurate point predictions — under severe computational constraints? I'll show that deterministic spectral projection achieves this, with both rigorous theory and comprehensive experiments.
+Welcome everyone, and thank you for being here. Today I'm presenting my presentation on Data-Consistent Inversion for ensemble data assimilation. The core question: can we build ensemble filters that give reliable uncertainty estimates — not just accurate point predictions — under severe computational constraints? I'll show that deterministic spectral projection achieves this, with both rigorous theory and comprehensive experiments.
 -->
 
 ---
@@ -55,12 +57,12 @@ Ensemble Kalman filtering is the backbone of operational data assimilation — u
 
 ## The Undersampling Crisis
 
-| Parameter | Value |
-|---|---|
-| State dimension n | 40 |
-| Observations per time m | 20 |
-| Ensemble size N | 10 |
-| Covariance rank | 9 or less |
+| Parameter               | Value     |
+| ----------------------- | --------- |
+| State dimension n       | 40        |
+| Observations per time m | 20        |
+| Ensemble size N         | 10        |
+| Covariance rank         | 9 or less |
 
 - **n > m > N**: severely undersampled
 - Covariance has 31 zero eigenvalues
@@ -106,7 +108,11 @@ Standard EnKF adds random noise to preserve variance:
 
 <div>$$\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}(\mathbf{z} + \boldsymbol{\epsilon}^{(j)} - \mathbf{H}\mathbf{x}^{(j),f})$$</div>
 
-**Two costs of perturbations:**
+- <span>$\mathbf{x}^{(j),f}$</span>: forecast state for member <span>$j$</span> — <span>$\mathbf{x}^{(j),a}$</span>: analysis (updated) state
+- <span>$\mathbf{K}$</span>: Kalman gain matrix — <span>$\mathbf{H}$</span>: observation operator
+- <span>$\mathbf{z}$</span>: observation vector — <span>$\boldsymbol{\epsilon}^{(j)} \sim \mathcal{N}(\mathbf{0}, \mathbf{R})$</span>: stochastic perturbation
+
+**Two costs of perturbations** (where <span>$d = mL$</span>, total observation dimension):
 
 1. Irreducible variance: $\mathcal{O}(\|\mathbf{K}\|^2 d / N)$
 2. Noise distributed across all dimensions — no adaptivity
@@ -119,14 +125,14 @@ Let me explain why standard methods fail. The stochastic EnKF adds random pertur
 
 ## The Gap This Work Addresses
 
-| Challenge | Current State |
-|---|---|
-| Variance collapse | Patched with inflation heuristic |
-| Calibration | Not connected to regularization |
-| Perturbation noise | Accepted as cost of business |
-| Bias-variance theory | Missing for spectral methods |
+| Challenge            | Current State                    |
+| -------------------- | -------------------------------- |
+| Variance collapse    | Patched with inflation heuristic |
+| Calibration          | Not connected to regularization  |
+| Perturbation noise   | Accepted as cost of business     |
+| Bias-variance theory | Missing for spectral methods     |
 
-**No unified framework connecting spectral regularization to calibrated UQ**
+**The core question: can we build ensemble filters that give reliable uncertainty estimates — not just accurate point predictions — under severe computational constraints? I'll show that the answer is yes.**
 
 <!-- .notes:
 So here's the landscape before this work. Variance collapse is treated with inflation — an empirical hack that requires per-system tuning. Calibration is measured post-hoc but not theoretically connected to algorithmic design choices. Observation perturbation noise is accepted as the price of maintaining ensemble diversity. And there's no theory explaining why or how spectral regularization in observation space should yield calibrated uncertainty. This dissertation fills that gap with three contributions: a new deterministic algorithm, a rigorous bias-variance theory, and comprehensive empirical validation. Let me start with the algorithm.
@@ -160,11 +166,12 @@ Normalize residuals by observation uncertainty:
 
 <div>$$\mathbf{E} = (\mathbf{R}^{(L)})^{-1/2}(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^\top)$$</div>
 
-- Each column: one ensemble member's mismatch
-- Whitening makes noise isotropic (unit covariance)
-- Signal structure becomes visible in eigenspectrum
+- <span>$\mathbf{Z}^{(w)} \in \mathbb{R}^{d \times N}$</span>: forecast observations stacked over the window (<span>$N$</span> columns, one per member)
+- <span>$\mathbf{z}^{(w)} \in \mathbb{R}^{d}$</span>: actual observations; <span>$\mathbf{1}^\top$</span> broadcasts subtraction across all members
+- <span>$\mathbf{R}^{(L)}$</span>: block-diagonal observation error covariance over <span>$L$</span> times; <span>$(\mathbf{R}^{(L)})^{-1/2}$</span> whitens so noise has unit covariance
+- Each column of <span>$\mathbf{E}$</span>: one member's normalized mismatch — signal structure now visible in eigenspectrum
 
-**Visual:** see next slide (full pipeline)
+**Key insight: normalizing by $\mathbf{R}^{(L)}$ makes noise isotropic — any remaining structure is genuine forecast-observation mismatch**
 
 <!-- .notes:
 Stage 1 is whitening. We take each ensemble member's forecast observations, subtract the actual observations to get residuals, and normalize by the observation error covariance. After whitening, the observation noise has identity covariance. This is crucial because it means any structure we see in the eigenspectrum of the residual covariance represents genuine forecast-observation mismatch, not observation noise artifacts. The whitening step is what makes the subsequent PCA meaningful.
@@ -176,7 +183,7 @@ Stage 1 is whitening. We take each ensemble member's forecast observations, subt
 
 Decompose centered whitened residual covariance:
 
-<div>$$\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top = \sum_{i=1}^{r} \hat{\lambda}_i \hat{\mathbf{v}}_i \hat{\mathbf{v}}_i^\top$$</div>
+<div>$$\mathbf{C}_E = \frac{1}{N-1}\mathbf{E}_c\mathbf{E}_c^\top = \hat{\mathbf{V}}\hat{\boldsymbol{\Lambda}}\hat{\mathbf{V}}^\top = \sum_{i=1}^{r} \hat{\lambda}_i \hat{\mathbf{v}}_i \hat{\mathbf{v}}_i^\top$$</div>
 
 - Large $\lambda_i$ → coherent dynamical mismatch (signal)
 - Small $\lambda_i$ → sampling noise
@@ -243,13 +250,162 @@ Here's the full algorithm. For each assimilation window, we propagate the ensemb
 
 ## Geometric Interpretation
 
-| Direction | Stochastic EnKF | QPCA-EnDCF |
-|---|---|---|
-| Signal modes | Correct + inject noise | Correct deterministically |
-| Noise modes | Inject noise uniformly | Leave unchanged |
-| Net effect | Compress variance everywhere | Preserve diversity precisely |
+<div style="display:flex; gap:2em; align-items:flex-start; margin-top:0.3em;">
 
-**QPCA-EnDCF confines updates to signal subspace**
+<!-- LEFT PANEL: Stochastic EnKF -->
+<div style="flex:1; text-align:center;">
+<div style="font-family:var(--r-heading-font); font-weight:650; font-size:0.85em; color:var(--accent,#8b4513); margin-bottom:0.5em; letter-spacing:-0.01em;">Stochastic EnKF</div>
+<svg viewBox="0 0 400 420" style="width:100%; max-width:420px;">
+  <!-- Faint basis axes -->
+  <line x1="40" y1="210" x2="360" y2="210" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="6,4"/>
+  <line x1="200" y1="30" x2="200" y2="390" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="6,4"/>
+  <text x="365" y="215" fill="var(--text-secondary,#6b5d4e)" font-size="11" font-style="italic">signal</text>
+  <text x="205" y="28" fill="var(--text-secondary,#6b5d4e)" font-size="11" font-style="italic">noise</text>
+
+  <!-- Initial ensemble cloud (large ellipse) -->
+  <ellipse cx="200" cy="140" rx="110" ry="70" fill="var(--accent-muted,#f0e8dc)" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.7"/>
+  <!-- Ensemble dots -->
+  <circle cx="155" cy="125" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="180" cy="110" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="210" cy="130" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="240" cy="120" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="195" cy="155" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="225" cy="150" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="170" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="250" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <text x="200" y="98" text-anchor="middle" fill="var(--text-primary,#2c2418)" font-size="12" font-weight="600">initial ensemble</text>
+
+  <!-- Random perturbation arrows (all directions) -->
+  <defs>
+    <marker id="ah-red" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <line x1="155" y1="125" x2="130" y2="108" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <line x1="180" y1="110" x2="165" y2="82" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <line x1="210" y1="130" x2="235" y2="108" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <line x1="240" y1="120" x2="272" y2="130" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <line x1="195" y1="155" x2="178" y2="175" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <line x1="225" y1="150" x2="248" y2="172" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <line x1="170" y1="145" x2="140" y2="155" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <line x1="250" y1="145" x2="270" y2="162" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+
+  <!-- Perturbation label -->
+
+<text x="310" y="90" fill="#c0392b" font-size="11" font-style="italic">ε ~ N(0, R)</text>
+<text x="310" y="105" fill="#c0392b" font-size="10">all directions</text>
+
+  <!-- Arrow down -->
+  <defs>
+    <marker id="ah-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--text-secondary,#6b5d4e)"/>
+    </marker>
+  </defs>
+  <line x1="200" y1="220" x2="200" y2="255" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.5" marker-end="url(#ah-gray)"/>
+  <text x="215" y="242" fill="var(--text-secondary,#6b5d4e)" font-size="10" font-style="italic">Kalman update</text>
+
+  <!-- Collapsed ensemble (small tight ellipse) -->
+  <ellipse cx="200" cy="320" rx="35" ry="25" fill="#f5e6e0" stroke="#c0392b" stroke-width="1.5" opacity="0.8"/>
+  <!-- Tight cluster dots -->
+  <circle cx="190" cy="315" r="3" fill="#c0392b" opacity="0.7"/>
+  <circle cx="200" cy="310" r="3" fill="#c0392b" opacity="0.7"/>
+  <circle cx="210" cy="318" r="3" fill="#c0392b" opacity="0.7"/>
+  <circle cx="195" cy="325" r="3" fill="#c0392b" opacity="0.7"/>
+  <circle cx="205" cy="328" r="3" fill="#c0392b" opacity="0.7"/>
+  <circle cx="198" cy="320" r="3" fill="#c0392b" opacity="0.7"/>
+
+  <!-- Ghost of original ellipse to show collapse -->
+  <ellipse cx="200" cy="320" rx="110" ry="70" fill="none" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="3,4" opacity="0.4"/>
+
+  <!-- Annotations -->
+
+<text x="200" y="368" text-anchor="middle" fill="#c0392b" font-size="11" font-weight="600">variance collapses</text>
+<text x="200" y="383" text-anchor="middle" fill="var(--text-secondary,#6b5d4e)" font-size="10">perturbations scale as 1/N</text>
+<text x="200" y="396" text-anchor="middle" fill="var(--text-secondary,#6b5d4e)" font-size="10">too weak to restore removed spread</text>
+</svg>
+
+</div>
+
+<!-- RIGHT PANEL: QPCA-EnDCF -->
+<div style="flex:1; text-align:center;">
+<div style="font-family:var(--r-heading-font); font-weight:650; font-size:0.85em; color:var(--accent,#8b4513); margin-bottom:0.5em; letter-spacing:-0.01em;">QPCA-EnDCF</div>
+<svg viewBox="0 0 400 420" style="width:100%; max-width:420px;">
+  <!-- Signal axis (bold) -->
+  <line x1="40" y1="210" x2="360" y2="210" stroke="#2d8f83" stroke-width="2" opacity="0.5"/>
+  <!-- Noise axis (faded) -->
+  <line x1="200" y1="30" x2="200" y2="390" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="6,4"/>
+  <text x="365" y="215" fill="#2d8f83" font-size="11" font-weight="600">signal</text>
+  <text x="205" y="28" fill="var(--text-secondary,#6b5d4e)" font-size="11" font-style="italic" opacity="0.6">noise</text>
+
+  <!-- Initial ensemble cloud -->
+  <ellipse cx="200" cy="140" rx="110" ry="70" fill="var(--accent-muted,#f0e8dc)" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.7"/>
+  <!-- Ensemble dots -->
+  <circle cx="155" cy="125" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="180" cy="110" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="210" cy="130" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="240" cy="120" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="195" cy="155" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="225" cy="150" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="170" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <circle cx="250" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
+  <text x="200" y="98" text-anchor="middle" fill="var(--text-primary,#2c2418)" font-size="12" font-weight="600">initial ensemble</text>
+
+  <!-- Signal-only update arrows (horizontal only, teal) -->
+  <defs>
+    <marker id="ah-teal" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#2d8f83"/>
+    </marker>
+  </defs>
+  <line x1="155" y1="125" x2="175" y2="125" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
+  <line x1="240" y1="120" x2="218" y2="120" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
+  <line x1="250" y1="145" x2="228" y2="145" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
+  <line x1="170" y1="145" x2="188" y2="145" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
+
+  <!-- "No arrows" indicators on noise directions (small X marks) -->
+
+<text x="180" y="100" fill="var(--text-secondary,#6b5d4e)" font-size="14" opacity="0.5" text-anchor="middle">—</text>
+<text x="225" y="168" fill="var(--text-secondary,#6b5d4e)" font-size="14" opacity="0.5" text-anchor="middle">—</text>
+
+  <!-- Signal subspace highlight band -->
+  <rect x="60" y="115" width="280" height="50" rx="4" fill="#2d8f83" opacity="0.07"/>
+  <text x="90" y="175" fill="#2d8f83" font-size="10" font-weight="600">signal subspace only</text>
+
+  <!-- Arrow down -->
+  <line x1="200" y1="220" x2="200" y2="255" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.5" marker-end="url(#ah-gray)"/>
+  <text x="215" y="242" fill="var(--text-secondary,#6b5d4e)" font-size="10" font-style="italic">spectral update</text>
+
+  <!-- Result: narrowed in signal, preserved in noise -->
+  <ellipse cx="200" cy="320" rx="45" ry="70" fill="#e6f5f3" stroke="#2d8f83" stroke-width="1.5" opacity="0.8"/>
+  <!-- Dots spread vertically but tight horizontally -->
+  <circle cx="195" cy="295" r="3.5" fill="#2d8f83" opacity="0.7"/>
+  <circle cx="205" cy="310" r="3.5" fill="#2d8f83" opacity="0.7"/>
+  <circle cx="198" cy="330" r="3.5" fill="#2d8f83" opacity="0.7"/>
+  <circle cx="202" cy="345" r="3.5" fill="#2d8f83" opacity="0.7"/>
+  <circle cx="195" cy="318" r="3.5" fill="#2d8f83" opacity="0.7"/>
+  <circle cx="207" cy="305" r="3.5" fill="#2d8f83" opacity="0.7"/>
+
+  <!-- Arrows showing preserved noise spread -->
+  <defs>
+    <marker id="ah-teal2" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 6 2, 0 4" fill="#2d8f83" opacity="0.5"/>
+    </marker>
+  </defs>
+  <line x1="200" y1="280" x2="200" y2="260" stroke="#2d8f83" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ah-teal2)" opacity="0.5"/>
+  <line x1="200" y1="360" x2="200" y2="380" stroke="#2d8f83" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ah-teal2)" opacity="0.5"/>
+  <text x="230" y="278" fill="#2d8f83" font-size="9" opacity="0.7">noise spread</text>
+  <text x="230" y="289" fill="#2d8f83" font-size="9" opacity="0.7">preserved</text>
+
+  <!-- Annotations -->
+
+<text x="200" y="405" text-anchor="middle" fill="#2d8f83" font-size="11" font-weight="600">no collapse</text>
+<text x="200" y="418" text-anchor="middle" fill="var(--text-secondary,#6b5d4e)" font-size="10">noise modes untouched — variance preserved by construction</text>
+</svg>
+
+</div>
+
+</div>
+
+<div style="margin-top:0.4em; padding:0.4em 0.8em; border-top:2px solid var(--accent,#8b4513); text-align:center; font-family:var(--r-heading-font); font-weight:650; font-size:0.78em; color:var(--r-heading-color,#1a1008);">Updates confined to signal subspace preserve noise-direction variance</div>
 
 <!-- .notes:
 This table captures the geometric difference. Stochastic EnKF corrects along signal directions but also injects perturbation noise there. Along noise directions, it injects noise uniformly. The net effect: variance is compressed everywhere because the observation perturbations add noise in all dimensions while the Kalman update removes variance along observed directions. QPCA-EnDCF corrects only along the kappa signal directions — deterministically, without added noise. Noise directions are untouched. This is why it preserves ensemble diversity: it operates surgically on the signal subspace and leaves everything else intact.
@@ -261,12 +417,12 @@ This table captures the geometric difference. Stochastic EnKF corrects along sig
 
 QPCA-EnDCF is the **ensemble filtering counterpart** of QPCA parameter estimation:
 
-| MUD/QPCA | QPCA-EnDCF |
-|---|---|
-| Parameter samples | Ensemble members |
-| Normalized residual <span>$\mathbf{X}$</span> | Whitened residual $\mathbf{E}^\top$ |
-| Learned QoI map | PCA projection |
-| Population covariance pullback | Empirical gain $\mathbf{K}^{\mathrm{DC}}$ |
+| MUD/QPCA                                      | QPCA-EnDCF                                |
+| --------------------------------------------- | ----------------------------------------- |
+| Parameter samples                             | Ensemble members                          |
+| Normalized residual <span>$\mathbf{X}$</span> | Whitened residual $\mathbf{E}^\top$       |
+| Learned QoI map                               | PCA projection                            |
+| Population covariance pullback                | Empirical gain $\mathbf{K}^{\mathrm{DC}}$ |
 
 Same algebraic template: **prior + covariance-weighted pullback of projected innovation**
 
@@ -377,13 +533,13 @@ You might ask: doesn't truncation always introduce bias? In classical Tikhonov o
 
 ## Theoretical Summary
 
-| Property | Stochastic EnKF | QPCA-EnDCF |
-|---|---|---|
-| Variance scaling | $\mathcal{O}(d/N)$ | $\mathcal{O}(\kappa/N)$ |
-| Perturbation noise | Irreducible | Eliminated |
-| Regularization | Uniform via R | Adaptive spectral |
-| Bias-variance | Classical tradeoff | Favorable under spectral decay |
-| Projector stability | N/A | Controlled by $\delta_\kappa$ |
+| Property            | Stochastic EnKF    | QPCA-EnDCF                     |
+| ------------------- | ------------------ | ------------------------------ |
+| Variance scaling    | $\mathcal{O}(d/N)$ | $\mathcal{O}(\kappa/N)$        |
+| Perturbation noise  | Irreducible        | Eliminated                     |
+| Regularization      | Uniform via R      | Adaptive spectral              |
+| Bias-variance       | Classical tradeoff | Favorable under spectral decay |
+| Projector stability | N/A                | Controlled by $\delta_\kappa$  |
 
 <!-- .notes:
 To summarize the theory: stochastic EnKF has variance scaling with observation dimension over N, irreducible perturbation noise, and uniform regularization. QPCA-EnDCF has variance scaling with effective rank over N, no perturbation noise, adaptive spectral regularization, and a favorable bias-variance tradeoff under spectral decay. The projector stability is controlled by the cutoff gap delta-kappa, which is intrinsic to the problem spectrum, not a tuning parameter.
@@ -414,11 +570,11 @@ All experiments use the Lorenz-96 system — the canonical testbed in the data a
 
 ## Result 1: Probabilistic Calibration
 
-| Method | Spread | RMSE | Ratio | Correlation |
-|---|---|---|---|---|
-| Seq-EnKF | 0.34 | 4.51 | 0.095 | 0.009 |
-| 4D-EnKF | 0.45 | 4.42 | 0.120 | 0.219 |
-| **QPCA-EnDCF** | **2.84** | **3.55** | **0.811** | **0.820** |
+| Method         | Spread   | RMSE     | Ratio     | Correlation |
+| -------------- | -------- | -------- | --------- | ----------- |
+| Seq-EnKF       | 0.34     | 4.51     | 0.095     | 0.009       |
+| 4D-EnKF        | 0.45     | 4.42     | 0.120     | 0.219       |
+| **QPCA-EnDCF** | **2.84** | **3.55** | **0.811** | **0.820**   |
 
 - QPCA-EnDCF: $\bar{\gamma} \approx 0.81$ (near-ideal), $\rho \approx 0.82$
 - Stochastic: $\bar{\gamma} \approx 0.1$ (15× overconfident), $\rho \approx 0$
@@ -447,11 +603,11 @@ The calibration diagnostics make this visually clear. Panel A shows the spread-s
 
 ![Bias Variance Evolution](figures/bias_variance_evolution.png)
 
-| Method | MSE | $\mathrm{Bias}^2$ | Variance | $\mathrm{Bias}^2/\mathrm{MSE}$ |
-|---|---|---|---|---|
-| Seq-EnKF | 22 | ~10 | ~12 | 45% |
-| 4D-EnKF | 21 | ~10 | ~11 | 47% |
-| **QPCA-EnDCF** | **13** | **~11** | **~2** | **82%** |
+| Method         | MSE    | $\mathrm{Bias}^2$ | Variance | $\mathrm{Bias}^2/\mathrm{MSE}$ |
+| -------------- | ------ | ----------------- | -------- | ------------------------------ |
+| Seq-EnKF       | 22     | ~10               | ~12      | 45%                            |
+| 4D-EnKF        | 21     | ~10               | ~11      | 47%                            |
+| **QPCA-EnDCF** | **13** | **~11**           | **~2**   | **82%**                        |
 
 <!-- .notes:
 The bias-variance decomposition reveals the mechanism. All three methods have roughly equal squared bias — about 10 to 11. The difference is variance. Stochastic methods have variance around 11-12, making them variance-limited. QPCA-EnDCF has variance of only 2.3 — an 80 percent reduction. Its error is overwhelmingly bias-dominated. This validates the theory exactly: spectral truncation removes variance-dominated modes without increasing bias. The 5× variance reduction is consistent with eliminating the O(d/N) perturbation term.

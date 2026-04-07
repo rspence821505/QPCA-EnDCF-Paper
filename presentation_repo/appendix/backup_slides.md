@@ -101,17 +101,16 @@ Rank histograms test full distributional calibration beyond second moments. Unde
 <!-- BACKUP SLIDE 5: Additive Inflation Results -->
 <!-- ============================================================ -->
 
-## Backup 5: Additive Inflation Analysis
+## Backup 5: Multiplicative Inflation Analysis
 
-![Additive Inflation](../paper/final_figures/inflation_additive_20.png)
+![Multiplicative Inflation](figures/inflation_multiplicative_20.png)
 
-- QPCA-EnDCF optimal at $\alpha_{\mathrm{add}} = 0$ for all <span>$N$</span>
-- Additive inflation degrades QPCA-EnDCF (disrupts correlations)
-- For stochastic: additive underperforms multiplicative by 5-10%
-- Isotropic noise lacks dynamical structure
+- QPCA-EnDCF optimal at <span>$\lambda_{\mathrm{infl}} = 1.0$</span> (no inflation) for all <span>$N$</span>
+- Stochastic methods need N-dependent tuning
+- **Eliminates a major source of heuristic calibration**
 
 <!-- .notes:
-Additive inflation results tell the same story as multiplicative. QPCA-EnDCF is optimal with zero additive inflation for every ensemble size. Adding isotropic noise actually hurts because it disrupts the dynamically consistent correlation structure that spectral regularization preserves. For stochastic methods, additive inflation provides marginal improvement over no inflation but consistently underperforms multiplicative inflation, because isotropic perturbations inject variance in dynamically irrelevant directions.
+One of the most practically important results: QPCA-EnDCF needs no inflation. This figure shows RMSE versus multiplicative inflation factor for different ensemble sizes. QPCA-EnDCF achieves its best performance at lambda equals 1.0 — no inflation — for every ensemble size tested. Stochastic methods have ensemble-size-dependent optima that shift as N changes. This eliminates a major operational headache: inflation tuning is one of the most time-consuming aspects of deploying ensemble filters, and getting it wrong can cause either filter divergence or excessive variance. QPCA-EnDCF simply doesn't need it.
 -->
 
 ---
@@ -140,30 +139,6 @@ Cross-distribution std: QPCA 0.052, Seq 0.092, 4D 0.131
 The full non-Gaussian table. Nine distributions, three trials each. QPCA-EnDCF wins every single comparison, with improvements ranging from 17.3 to 24.5 percent. Its cross-distribution standard deviation is 0.052 — half that of sequential EnKF and a third of 4D-EnKF. The largest improvement is 24.5 percent against sequential EnKF under Gamma(k=2) errors, and the most consistent advantage is the approximately 20 percent mean improvement across all distributions.
 -->
 
----
-
-<!-- ============================================================ -->
-<!-- BACKUP SLIDE 7: Correlated Error Implementation -->
-<!-- ============================================================ -->
-
-## Backup 7: Correlated Observation Error Details
-
-**Three covariance structures:**
-- Diagonal: $\mathrm{cond}(\mathbf{R}) = 1$ (baseline)
-- Exponential: $R_{ij} = \sigma^2 \exp(-d_{ij}/\ell)$, $\mathrm{cond}(\mathbf{R}) = 649$
-- Gaussian: $R_{ij} = \sigma^2 \exp(-d_{ij}^2/2\ell^2)$, $\mathrm{cond}(\mathbf{R}) \approx 3.7 \times 10^5$
-
-**Whitening implementation:** Cholesky factorization $\mathbf{R} = \mathbf{L}\mathbf{L}^\top$, $\mathbf{W} = \mathbf{L}^{-\top}$
-
-**Key results:**
-- QPCA-EnDCF degradation: less than 7% across 5 orders of magnitude
-- 4D-EnKF degradation: 15.3% under Gaussian correlation
-- QPCA advantage grows: 25.2% → 24.7% → 31.9%
-- Regularization $\varepsilon = 10^{-3} \,\mathrm{tr}(\mathbf{R})$ for Gaussian case
-
-<!-- .notes:
-The correlated error study tests three covariance structures with condition numbers from 1 to 370,000. We use Cholesky whitening — R equals L L-transpose, W equals L-inverse-transpose. QPCA-EnDCF stays within 7 percent of the uncorrelated baseline, while 4D-EnKF degrades by 15 percent under severe ill-conditioning. The advantage of QPCA-EnDCF actually increases with correlation strength because whitening effectively decorrelates the observation space, restoring the favorable spectral structure.
--->
 
 
 ---

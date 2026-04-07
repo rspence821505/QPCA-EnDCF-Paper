@@ -22,7 +22,7 @@ revealOptions:
 
 <!-- .slide: data-background="#1a1a2e" -->
 
-# Spectral Regularization and Probabilistic Calibration in Ensemble Filtering
+# A Data-Consistent approach to Ensemble Filtering
 
 ### A Unified Theoretical Framework
 
@@ -40,14 +40,91 @@ Welcome everyone, and thank you for being here. Today I'm presenting my presenta
 
 ## The Promise of Ensemble Filtering
 
-- Bayesian state estimation for high-dimensional systems
-- Represent uncertainty with N state realizations
-- Practical for operational weather, ocean, climate
-- Avoid explicit covariance manipulation
-
-**But: what happens when N is small?**
-
-<!-- .element: class="fragment" -->
+<div style="display:flex; flex-direction:column; align-items:center; margin-top:0.15em;">
+<svg viewBox="0 0 1600 500" style="width:94%; max-width:1600px;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="pef-fa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0.5,8 3,0 5.5" fill="#8a7e72"/>
+    </marker>
+    <radialGradient id="pef-pg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8899aa" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#8899aa" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#8899aa" stop-opacity="0"/>
+    </radialGradient>
+    <g id="pef-rays" stroke="#7a8fa3">
+      <line x1="-115" y1="0" x2="115" y2="0" stroke-width="1.1" opacity="0.24"/>
+      <line x1="-111" y1="-30" x2="111" y2="30" stroke-width="1.0" opacity="0.20"/>
+      <line x1="-100" y1="-58" x2="100" y2="58" stroke-width="0.9" opacity="0.17"/>
+      <line x1="-81" y1="-81" x2="81" y2="81" stroke-width="0.8" opacity="0.14"/>
+      <line x1="-58" y1="-100" x2="58" y2="100" stroke-width="0.7" opacity="0.11"/>
+      <line x1="-30" y1="-111" x2="30" y2="111" stroke-width="0.7" opacity="0.09"/>
+      <line x1="0" y1="-115" x2="0" y2="115" stroke-width="0.6" opacity="0.07"/>
+      <line x1="30" y1="-111" x2="-30" y2="111" stroke-width="0.6" opacity="0.06"/>
+      <line x1="58" y1="-100" x2="-58" y2="100" stroke-width="0.5" opacity="0.05"/>
+      <line x1="81" y1="-81" x2="-81" y2="81" stroke-width="0.5" opacity="0.05"/>
+      <line x1="100" y1="-58" x2="-100" y2="58" stroke-width="0.4" opacity="0.04"/>
+      <line x1="111" y1="-30" x2="-111" y2="30" stroke-width="0.4" opacity="0.04"/>
+    </g>
+  </defs>
+  <g transform="translate(235,248)">
+    <use href="#pef-rays"/>
+    <ellipse cx="0" cy="0" rx="140" ry="118" fill="url(#pef-pg)"/>
+    <ellipse cx="0" cy="0" rx="118" ry="98" fill="none" stroke="#7a8fa3" stroke-width="0.9" opacity="0.25"/>
+    <ellipse cx="0" cy="0" rx="90" ry="74" fill="none" stroke="#7a8fa3" stroke-width="1.0" opacity="0.35"/>
+    <ellipse cx="0" cy="0" rx="62" ry="50" fill="none" stroke="#7a8fa3" stroke-width="1.1" opacity="0.46"/>
+    <ellipse cx="0" cy="0" rx="34" ry="26" fill="none" stroke="#7a8fa3" stroke-width="1.2" opacity="0.58"/>
+    <ellipse cx="0" cy="0" rx="12" ry="8" fill="none" stroke="#7a8fa3" stroke-width="1.3" opacity="0.70"/>
+    <text x="-120" y="-130" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="14" fill="#9a8d7e" font-weight="500">(a)</text>
+    <text x="0" y="152" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="16.5" fill="#6b5d4e" font-style="italic">p(x | z)</text>
+    <text x="0" y="172" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="13.5" fill="#9a8d7e" font-style="italic">x ∈ ℝ<tspan baseline-shift="super" font-size="10">d</tspan></text>
+  </g>
+  <line x1="392" y1="248" x2="498" y2="248" stroke="#8a7e72" stroke-width="1" marker-end="url(#pef-fa)"/>
+  <g transform="translate(710,248)">
+    <use href="#pef-rays" opacity="0.22"/>
+    <ellipse cx="0" cy="0" rx="118" ry="98" fill="none" stroke="#7a8fa3" stroke-width="0.6" opacity="0.12"/>
+    <ellipse cx="0" cy="0" rx="90" ry="74" fill="none" stroke="#7a8fa3" stroke-width="0.7" opacity="0.14"/>
+    <ellipse cx="0" cy="0" rx="62" ry="50" fill="none" stroke="#7a8fa3" stroke-width="0.7" opacity="0.16"/>
+    <ellipse cx="0" cy="0" rx="34" ry="26" fill="none" stroke="#7a8fa3" stroke-width="0.7" opacity="0.18"/>
+    <circle cx="-40" cy="-55" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="25" cy="-68" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="68" cy="-28" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="-72" cy="-5" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="-10" cy="-16" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="40" cy="22" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="-45" cy="35" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="18" cy="58" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="65" cy="48" r="7" fill="#2a8585" opacity="0.85"/>
+    <circle cx="-20" cy="72" r="7" fill="#2a8585" opacity="0.85"/>
+    <text x="-118" y="-130" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="14" fill="#9a8d7e" font-weight="500">(b)</text>
+    <text x="0" y="130" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="16.5" fill="#2a8585" font-weight="500" font-style="italic">N samples</text>
+    <text x="0" y="150" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="12.5" fill="#b0a898">weather · ocean · climate</text>
+  </g>
+  <line x1="898" y1="248" x2="1018" y2="248" stroke="#8a7e72" stroke-width="1" marker-end="url(#pef-fa)"/>
+  <g transform="translate(1290,248)">
+    <use href="#pef-rays" opacity="0.15"/>
+    <ellipse cx="0" cy="0" rx="118" ry="98" fill="none" stroke="#7a8fa3" stroke-width="0.6" opacity="0.10"/>
+    <ellipse cx="0" cy="0" rx="90" ry="74" fill="none" stroke="#7a8fa3" stroke-width="0.6" opacity="0.12"/>
+    <ellipse cx="0" cy="0" rx="62" ry="50" fill="none" stroke="#7a8fa3" stroke-width="0.7" opacity="0.14"/>
+    <ellipse cx="0" cy="0" rx="34" ry="26" fill="none" stroke="#7a8fa3" stroke-width="0.7" opacity="0.16"/>
+    <circle cx="-18" cy="-8" r="7" fill="#c4653a" opacity="0.82"/>
+    <circle cx="25" cy="18" r="7" fill="#c4653a" opacity="0.82"/>
+    <circle cx="-3" cy="35" r="7" fill="#c4653a" opacity="0.82"/>
+    <circle cx="60" cy="-30" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <circle cx="-58" cy="10" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <circle cx="40" cy="42" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <circle cx="-46" cy="-32" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <circle cx="15" cy="-45" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <circle cx="72" cy="14" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <circle cx="-32" cy="55" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <circle cx="48" cy="-10" r="5.5" fill="none" stroke="#c4653a" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.45"/>
+    <text x="-118" y="-130" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="14" fill="#9a8d7e" font-weight="500">(c)</text>
+    <text x="0" y="138" text-anchor="middle" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="19" font-weight="600" fill="#c4653a">N ≪ d</text>
+  </g>
+</svg>
+<div class="fragment" style="margin-top:0.4em; text-align:center; font-size:1.05em; font-weight:550; color:#c4653a; letter-spacing:0.01em;">
+What happens when N ≪ d ?
+</div>
+</div>
 
 <!-- .notes:
 Ensemble Kalman filtering is the backbone of operational data assimilation — used in weather prediction, ocean modeling, and climate science. The idea is elegant: represent posterior uncertainty through a small collection of state vectors, avoiding the need to store or manipulate full covariance matrices. But operational constraints force us to use very small ensembles — often 10 to 50 members for systems with millions of unknowns. What happens to uncertainty quantification in that regime is the central question of this work.
@@ -57,47 +134,132 @@ Ensemble Kalman filtering is the backbone of operational data assimilation — u
 
 ## The Undersampling Crisis
 
-| Parameter               | Value     |
-| ----------------------- | --------- |
-| State dimension n       | 40        |
-| Observations per time m | 20        |
-| Ensemble size N         | 10        |
-| Covariance rank         | 9 or less |
-
-- **n > m > N**: severely undersampled
-- Covariance has 31 zero eigenvalues
-- Sampling noise corrupts nonzero eigenvalues
+<div style="display:flex; flex-direction:column; align-items:center; margin-top:0.1em;">
+<svg viewBox="0 0 1700 560" style="width:96%; max-width:1700px;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="uc-a" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#8b4513"/>
+    </marker>
+  </defs>
+  <!-- ── STAGE 1: Undersampled Regime ── -->
+  <g transform="translate(50, 20)">
+    <text x="190" y="14" text-anchor="middle" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="22" font-weight="660" fill="#2c2418" letter-spacing="0.02em">Undersampled Regime</text>
+    <!-- Dimensional hierarchy bars -->
+    <rect x="0" y="52" width="340" height="40" rx="3" fill="#2a8585" fill-opacity="0.10" stroke="#2a8585" stroke-width="1.1"/>
+    <text x="14" y="78" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="17" font-weight="600" fill="#2a8585">n = 40</text>
+    <text x="352" y="78" font-family="Charter,Georgia,serif" font-size="14.5" fill="#6b5d4e" font-style="italic">state dimension</text>
+    <rect x="0" y="104" width="170" height="40" rx="3" fill="#2a8585" fill-opacity="0.16" stroke="#2a8585" stroke-width="1.1"/>
+    <text x="14" y="130" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="17" font-weight="600" fill="#2a8585">m = 20</text>
+    <text x="182" y="130" font-family="Charter,Georgia,serif" font-size="14.5" fill="#6b5d4e" font-style="italic">obs per time</text>
+    <rect x="0" y="156" width="85" height="40" rx="3" fill="#c4653a" fill-opacity="0.13" stroke="#c4653a" stroke-width="1.3"/>
+    <text x="14" y="182" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="17" font-weight="650" fill="#c4653a">N = 10</text>
+    <text x="97" y="182" font-family="Charter,Georgia,serif" font-size="14.5" fill="#6b5d4e" font-style="italic">ensemble</text>
+    <rect x="0" y="208" width="76" height="40" rx="3" fill="none" stroke="#c4653a" stroke-width="1.3" stroke-dasharray="5,3"/>
+    <text x="14" y="234" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="16" font-weight="600" fill="#c4653a">rank ≤ 9</text>
+    <text x="88" y="234" font-family="Charter,Georgia,serif" font-size="14.5" fill="#6b5d4e" font-style="italic">cov. rank</text>
+    <text x="190" y="300" text-anchor="middle" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="18" font-weight="650" fill="#c4653a" letter-spacing="0.01em">n ≫ N : severely undersampled</text>
+  </g>
+  <!-- ── ARROW 1→2 ── -->
+  <line x1="475" y1="175" x2="530" y2="175" stroke="#8b4513" stroke-width="1.5" marker-end="url(#uc-a)"/>
+  <text x="503" y="162" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="13.5" fill="#6b5d4e" font-style="italic">implies</text>
+  <!-- ── STAGE 2: Broken Covariance Spectrum ── -->
+  <g transform="translate(555, 20)">
+    <text x="260" y="14" text-anchor="middle" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="22" font-weight="660" fill="#2c2418" letter-spacing="0.02em">Broken Covariance Spectrum</text>
+    <g transform="translate(20, 40)">
+      <!-- Axes -->
+      <line x1="32" y1="16" x2="32" y2="280" stroke="#5a4e40" stroke-width="0.8"/>
+      <line x1="30" y1="280" x2="480" y2="280" stroke="#5a4e40" stroke-width="0.8"/>
+      <text x="14" y="150" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="15" fill="#6b5d4e" font-style="italic" transform="rotate(-90 14 150)">eigenvalue λᵢ</text>
+      <text x="256" y="300" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="13" fill="#9a8d7e" font-style="italic">mode index i = 1 … 40</text>
+      <!-- True population spectrum (faded area) -->
+      <path d="M 42,35 C 80,48 115,82 150,120 C 185,158 215,188 250,215 C 285,235 325,252 375,264 C 410,270 445,275 475,278 L 475,280 L 42,280 Z" fill="#2a8585" fill-opacity="0.05" stroke="#2a8585" stroke-width="0.9" stroke-dasharray="4,3" stroke-opacity="0.22"/>
+      <text x="355" y="248" font-family="Charter,Georgia,serif" font-size="11.5" fill="#2a8585" opacity="0.40" font-style="italic">true population</text>
+      <!-- Empirical eigenvalue bars (9 nonzero) -->
+      <rect x="42"  y="48"  width="11" height="232" rx="2" fill="#2a8585" opacity="0.52"/>
+      <rect x="56"  y="88"  width="11" height="192" rx="2" fill="#2a8585" opacity="0.48"/>
+      <rect x="70"  y="122" width="11" height="158" rx="2" fill="#2a8585" opacity="0.44"/>
+      <rect x="84"  y="155" width="11" height="125" rx="2" fill="#2a8585" opacity="0.40"/>
+      <rect x="98"  y="185" width="11" height="95"  rx="2" fill="#2a8585" opacity="0.36"/>
+      <rect x="112" y="210" width="11" height="70"  rx="2" fill="#2a8585" opacity="0.32"/>
+      <rect x="126" y="232" width="11" height="48"  rx="2" fill="#2a8585" opacity="0.28"/>
+      <rect x="140" y="252" width="11" height="28"  rx="2" fill="#2a8585" opacity="0.25"/>
+      <rect x="154" y="266" width="11" height="14"  rx="2" fill="#c4653a" opacity="0.30"/>
+      <!-- Noise jitter on leading bars -->
+      <path d="M 44,44 l 2,-5 l 2,5 l 2,-4 l 2,4" fill="none" stroke="#c4653a" stroke-width="0.9" opacity="0.55"/>
+      <path d="M 58,84 l 2,-4 l 2,4 l 2,-3 l 2,3" fill="none" stroke="#c4653a" stroke-width="0.9" opacity="0.45"/>
+      <path d="M 72,118 l 1.5,-3.5 l 2,3.5 l 1.5,-3" fill="none" stroke="#c4653a" stroke-width="0.8" opacity="0.38"/>
+      <!-- Bias annotation -->
+      <text x="115" y="36" font-family="Charter,Georgia,serif" font-size="12.5" fill="#c4653a" font-style="italic" opacity="0.7">noisy + biased ↓</text>
+      <path d="M 112,38 L 72,48" fill="none" stroke="#c4653a" stroke-width="0.6" stroke-dasharray="2,2" opacity="0.35"/>
+      <!-- Zero eigenvalue flat region -->
+      <line x1="170" y1="280" x2="470" y2="280" stroke="#c4653a" stroke-width="2.5" opacity="0.15"/>
+      <!-- Tick marks for zero positions -->
+      <g opacity="0.18" stroke="#c4653a" stroke-width="0.8">
+        <line x1="175" y1="278" x2="175" y2="282"/><line x1="185" y1="278" x2="185" y2="282"/>
+        <line x1="195" y1="278" x2="195" y2="282"/><line x1="205" y1="278" x2="205" y2="282"/>
+        <line x1="215" y1="278" x2="215" y2="282"/><line x1="225" y1="278" x2="225" y2="282"/>
+        <line x1="235" y1="278" x2="235" y2="282"/><line x1="245" y1="278" x2="245" y2="282"/>
+        <line x1="255" y1="278" x2="255" y2="282"/><line x1="265" y1="278" x2="265" y2="282"/>
+        <line x1="275" y1="278" x2="275" y2="282"/><line x1="285" y1="278" x2="285" y2="282"/>
+        <line x1="295" y1="278" x2="295" y2="282"/><line x1="305" y1="278" x2="305" y2="282"/>
+        <line x1="315" y1="278" x2="315" y2="282"/><line x1="325" y1="278" x2="325" y2="282"/>
+        <line x1="335" y1="278" x2="335" y2="282"/><line x1="345" y1="278" x2="345" y2="282"/>
+        <line x1="355" y1="278" x2="355" y2="282"/><line x1="365" y1="278" x2="365" y2="282"/>
+        <line x1="375" y1="278" x2="375" y2="282"/><line x1="385" y1="278" x2="385" y2="282"/>
+        <line x1="395" y1="278" x2="395" y2="282"/><line x1="405" y1="278" x2="405" y2="282"/>
+        <line x1="415" y1="278" x2="415" y2="282"/><line x1="425" y1="278" x2="425" y2="282"/>
+        <line x1="435" y1="278" x2="435" y2="282"/><line x1="445" y1="278" x2="445" y2="282"/>
+        <line x1="455" y1="278" x2="455" y2="282"/><line x1="465" y1="278" x2="465" y2="282"/>
+        <line x1="470" y1="278" x2="470" y2="282"/>
+      </g>
+      <!-- Bracket for zero region -->
+      <path d="M 170,290 L 170,296 L 320,296 L 320,302 M 320,296 L 470,296 L 470,290" fill="none" stroke="#c4653a" stroke-width="1" opacity="0.55"/>
+      <text x="320" y="318" text-anchor="middle" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="14.5" fill="#c4653a" font-weight="560">31 zero eigenvalues</text>
+      <!-- Rank label -->
+      <text x="105" y="318" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="14" fill="#2a8585" font-weight="560">rank(Ĉ) ≤ 9</text>
+    </g>
+  </g>
+  <!-- ── ARROW 2→3 ── -->
+  <line x1="1100" y1="175" x2="1155" y2="175" stroke="#8b4513" stroke-width="1.5" marker-end="url(#uc-a)"/>
+  <text x="1128" y="162" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="13.5" fill="#6b5d4e" font-style="italic">therefore</text>
+  <!-- ── STAGE 3: Operational Impact ── -->
+  <g transform="translate(1185, 20)">
+    <text x="220" y="14" text-anchor="middle" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="22" font-weight="660" fill="#2c2418" letter-spacing="0.02em">Operational Failure</text>
+    <!-- Weather -->
+    <g transform="translate(55, 85)">
+      <circle cx="0" cy="0" r="30" fill="none" stroke="#c4653a" stroke-width="1.2" opacity="0.45"/>
+      <path d="M -19,-9 Q 0,-20 19,-9" fill="none" stroke="#c4653a" stroke-width="1" opacity="0.35"/>
+      <path d="M -21,2 Q 0,-7 21,2" fill="none" stroke="#c4653a" stroke-width="1" opacity="0.35"/>
+      <path d="M -19,13 Q 0,4 19,13" fill="none" stroke="#c4653a" stroke-width="1" opacity="0.35"/>
+      <text x="46" y="2" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="16" fill="#2c2418" font-weight="570">weather</text>
+      <text x="46" y="20" font-family="Charter,Georgia,serif" font-size="13.5" fill="#6b5d4e" font-style="italic">wrong warning thresholds</text>
+    </g>
+    <!-- Ocean -->
+    <g transform="translate(55, 175)">
+      <circle cx="0" cy="0" r="30" fill="none" stroke="#c4653a" stroke-width="1.2" opacity="0.45"/>
+      <path d="M -19,-5 Q -9,-15 0,-5 Q 9,5 19,-5" fill="none" stroke="#c4653a" stroke-width="1" opacity="0.35"/>
+      <path d="M -19,7 Q -9,-2 0,7 Q 9,16 19,7" fill="none" stroke="#c4653a" stroke-width="1" opacity="0.35"/>
+      <text x="46" y="2" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="16" fill="#2c2418" font-weight="570">ocean</text>
+      <text x="46" y="20" font-family="Charter,Georgia,serif" font-size="13.5" fill="#6b5d4e" font-style="italic">corrupted reanalysis</text>
+    </g>
+    <!-- Climate -->
+    <g transform="translate(55, 265)">
+      <circle cx="0" cy="0" r="30" fill="none" stroke="#c4653a" stroke-width="1.2" opacity="0.45"/>
+      <ellipse cx="0" cy="0" rx="12" ry="30" fill="none" stroke="#c4653a" stroke-width="0.8" opacity="0.3"/>
+      <line x1="-30" y1="0" x2="30" y2="0" stroke="#c4653a" stroke-width="0.8" opacity="0.3"/>
+      <text x="46" y="2" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="16" fill="#2c2418" font-weight="570">climate</text>
+      <text x="46" y="20" font-family="Charter,Georgia,serif" font-size="13.5" fill="#6b5d4e" font-style="italic">biased confidence bands</text>
+    </g>
+  </g>
+  <!-- ── CONCLUSION ── -->
+  <line x1="80" y1="425" x2="1620" y2="425" stroke="#d8d0c4" stroke-width="1" stroke-dasharray="6,4"/>
+  <text x="850" y="475" text-anchor="middle" font-family="-apple-system,'Inter','Segoe UI',Helvetica,sans-serif" font-size="26" font-weight="720" fill="#c4653a" letter-spacing="0.01em">Overconfident ensembles are worse than no uncertainty</text>
+  <text x="850" y="515" text-anchor="middle" font-family="Charter,Georgia,serif" font-size="16.5" fill="#6b5d4e" font-style="italic" letter-spacing="0.01em">n ≫ N   →   rank-deficient covariance   →   overconfident uncertainty   →   unreliable decisions</text>
+</svg>
+</div>
 
 <!-- .notes:
-Here's the regime I study. In the Lorenz-96 system with 40 state variables, we observe 20 components but have only 10 ensemble members. The empirical covariance has rank at most 9 — it's missing information in 31 directions. And the eigenvalues it does estimate are biased downward. This is a mathematical certainty, not an implementation failure. The question is: what do we do about it?
--->
-
----
-
-## Variance Collapse in Action
-
-![Spread vs RMSE Temporal](figures/spread_vs_rmse_temporal.png)
-
-- **Stochastic EnKF**: spread ≈ 0.3, RMSE ≈ 4.5
-- Ensemble claims $\sigma = 0.3$, actual error = 4.5
-- **15× overconfident** uncertainty estimates
-
-<!-- .notes:
-This figure tells the whole story of the problem. The solid lines are ensemble spread — what the filter thinks the error is. The dashed lines are RMSE — the actual error. For sequential EnKF, the spread flatlines near 0.3 while the true error fluctuates between 3 and 6. That means the filter is 15 times more confident than it should be. The 4D-EnKF is slightly better but still severely underdispersed. This isn't just an academic concern — overconfident uncertainty renders ensemble forecasts unreliable for decision-making.
--->
-
----
-
-## Why This Matters
-
-- Weather: ensemble spread drives warning thresholds
-- Ocean: misspecified uncertainty → poor reanalysis
-- Climate: bias in projection confidence bands
-
-**Overconfident ensembles are worse than no uncertainty**
-
-<!-- .notes:
-Why should we care about calibration? Because downstream decisions depend on it. In weather forecasting, ensemble spread directly controls warning thresholds. If spread is 15 times too small, extreme events go unwarned. In ocean reanalysis, misspecified uncertainty corrupts initialization. Overconfident uncertainty isn't just imprecise — it's actively misleading. It's worse than admitting you don't know.
+Here's the regime I study. In the Lorenz-96 system with 40 state variables, we observe 20 components but have only 10 ensemble members. The empirical covariance has rank at most 9 — it's missing information in 31 directions. And the eigenvalues it does estimate are biased downward. This is a mathematical certainty, not an implementation failure. Why should we care? Because downstream decisions depend on this uncertainty. In weather forecasting, ensemble spread directly controls warning thresholds — if spread is 15 times too small, extreme events go unwarned. In ocean reanalysis, misspecified uncertainty corrupts initialization. In climate, it biases confidence bands. Overconfident uncertainty isn't just imprecise — it's actively misleading. It's worse than admitting you don't know.
 -->
 
 ---
@@ -217,33 +379,56 @@ Stage 3 applies the correction. We project the whitened residuals onto just the 
 
 ---
 
-## Algorithm Overview
+## QPCA-EnDCF: Computational Pipeline
 
-<div style="display: flex; gap: 2em; align-items: flex-start;">
-<div style="flex: 1;">
-
-**For each assimilation window** $\mathbf{w}$:
-
-1. Propagate ensemble through <span>$L$</span> observation times
-2. Stack forecast observations $\mathbf{Z}^{(w)}$
-3. Whiten: $\mathbf{E} = \mathbf{R}^{-1/2}(\mathbf{Z}^{(w)} - \mathbf{z}^{(w)})$
-4. Center: $\mathbf{E}_c = \mathbf{E} - \mathrm{mean}(\mathbf{E})$
-5. Eigendecompose: $\mathbf{C}_E = \mathbf{E}_c\mathbf{E}_c^\top/(N-1)$
-6. Truncate: keep leading $\kappa$ eigenvectors
-7. Project: $\mathbf{Q}_{\mathrm{PCA}} = -\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top\mathbf{E}$
-8. Unwhiten: $\boldsymbol{\Delta}_{\mathrm{obs}} = \mathbf{R}^{1/2}\mathbf{Q}_{\mathrm{PCA}}$
-9. Apply gain: $\mathbf{X}^a = \mathbf{X}^f + \mathbf{K}^{\mathrm{DC}}\boldsymbol{\Delta}_{\mathrm{obs}}$
-
+<div style="display:flex; align-items:center; gap:0; width:100%; font-size:0.48em; line-height:1.4;">
+<div style="flex:1; text-align:center; padding:0 0.15em;">
+<div style="color:#1a7a6d; font-weight:700; font-size:1.15em; margin-bottom:0.3em; letter-spacing:0.03em;">FORECAST</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0;"><strong>Propagate ensemble</strong><br><span>$\mathbf{x}^{(j)} \leftarrow \mathcal{M}(\mathbf{x}^{(j)}),\; j=1,\ldots,N$</span></div>
+<div style="color:#5a7a6d; font-size:1.2em; line-height:1;">↓</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0;"><strong>Observation operator</strong><br><span>$\mathbf{Y}_k = \mathbf{H}\mathbf{X}_k,\;\; k = k_0{+}1,\ldots,k_w$</span></div>
+<div style="color:#5a7a6d; font-size:1.2em; line-height:1;">↓</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0;"><strong>Stack observations</strong><br><span>$\mathbf{Z}^{(w)} \in \mathbb{R}^{d \times N}$</span></div>
+<div style="color:#999; font-size:0.8em; margin-top:0.2em;"><span>$\mathbb{R}^{n \times N}$</span> state space</div>
 </div>
-<div style="flex: 1;">
-
-![QPCA-EnDCF Pipeline](diagrams_rendered/qpca_pipeline.svg)
-
+<div style="display:flex; align-items:center; color:#5a7a6d; font-size:1.8em; padding:0 0.08em;">→</div>
+<div style="flex:1.15; text-align:center; padding:0 0.15em;">
+<div style="color:#1a7a6d; font-weight:700; font-size:1.15em; margin-bottom:0.3em; letter-spacing:0.03em;">WHITEN</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0;"><strong>Residuals</strong><br><span>$\mathbf{D} = \mathbf{Z}^{(w)} - \mathbf{z}^{(w)}\mathbf{1}^\top$</span></div>
+<div style="color:#5a7a6d; font-size:1.2em; line-height:1;">↓</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0; background:#f0f7f5;"><strong>Whiten + Center</strong><br><span>$\mathbf{E} = (\mathbf{R}^{(L)})^{-1/2}\mathbf{D}$</span><br><span>$\mathbf{E}_c = \mathbf{E} - \tfrac{1}{N}(\mathbf{E}\mathbf{1})\mathbf{1}^\top$</span></div>
+<div style="color:#888; font-size:0.85em; border:1px dashed #aaa; border-radius:3px; display:inline-block; padding:0.1em 0.3em; margin-top:0.15em;"><span>$\mathbf{R}^{(L)} = \mathbf{I}_L \otimes \mathbf{R}$</span></div>
+<div style="color:#999; font-size:0.8em; margin-top:0.2em;"><span>$\mathbb{R}^{d \times N}$</span> obs space (<span>$d = mL$</span>)</div>
+</div>
+<div style="display:flex; align-items:center; color:#5a7a6d; font-size:1.8em; padding:0 0.08em;">→</div>
+<div style="flex:1.15; text-align:center; padding:0 0.15em;">
+<div style="color:#1a7a6d; font-weight:700; font-size:1.15em; margin-bottom:0.3em; letter-spacing:0.03em;">SPECTRAL DECOMP.</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0;"><strong>Sample covariance</strong><br><span>$\mathbf{C}_E = \tfrac{1}{N{-}1}\mathbf{E}_c\mathbf{E}_c^\top$</span></div>
+<div style="color:#5a7a6d; font-size:1.2em; line-height:1;">↓</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0; background:#f0f7f5;"><strong>Eigendecompose + Truncate</strong><br><span>$\hat{\mathbf{V}}_\kappa = [\hat{\mathbf{v}}_1,\ldots,\hat{\mathbf{v}}_\kappa]$</span></div>
+<div style="color:#999; font-size:0.8em; margin-top:0.2em;"><span>$\mathbb{R}^{d \times d} \to$</span> rank <span>$\kappa \ll d$</span></div>
+</div>
+<div style="display:flex; align-items:center; color:#5a7a6d; font-size:1.8em; padding:0 0.08em;">→</div>
+<div style="flex:1.15; text-align:center; padding:0 0.15em;">
+<div style="color:#1a7a6d; font-weight:700; font-size:1.15em; margin-bottom:0.3em; letter-spacing:0.03em;">CORRECTION</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0;"><strong>Project onto signal subspace</strong><br><span>$\mathbf{Q}_{\mathrm{PCA}} = -\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top\mathbf{E}$</span></div>
+<div style="color:#5a7a6d; font-size:1.2em; line-height:1;">↓</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0; background:#f0f7f5;"><strong>Unwhiten to obs space</strong><br><span>$\boldsymbol{\Delta}_{\mathrm{obs}} = (\mathbf{R}^{(L)})^{1/2}\mathbf{Q}_{\mathrm{PCA}}$</span></div>
+<div style="color:#999; font-size:0.8em; margin-top:0.2em;"><span>$\mathbb{R}^{d \times N}$</span> restricted to <span>$\kappa$</span> modes</div>
+</div>
+<div style="display:flex; align-items:center; color:#5a7a6d; font-size:1.8em; padding:0 0.08em;">→</div>
+<div style="flex:1.15; text-align:center; padding:0 0.15em;">
+<div style="color:#1a7a6d; font-weight:700; font-size:1.15em; margin-bottom:0.3em; letter-spacing:0.03em;">UPDATE</div>
+<div style="border:1.5px solid #5a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0;"><strong>Data-consistent gain</strong><br><span>$\mathbf{P}_{xz} = \tfrac{1}{N{-}1}\mathbf{A}_x\mathbf{A}_z^\top$</span>, <span>$\mathbf{P}_{zz} = \tfrac{1}{N{-}1}\mathbf{A}_z\mathbf{A}_z^\top$</span><br><span>$\mathbf{K}^{\mathrm{DC}} = \mathbf{P}_{xz}\mathbf{P}_{zz}^\dagger$</span></div>
+<div style="color:#5a7a6d; font-size:1.2em; line-height:1;">↓</div>
+<div style="border:2px solid #1a7a6d; border-radius:5px; padding:0.4em; margin:0.1em 0; background:rgba(26,122,109,0.1);"><strong>Deterministic state update</strong><br><span>$\mathbf{X}_{k_w} \leftarrow \mathbf{X}_{k_w} + \mathbf{K}^{\mathrm{DC}}\boldsymbol{\Delta}_{\mathrm{obs}}$</span></div>
+<div style="color:#999; font-size:0.8em; margin-top:0.2em;"><span>$\mathbb{R}^{n \times N}$</span> analysis ensemble</div>
 </div>
 </div>
+<div style="text-align:center; margin-top:0.3em; padding:0.25em 1em; border-top:1.5px dashed #5a7a6d; font-size:0.45em; color:#5a7a6d; font-style:italic;">↺ <span>$\mathbf{X} \leftarrow \mathbf{X}_{k_w}$</span> — advance to next window <span>$w + 1$</span>. Fully deterministic; cost dominated by <span>$\mathcal{M}$</span> propagation.</div>
 
 <!-- .notes:
-Here's the full algorithm. For each assimilation window, we propagate the ensemble, stack the forecast observations, whiten, center, eigendecompose, truncate to kappa modes, project the whitened residuals, unwhiten, and apply the gain. It's completely deterministic — same inputs always give same outputs. No random number generation beyond the initial ensemble. The computational overhead relative to a standard EnKF is one eigendecomposition of a d-by-d matrix per window, which is negligible relative to model propagation cost.
+This diagram shows the complete QPCA-EnDCF computational pipeline as implemented in Algorithm 1 of the paper. Five phases execute per assimilation window. First, the forecast phase propagates all N ensemble members through L observation times using the forward model M, then applies the observation operator H to get forecast observations Y-k at each time. These are stacked into Z-w. Second, whitening normalizes residuals by the block-diagonal observation covariance R-L = I-L tensor R, producing whitened residuals E with identity noise covariance, then centers them. Third, spectral decomposition eigendecomposes the sample covariance C-E and retains the leading kappa eigenvectors V-hat-kappa. Fourth, the correction projects whitened residuals onto the signal subspace via Q-PCA = minus V-hat-kappa V-hat-kappa-transpose E, then unwhitens to get observation-space increments Delta-obs. Fifth, the update computes the data-consistent gain K-DC = P-xz times P-zz-pseudoinverse from empirical cross-covariances and applies the deterministic update X-kw gets X-kw plus K-DC Delta-obs. The feedback loop advances the analysis ensemble to the next window.
 -->
 
 ---
@@ -367,6 +552,20 @@ Here's the full algorithm. For each assimilation window, we propagate the ensemb
 
 <!-- .notes:
 This table captures the geometric difference. Stochastic EnKF corrects along signal directions but also injects perturbation noise there. Along noise directions, it injects noise uniformly. The net effect: variance is compressed everywhere because the observation perturbations add noise in all dimensions while the Kalman update removes variance along observed directions. QPCA-EnDCF corrects only along the kappa signal directions — deterministically, without added noise. Noise directions are untouched. This is why it preserves ensemble diversity: it operates surgically on the signal subspace and leaves everything else intact.
+-->
+
+---
+
+## Variance Collapse in Action
+
+![Spread vs RMSE Temporal](figures/spread_vs_rmse_temporal.png)
+
+- **Stochastic EnKF**: spread ≈ 0.3, RMSE ≈ 4.5
+- Ensemble claims $\sigma = 0.3$, actual error = 4.5
+- **15× overconfident** uncertainty estimates
+
+<!-- .notes:
+This figure tells the whole story of the problem. The solid lines are ensemble spread — what the filter thinks the error is. The dashed lines are RMSE — the actual error. For sequential EnKF, the spread flatlines near 0.3 while the true error fluctuates between 3 and 6. That means the filter is 15 times more confident than it should be. The 4D-EnKF is slightly better but still severely underdispersed. This isn't just an academic concern — overconfident uncertainty renders ensemble forecasts unreliable for decision-making.
 -->
 
 ---
@@ -530,15 +729,15 @@ That's the theory. Now let me show you the experiments that test these predictio
 
 with cyclic indexing: <span>$x_{-1} = x_{n-1}$</span>, <span>$x_0 = x_n$</span>, <span>$x_{n+1} = x_1$</span>
 
-| Parameter               | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| State dimension <span>$n$</span>        | 40 (<span>$x_i$</span>: state variable at index <span>$i$</span>)           |
-| Forcing <span>$F$</span>               | 8 (chaotic regime, 13 positive Lyapunov exponents) |
-| Observations <span>$m$</span>          | 20 every-other component, <span>$\sigma_{\mathrm{obs}} = 1.5$</span>        |
-| Ensemble size <span>$N$</span>         | 10 (severe undersampling)                          |
-| Window length <span>$L$</span>         | 5 (spanning 0.83 Lyapunov times — time for errors to grow by factor <span>$e$</span>) |
-| Methods                 | Seq-EnKF, 4D-EnKF, QPCA-EnDCF (<span>$\kappa=1$</span>)        |
-| Trials                  | 5 independent Monte Carlo realizations             |
+| Parameter                        | Value                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------- |
+| State dimension <span>$n$</span> | 40 (<span>$x_i$</span>: state variable at index <span>$i$</span>)                     |
+| Forcing <span>$F$</span>         | 8 (chaotic regime, 13 positive Lyapunov exponents)                                    |
+| Observations <span>$m$</span>    | 20 every-other component, <span>$\sigma_{\mathrm{obs}} = 1.5$</span>                  |
+| Ensemble size <span>$N$</span>   | 10 (severe undersampling)                                                             |
+| Window length <span>$L$</span>   | 5 (spanning 0.83 Lyapunov times — time for errors to grow by factor <span>$e$</span>) |
+| Methods                          | Seq-EnKF, 4D-EnKF, QPCA-EnDCF (<span>$\kappa=1$</span>)                               |
+| Trials                           | 5 independent Monte Carlo realizations                                                |
 
 <!-- .notes:
 All experiments use the Lorenz-96 system — the canonical testbed in the data assimilation literature, used by Evensen, Hunt, Anderson, Whitaker, and essentially every major ensemble filtering study. This is the forward model that generates the state dynamics: each variable is driven by nonlinear advection-like coupling to its neighbors, linear damping, and constant forcing F. At F equals 8, the system is fully chaotic with 13 positive Lyapunov exponents, making it a demanding test for ensemble filters. We observe 20 of 40 components with noise standard deviation 1.5, giving a signal-to-noise ratio of about 2.4 — an intermediate regime that demands effective regularization. Ensemble size is 10, which is severely undersampled: the covariance rank is at most 9 in a 40-dimensional space. Stochastic methods use multiplicative inflation of 1.05, which is near their optimum for this N. QPCA-EnDCF uses kappa equals 1 with no inflation — these are not tuned but follow from the spectral structure.
@@ -598,16 +797,20 @@ The bar chart summarizes this cleanly. On the left, absolute MSE with bias and v
 
 ---
 
-## Result 3: Inflation-Free Operation
+## Result 3: Inflation-Free Operation — Additive
 
-![Multiplicative Inflation](figures/inflation_multiplicative_20.png)
+<div>$$\mathbf{x}^{(j)}_{\alpha_{\mathrm{add}}} = \mathbf{x}^{(j),f} + \boldsymbol{\varepsilon}^{(j)}, \qquad \boldsymbol{\varepsilon}^{(j)} \sim \mathcal{N}(\mathbf{0},\; \alpha_{\mathrm{add}}^2\,\mathbf{Q}_{\mathrm{add}}), \qquad \mathbf{Q}_{\mathrm{add}} = \mathbf{I}_n$$</div>
 
-- QPCA-EnDCF optimal at $\lambda_{\mathrm{infl}} = 1.0$ (no inflation) for all <span>$N$</span>
-- Stochastic methods need N-dependent tuning
-- **Eliminates a major source of heuristic calibration**
+- Injects isotropic noise to alleviate rank deficiency — but disrupts dynamical correlations unless <span>$\mathbf{Q}_{\mathrm{add}}$</span> reflects true dynamics
+- QPCA-EnDCF preserves correlation structure spectrally, making additive inflation unnecessary
+
+![Additive Inflation](figures/inflation_additive_20.png)
+
+- QPCA-EnDCF optimal at <span>$\alpha_{\mathrm{add}} = 0$</span> for all <span>$N$</span>; any <span>$\alpha_{\mathrm{add}} > 0$</span> degrades performance
+- Stochastic methods: additive underperforms multiplicative by 5–10%
 
 <!-- .notes:
-One of the most practically important results: QPCA-EnDCF needs no inflation. This figure shows RMSE versus multiplicative inflation factor for different ensemble sizes. QPCA-EnDCF achieves its best performance at lambda equals 1.0 — no inflation — for every ensemble size tested. Stochastic methods have ensemble-size-dependent optima that shift as N changes. This eliminates a major operational headache: inflation tuning is one of the most time-consuming aspects of deploying ensemble filters, and getting it wrong can cause either filter divergence or excessive variance. QPCA-EnDCF simply doesn't need it.
+Additive inflation perturbs each ensemble member with independent Gaussian noise drawn from alpha-add-squared times Q-add. With the standard isotropic choice Q-add equals I-n, this injects variance uniformly across all state dimensions — including directions orthogonal to the ensemble subspace. Unlike multiplicative inflation, it can partially address rank deficiency, but unless Q-add reflects dynamical correlations, the injected variance is physically implausible. QPCA-EnDCF is optimal with zero additive inflation for every ensemble size tested. Adding isotropic noise actually hurts because it disrupts the dynamically consistent correlation structure that spectral regularization preserves. For stochastic methods, additive inflation provides marginal improvement over no inflation but consistently underperforms multiplicative inflation by 5 to 10 percent, because isotropic perturbations inject variance in dynamically irrelevant directions.
 -->
 
 ---
@@ -637,7 +840,13 @@ Real observation errors are rarely Gaussian. We tested 9 distributions spanning 
 
 ---
 
-## Result 4: Robustness — Correlated Errors
+## Result 4: Robustness — Correlated Observation Errors
+
+**Given known <span>$\mathbf{R}$</span>, QPCA-EnDCF degrades ≤ 7% across 5 orders of magnitude in <span>$\mathrm{cond}(\mathbf{R})$</span>.**
+
+Correlated covariance structures (<span>$d_{ij}$</span>: periodic index distance, <span>$\ell$</span>: correlation length), whitened via <span>$\mathbf{R} = \mathbf{L}\mathbf{L}^\top$</span>, <span>$\mathbf{W} = \mathbf{L}^{-\top}$</span>:
+
+<div>$$[\mathbf{R}]_{ij} = \sigma_{\mathrm{obs}}^2 \exp\!\left(-\frac{d_{ij}}{\ell}\right) \;\text{(exponential, cond = 649)}, \qquad [\mathbf{R}]_{ij} = \sigma_{\mathrm{obs}}^2 \exp\!\left(-\frac{d_{ij}^2}{2\ell^2}\right) \;\text{(Gaussian, cond} \approx 3.7 \times 10^5\text{)}$$</div>
 
 <div style="display: flex; gap: 1.5em; align-items: center;">
 <div style="flex: 1;">
@@ -648,12 +857,12 @@ Real observation errors are rarely Gaussian. We tested 9 distributions spanning 
 </div>
 </div>
 
-- Condition numbers spanning 5 orders of magnitude
-- QPCA-EnDCF: within 7% of uncorrelated baseline
-- Advantage **grows** with correlation: 25% → 32%
+- QPCA-EnDCF within 7% of diagonal baseline; 4D-EnKF degrades 15% — advantage grows from 25% → 32%
+- **Mechanism:** Cholesky whitening restores <span>$\mathbf{W}\mathbf{R}\mathbf{W}^\top = \mathbf{I}$</span> before spectral analysis; stochastic perturbations lose efficiency as correlations reduce independent information
+- **Scope:** true <span>$\mathbf{R}$</span> provided to filter (no misspecification); tests algorithmic stability, not robustness to unknown correlations
 
 <!-- .notes:
-We also tested correlated observation errors, spanning condition numbers from 1 to 370,000. QPCA-EnDCF degrades only modestly — within 7 percent of the uncorrelated baseline even under severe ill-conditioning. Crucially, the advantage over 4D-EnKF grows with correlation strength, from 25 percent improvement at the diagonal baseline to 32 percent under severe ill-conditioning. This happens because whitening effectively decorrelates the observations before spectral analysis, whereas stochastic perturbations sampled from the correlated structure become less efficient as correlations reduce effective information content.
+This slide tests algorithmic robustness: given the true observation covariance R, does QPCA-EnDCF maintain performance as correlation strength and conditioning increase? This is explicitly not a misspecification test — the filter receives R matching the data-generating process. We test three structures spanning five orders of magnitude in condition number: diagonal baseline with cond-R equals 1, exponential with cond-R equals 649, and Gaussian with cond-R approximately 370,000. Here d-ij is the periodic index distance between observed components, and ell is the correlation length scale, set to 4 in all experiments. QPCA-EnDCF degrades only modestly — within 7 percent of the uncorrelated baseline even at cond-R of 370,000. By contrast, 4D-EnKF degrades by 15.3 percent. The advantage grows from 25 to 32 percent under severe ill-conditioning. The mechanism: Cholesky whitening maps the correlated observation space to identity covariance — W R W-transpose equals I — restoring the isotropic noise structure that makes subsequent PCA meaningful. Stochastic perturbations sampled from the correlated structure become less efficient because correlated observations contribute less independent information, yet perturbation noise scales with the full dimension d.
 -->
 
 ---

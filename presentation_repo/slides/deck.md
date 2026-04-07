@@ -250,162 +250,120 @@ Here's the full algorithm. For each assimilation window, we propagate the ensemb
 
 ## Geometric Interpretation
 
-<div style="display:flex; gap:2em; align-items:flex-start; margin-top:0.3em;">
+<div style="display:flex; gap:0; align-items:flex-start; margin-top:0;">
 
-<!-- LEFT PANEL: Stochastic EnKF -->
-<div style="flex:1; text-align:center;">
-<div style="font-family:var(--r-heading-font); font-weight:650; font-size:0.85em; color:var(--accent,#8b4513); margin-bottom:0.5em; letter-spacing:-0.01em;">Stochastic EnKF</div>
-<svg viewBox="0 0 400 420" style="width:100%; max-width:420px;">
-  <!-- Faint basis axes -->
-  <line x1="40" y1="210" x2="360" y2="210" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="6,4"/>
-  <line x1="200" y1="30" x2="200" y2="390" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="6,4"/>
-  <text x="365" y="215" fill="var(--text-secondary,#6b5d4e)" font-size="11" font-style="italic">signal</text>
-  <text x="205" y="28" fill="var(--text-secondary,#6b5d4e)" font-size="11" font-style="italic">noise</text>
-
-  <!-- Initial ensemble cloud (large ellipse) -->
-  <ellipse cx="200" cy="140" rx="110" ry="70" fill="var(--accent-muted,#f0e8dc)" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.7"/>
-  <!-- Ensemble dots -->
-  <circle cx="155" cy="125" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="180" cy="110" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="210" cy="130" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="240" cy="120" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="195" cy="155" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="225" cy="150" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="170" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="250" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <text x="200" y="98" text-anchor="middle" fill="var(--text-primary,#2c2418)" font-size="12" font-weight="600">initial ensemble</text>
-
-  <!-- Random perturbation arrows (all directions) -->
+<svg viewBox="0 0 460 470" style="flex:1; max-height:78vh;">
   <defs>
-    <marker id="ah-red" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
-      <polygon points="0 0, 7 2.5, 0 5" fill="#c0392b"/>
-    </marker>
+    <marker id="mr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#b53a2a"/></marker>
+    <marker id="mg" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#999"/></marker>
   </defs>
-  <line x1="155" y1="125" x2="130" y2="108" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
-  <line x1="180" y1="110" x2="165" y2="82" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
-  <line x1="210" y1="130" x2="235" y2="108" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
-  <line x1="240" y1="120" x2="272" y2="130" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
-  <line x1="195" y1="155" x2="178" y2="175" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
-  <line x1="225" y1="150" x2="248" y2="172" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
-  <line x1="170" y1="145" x2="140" y2="155" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
-  <line x1="250" y1="145" x2="270" y2="162" stroke="#c0392b" stroke-width="1.5" marker-end="url(#ah-red)"/>
+  <text x="230" y="22" text-anchor="middle" fill="#b53a2a" font-size="14" font-weight="700">(a) Stochastic EnKF</text>
+  <!-- TOP: forecast + perturbations -->
+  <line x1="40" y1="150" x2="420" y2="150" stroke="#c8c0b4" stroke-width="0.5"/>
+  <line x1="230" y1="42" x2="230" y2="258" stroke="#c8c0b4" stroke-width="0.5"/>
+  <text x="426" y="154" fill="#a09888" font-size="10" font-style="italic">v̂₁</text>
+  <text x="234" y="40" fill="#a09888" font-size="10" font-style="italic">v̂₂</text>
+  <circle cx="230" cy="150" r="120" fill="none" stroke="#b53a2a" stroke-width="0.5" stroke-dasharray="2.5,3" opacity="0.2"/>
+  <ellipse cx="230" cy="150" rx="100" ry="65" fill="#b53a2a" fill-opacity="0.04" stroke="#b53a2a" stroke-width="0.9" stroke-dasharray="4,3" stroke-opacity="0.4"/>
+  <circle cx="178" cy="132" r="3.5" fill="#5a4e40"/>
+  <line x1="178" y1="132" x2="145" y2="108" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <circle cx="205" cy="112" r="3.5" fill="#5a4e40"/>
+  <line x1="205" y1="112" x2="188" y2="78" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <circle cx="242" cy="128" r="3.5" fill="#5a4e40"/>
+  <line x1="242" y1="128" x2="278" y2="100" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <circle cx="275" cy="140" r="3.5" fill="#5a4e40"/>
+  <line x1="275" y1="140" x2="312" y2="145" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <circle cx="262" cy="168" r="3.5" fill="#5a4e40"/>
+  <line x1="262" y1="168" x2="292" y2="194" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <circle cx="215" cy="178" r="3.5" fill="#5a4e40"/>
+  <line x1="215" y1="178" x2="195" y2="208" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <circle cx="188" cy="164" r="3.5" fill="#5a4e40"/>
+  <line x1="188" y1="164" x2="152" y2="176" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <circle cx="250" cy="160" r="3.5" fill="#5a4e40"/>
+  <line x1="250" y1="160" x2="272" y2="186" stroke="#b53a2a" stroke-width="1.3" marker-end="url(#mr)" opacity="0.8"/>
+  <text x="348" y="72" fill="#b53a2a" font-size="11" font-style="italic">ε⁽ʲ⁾ ~ 𝒩(0, R)</text>
+  <text x="348" y="86" fill="#b53a2a" font-size="10" opacity="0.7">full d-space</text>
+  <!-- Transition -->
+  <line x1="230" y1="270" x2="230" y2="300" stroke="#999" stroke-width="1.2" marker-end="url(#mg)"/>
+  <text x="248" y="290" fill="#999" font-size="10" font-style="italic">update + perturb</text>
+  <!-- BOTTOM: collapsed -->
+  <line x1="40" y1="380" x2="420" y2="380" stroke="#c8c0b4" stroke-width="0.5"/>
+  <line x1="230" y1="315" x2="230" y2="445" stroke="#c8c0b4" stroke-width="0.5"/>
+  <ellipse cx="230" cy="380" rx="100" ry="65" fill="none" stroke="#d0c8bc" stroke-width="0.6" stroke-dasharray="3,3" opacity="0.3"/>
+  <ellipse cx="230" cy="380" rx="24" ry="16" fill="#b53a2a" fill-opacity="0.06" stroke="#b53a2a" stroke-width="1.4" stroke-opacity="0.7"/>
+  <circle cx="222" cy="375" r="3" fill="#b53a2a" opacity="0.7"/>
+  <circle cx="232" cy="371" r="3" fill="#b53a2a" opacity="0.7"/>
+  <circle cx="240" cy="378" r="3" fill="#b53a2a" opacity="0.7"/>
+  <circle cx="226" cy="385" r="3" fill="#b53a2a" opacity="0.7"/>
+  <circle cx="236" cy="388" r="3" fill="#b53a2a" opacity="0.7"/>
+  <circle cx="218" cy="383" r="3" fill="#b53a2a" opacity="0.7"/>
+  <circle cx="230" cy="380" r="3" fill="#b53a2a" opacity="0.7"/>
+  <circle cx="228" cy="376" r="3" fill="#b53a2a" opacity="0.7"/>
+  <text x="230" y="432" text-anchor="middle" fill="#b53a2a" font-size="12" font-weight="600">isotropic collapse</text>
+  <text x="230" y="448" text-anchor="middle" fill="#999" font-size="10" font-style="italic">Var(ε) ~ 1/N  ≪  removed spread</text>
+</svg>
 
-  <!-- Perturbation label -->
-
-<text x="310" y="90" fill="#c0392b" font-size="11" font-style="italic">ε ~ N(0, R)</text>
-<text x="310" y="105" fill="#c0392b" font-size="10">all directions</text>
-
-  <!-- Arrow down -->
+<svg viewBox="0 0 460 470" style="flex:1; max-height:78vh;">
   <defs>
-    <marker id="ah-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="var(--text-secondary,#6b5d4e)"/>
-    </marker>
+    <marker id="mt" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#1a7a6d"/></marker>
+    <marker id="mg2" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#999"/></marker>
   </defs>
-  <line x1="200" y1="220" x2="200" y2="255" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.5" marker-end="url(#ah-gray)"/>
-  <text x="215" y="242" fill="var(--text-secondary,#6b5d4e)" font-size="10" font-style="italic">Kalman update</text>
-
-  <!-- Collapsed ensemble (small tight ellipse) -->
-  <ellipse cx="200" cy="320" rx="35" ry="25" fill="#f5e6e0" stroke="#c0392b" stroke-width="1.5" opacity="0.8"/>
-  <!-- Tight cluster dots -->
-  <circle cx="190" cy="315" r="3" fill="#c0392b" opacity="0.7"/>
-  <circle cx="200" cy="310" r="3" fill="#c0392b" opacity="0.7"/>
-  <circle cx="210" cy="318" r="3" fill="#c0392b" opacity="0.7"/>
-  <circle cx="195" cy="325" r="3" fill="#c0392b" opacity="0.7"/>
-  <circle cx="205" cy="328" r="3" fill="#c0392b" opacity="0.7"/>
-  <circle cx="198" cy="320" r="3" fill="#c0392b" opacity="0.7"/>
-
-  <!-- Ghost of original ellipse to show collapse -->
-  <ellipse cx="200" cy="320" rx="110" ry="70" fill="none" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="3,4" opacity="0.4"/>
-
-  <!-- Annotations -->
-
-<text x="200" y="368" text-anchor="middle" fill="#c0392b" font-size="11" font-weight="600">variance collapses</text>
-<text x="200" y="383" text-anchor="middle" fill="var(--text-secondary,#6b5d4e)" font-size="10">perturbations scale as 1/N</text>
-<text x="200" y="396" text-anchor="middle" fill="var(--text-secondary,#6b5d4e)" font-size="10">too weak to restore removed spread</text>
+  <text x="230" y="22" text-anchor="middle" fill="#1a7a6d" font-size="14" font-weight="700">(b) QPCA-EnDCF</text>
+  <!-- TOP: forecast + signal-only arrows -->
+  <line x1="230" y1="42" x2="230" y2="258" stroke="#c8c0b4" stroke-width="0.5"/>
+  <text x="234" y="40" fill="#a09888" font-size="10" font-style="italic">v⊥</text>
+  <rect x="35" y="142" width="390" height="16" rx="1" fill="#1a7a6d" fill-opacity="0.05"/>
+  <line x1="35" y1="150" x2="425" y2="150" stroke="#1a7a6d" stroke-width="1.2" opacity="0.35"/>
+  <text x="430" y="154" fill="#1a7a6d" font-size="10" font-weight="600">v̂₁</text>
+  <text x="430" y="166" fill="#1a7a6d" font-size="9" opacity="0.6">signal</text>
+  <ellipse cx="230" cy="150" rx="100" ry="65" fill="#1a7a6d" fill-opacity="0.03" stroke="#1a7a6d" stroke-width="0.9" stroke-dasharray="4,3" stroke-opacity="0.4"/>
+  <circle cx="178" cy="132" r="3.5" fill="#5a4e40"/>
+  <line x1="178" y1="132" x2="202" y2="132" stroke="#1a7a6d" stroke-width="1.5" marker-end="url(#mt)"/>
+  <circle cx="205" cy="112" r="3.5" fill="#5a4e40"/>
+  <circle cx="242" cy="128" r="3.5" fill="#5a4e40"/>
+  <circle cx="275" cy="140" r="3.5" fill="#5a4e40"/>
+  <line x1="275" y1="140" x2="252" y2="140" stroke="#1a7a6d" stroke-width="1.5" marker-end="url(#mt)"/>
+  <circle cx="262" cy="168" r="3.5" fill="#5a4e40"/>
+  <line x1="262" y1="168" x2="242" y2="168" stroke="#1a7a6d" stroke-width="1.5" marker-end="url(#mt)"/>
+  <circle cx="215" cy="178" r="3.5" fill="#5a4e40"/>
+  <circle cx="188" cy="164" r="3.5" fill="#5a4e40"/>
+  <line x1="188" y1="164" x2="208" y2="164" stroke="#1a7a6d" stroke-width="1.5" marker-end="url(#mt)"/>
+  <circle cx="250" cy="160" r="3.5" fill="#5a4e40"/>
+  <line x1="250" y1="160" x2="234" y2="160" stroke="#1a7a6d" stroke-width="1.5" marker-end="url(#mt)"/>
+  <text x="200" y="100" fill="#bbb" font-size="9" text-anchor="middle">no update</text>
+  <line x1="200" y1="103" x2="200" y2="109" stroke="#ccc" stroke-width="0.6"/>
+  <text x="266" y="192" fill="#bbb" font-size="9" text-anchor="middle">no update</text>
+  <line x1="266" y1="184" x2="266" y2="178" stroke="#ccc" stroke-width="0.6"/>
+  <text x="355" y="82" fill="#1a7a6d" font-size="11" font-weight="600">project onto V̂κ</text>
+  <text x="355" y="96" fill="#1a7a6d" font-size="10" opacity="0.7">(leading κ modes)</text>
+  <!-- Transition -->
+  <line x1="230" y1="270" x2="230" y2="300" stroke="#999" stroke-width="1.2" marker-end="url(#mg2)"/>
+  <text x="248" y="290" fill="#999" font-size="10" font-style="italic">spectral projection</text>
+  <!-- BOTTOM: anisotropic result -->
+  <line x1="40" y1="380" x2="420" y2="380" stroke="#c8c0b4" stroke-width="0.5"/>
+  <line x1="230" y1="315" x2="230" y2="445" stroke="#c8c0b4" stroke-width="0.5"/>
+  <ellipse cx="230" cy="380" rx="100" ry="65" fill="none" stroke="#d0c8bc" stroke-width="0.6" stroke-dasharray="3,3" opacity="0.3"/>
+  <ellipse cx="230" cy="380" rx="28" ry="63" fill="#1a7a6d" fill-opacity="0.05" stroke="#1a7a6d" stroke-width="1.4" stroke-opacity="0.7"/>
+  <circle cx="225" cy="338" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <circle cx="233" cy="352" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <circle cx="228" cy="368" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <circle cx="235" cy="382" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <circle cx="223" cy="396" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <circle cx="232" cy="410" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <circle cx="237" cy="375" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <circle cx="226" cy="360" r="3.5" fill="#1a7a6d" opacity="0.7"/>
+  <!-- Bracket for preserved noise spread -->
+  <line x1="188" y1="318" x2="188" y2="442" stroke="#1a7a6d" stroke-width="0.8" opacity="0.3"/>
+  <line x1="188" y1="318" x2="192" y2="318" stroke="#1a7a6d" stroke-width="0.8" opacity="0.3"/>
+  <line x1="188" y1="442" x2="192" y2="442" stroke="#1a7a6d" stroke-width="0.8" opacity="0.3"/>
+  <text x="182" y="384" text-anchor="middle" fill="#1a7a6d" font-size="9" font-weight="600" transform="rotate(-90 182 384)">v⊥ preserved</text>
+  <text x="230" y="432" text-anchor="middle" fill="#1a7a6d" font-size="12" font-weight="600">anisotropic correction</text>
+  <text x="230" y="448" text-anchor="middle" fill="#999" font-size="10" font-style="italic">noise-direction variance unchanged</text>
 </svg>
 
 </div>
 
-<!-- RIGHT PANEL: QPCA-EnDCF -->
-<div style="flex:1; text-align:center;">
-<div style="font-family:var(--r-heading-font); font-weight:650; font-size:0.85em; color:var(--accent,#8b4513); margin-bottom:0.5em; letter-spacing:-0.01em;">QPCA-EnDCF</div>
-<svg viewBox="0 0 400 420" style="width:100%; max-width:420px;">
-  <!-- Signal axis (bold) -->
-  <line x1="40" y1="210" x2="360" y2="210" stroke="#2d8f83" stroke-width="2" opacity="0.5"/>
-  <!-- Noise axis (faded) -->
-  <line x1="200" y1="30" x2="200" y2="390" stroke="var(--border-subtle,#d8d0c4)" stroke-width="0.8" stroke-dasharray="6,4"/>
-  <text x="365" y="215" fill="#2d8f83" font-size="11" font-weight="600">signal</text>
-  <text x="205" y="28" fill="var(--text-secondary,#6b5d4e)" font-size="11" font-style="italic" opacity="0.6">noise</text>
-
-  <!-- Initial ensemble cloud -->
-  <ellipse cx="200" cy="140" rx="110" ry="70" fill="var(--accent-muted,#f0e8dc)" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.7"/>
-  <!-- Ensemble dots -->
-  <circle cx="155" cy="125" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="180" cy="110" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="210" cy="130" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="240" cy="120" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="195" cy="155" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="225" cy="150" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="170" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <circle cx="250" cy="145" r="3.5" fill="var(--text-secondary,#6b5d4e)" opacity="0.7"/>
-  <text x="200" y="98" text-anchor="middle" fill="var(--text-primary,#2c2418)" font-size="12" font-weight="600">initial ensemble</text>
-
-  <!-- Signal-only update arrows (horizontal only, teal) -->
-  <defs>
-    <marker id="ah-teal" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
-      <polygon points="0 0, 7 2.5, 0 5" fill="#2d8f83"/>
-    </marker>
-  </defs>
-  <line x1="155" y1="125" x2="175" y2="125" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
-  <line x1="240" y1="120" x2="218" y2="120" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
-  <line x1="250" y1="145" x2="228" y2="145" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
-  <line x1="170" y1="145" x2="188" y2="145" stroke="#2d8f83" stroke-width="1.8" marker-end="url(#ah-teal)"/>
-
-  <!-- "No arrows" indicators on noise directions (small X marks) -->
-
-<text x="180" y="100" fill="var(--text-secondary,#6b5d4e)" font-size="14" opacity="0.5" text-anchor="middle">—</text>
-<text x="225" y="168" fill="var(--text-secondary,#6b5d4e)" font-size="14" opacity="0.5" text-anchor="middle">—</text>
-
-  <!-- Signal subspace highlight band -->
-  <rect x="60" y="115" width="280" height="50" rx="4" fill="#2d8f83" opacity="0.07"/>
-  <text x="90" y="175" fill="#2d8f83" font-size="10" font-weight="600">signal subspace only</text>
-
-  <!-- Arrow down -->
-  <line x1="200" y1="220" x2="200" y2="255" stroke="var(--text-secondary,#6b5d4e)" stroke-width="1.5" marker-end="url(#ah-gray)"/>
-  <text x="215" y="242" fill="var(--text-secondary,#6b5d4e)" font-size="10" font-style="italic">spectral update</text>
-
-  <!-- Result: narrowed in signal, preserved in noise -->
-  <ellipse cx="200" cy="320" rx="45" ry="70" fill="#e6f5f3" stroke="#2d8f83" stroke-width="1.5" opacity="0.8"/>
-  <!-- Dots spread vertically but tight horizontally -->
-  <circle cx="195" cy="295" r="3.5" fill="#2d8f83" opacity="0.7"/>
-  <circle cx="205" cy="310" r="3.5" fill="#2d8f83" opacity="0.7"/>
-  <circle cx="198" cy="330" r="3.5" fill="#2d8f83" opacity="0.7"/>
-  <circle cx="202" cy="345" r="3.5" fill="#2d8f83" opacity="0.7"/>
-  <circle cx="195" cy="318" r="3.5" fill="#2d8f83" opacity="0.7"/>
-  <circle cx="207" cy="305" r="3.5" fill="#2d8f83" opacity="0.7"/>
-
-  <!-- Arrows showing preserved noise spread -->
-  <defs>
-    <marker id="ah-teal2" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
-      <polygon points="0 0, 6 2, 0 4" fill="#2d8f83" opacity="0.5"/>
-    </marker>
-  </defs>
-  <line x1="200" y1="280" x2="200" y2="260" stroke="#2d8f83" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ah-teal2)" opacity="0.5"/>
-  <line x1="200" y1="360" x2="200" y2="380" stroke="#2d8f83" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ah-teal2)" opacity="0.5"/>
-  <text x="230" y="278" fill="#2d8f83" font-size="9" opacity="0.7">noise spread</text>
-  <text x="230" y="289" fill="#2d8f83" font-size="9" opacity="0.7">preserved</text>
-
-  <!-- Annotations -->
-
-<text x="200" y="405" text-anchor="middle" fill="#2d8f83" font-size="11" font-weight="600">no collapse</text>
-<text x="200" y="418" text-anchor="middle" fill="var(--text-secondary,#6b5d4e)" font-size="10">noise modes untouched — variance preserved by construction</text>
-</svg>
-
-</div>
-
-</div>
-
-<div style="margin-top:0.4em; padding:0.4em 0.8em; border-top:2px solid var(--accent,#8b4513); text-align:center; font-family:var(--r-heading-font); font-weight:650; font-size:0.78em; color:var(--r-heading-color,#1a1008);">Updates confined to signal subspace preserve noise-direction variance</div>
+<div style="margin-top:-0.2em; padding:0.2em 1em; text-align:center; font-family:Georgia,'Times New Roman',serif; font-size:0.68em; color:var(--text-secondary,#6b5d4e); line-height:1.3; font-style:italic;">Signal-subspace updates preserve orthogonal variance; isotropic perturbations do not.</div>
 
 <!-- .notes:
 This table captures the geometric difference. Stochastic EnKF corrects along signal directions but also injects perturbation noise there. Along noise directions, it injects noise uniformly. The net effect: variance is compressed everywhere because the observation perturbations add noise in all dimensions while the Kalman update removes variance along observed directions. QPCA-EnDCF corrects only along the kappa signal directions — deterministically, without added noise. Noise directions are untouched. This is why it preserves ensemble diversity: it operates surgically on the signal subspace and leaves everything else intact.
@@ -413,23 +371,34 @@ This table captures the geometric difference. Stochastic EnKF corrects along sig
 
 ---
 
-## Connection to MUD/QPCA Framework
+## MUD ↔ QPCA-EnDCF: Algebraic Correspondence
 
-QPCA-EnDCF is the **ensemble filtering counterpart** of QPCA parameter estimation:
+**MUD** updates parameters <span>$\theta$</span> via inversion through a QPCA-learned QoI map:
 
-| MUD/QPCA                                      | QPCA-EnDCF                                |
-| --------------------------------------------- | ----------------------------------------- |
-| Parameter samples                             | Ensemble members                          |
-| Normalized residual <span>$\mathbf{X}$</span> | Whitened residual $\mathbf{E}^\top$       |
-| Learned QoI map                               | PCA projection                            |
-| Population covariance pullback                | Empirical gain $\mathbf{K}^{\mathrm{DC}}$ |
+<div>$$\theta_{\mathrm{MUD}} = \underbrace{\theta_{\mathrm{init}}}_{\text{prior}} + \underbrace{\Sigma_\theta A^\top \Sigma_{\mathrm{pred}}^{-1}}_{\text{covariance pullback}}\;\underbrace{(\mathbf{z}_{\mathrm{obs}} - A\,\theta_{\mathrm{init}})}_{\text{QoI innovation}}$$</div>
 
-Same algebraic template: **prior + covariance-weighted pullback of projected innovation**
+<div class="fragment">
+
+**QPCA-EnDCF** updates state <span>$\mathbf{x}$</span> via spectral projection of whitened residuals:
+
+<div>$$\mathbf{x}^{(j),a} = \underbrace{\mathbf{x}^{(j),f}}_{\text{prior}} + \underbrace{\mathbf{K}^{\mathrm{DC}}\,\mathbf{R}^{1/2}}_{\text{covariance pullback}}\;\underbrace{\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top\,\mathbf{R}^{-1/2}(\mathbf{z}^{(w)} - \mathbf{z}_f^{(j)})}_{\text{projected innovation}}$$</div>
+
+</div>
+
+<div class="fragment">
+
+**Shared template:** prior + covariance-weighted pullback of subspace-restricted innovation
+
+- **QPCA defines** the signal subspace (<span>$A$</span> in MUD, <span>$\hat{\mathbf{V}}_\kappa$</span> in EnDCF) via spectral decomposition
+- **Both methods confine** updates to this subspace — orthogonal directions unchanged
+- **Implication:** ensemble diversity preserved outside signal subspace → calibrated spread
+
+</div>
 
 <!-- .notes:
-An important intellectual contribution is showing that QPCA-EnDCF is the natural ensemble filtering counterpart of the QPCA parameter estimation framework from Butler, Wildey, and Zhang. Both methods whiten residuals, identify dominant directions through PCA, and correct using covariance-weighted pullbacks. The MUD paper does this for static parameter estimation with population covariances; QPCA-EnDCF does it empirically with finite ensembles in a sequential filtering context. This connection grounds the method in an established inverse problem framework and opens the door to transferring theoretical results between the two settings.
+This slide establishes the formal algebraic correspondence between MUD parameter estimation and QPCA-EnDCF filtering. Both follow the same template: prior plus covariance-weighted pullback of a subspace-restricted innovation. In MUD, the QPCA-learned map A defines a low-rank subspace for parameter inversion; the gain pulls back through that subspace using population covariances. In QPCA-EnDCF, the leading eigenvectors of the whitened residual covariance define the signal subspace; the data-consistent gain pulls the projected correction back to state space. The critical shared insight: updates are confined to a learned signal subspace, and orthogonal directions receive no correction. This is precisely why ensemble diversity — and therefore calibration — is preserved. The method is grounded in established MUD inverse problem theory from Butler, Wildey, and Zhang, which opens the door to transferring theoretical results between parameter estimation and filtering.
 
-Now that I've described what the method does, the natural question is: why does it work? Why should spectral truncation produce calibrated ensembles? That's what the theory answers.
+Now that I've shown what the method does and where it comes from, the natural question is: why does spectral truncation produce calibrated ensembles? That's what the theory answers.
 -->
 
 ---
@@ -555,46 +524,46 @@ That's the theory. Now let me show you the experiments that test these predictio
 
 ## Experimental Setup
 
-- **System:** Lorenz-96 (n=40, F=8, chaotic)
-- **Observations:** <span>$m=20$</span>, every-other component, $\sigma_{\mathrm{obs}} = 1.5$
-- **Ensemble:** <span>$N=10$</span> (severe undersampling)
-- **Windows:** <span>$L=5$</span>, spanning 0.83 Lyapunov times
-- **Methods:** Seq-EnKF, 4D-EnKF, QPCA-EnDCF ($\kappa=1$)
-- **Trials:** 5 independent Monte Carlo realizations
+**Forward model — Lorenz-96** (chaotic, nonlinear dynamical system generating state evolution):
+
+<div>$$\frac{dx_i}{dt} = (x_{i+1} - x_{i-2})\,x_{i-1} - x_i + F, \qquad i = 1, \dots, n$$</div>
+
+with cyclic indexing: <span>$x_{-1} = x_{n-1}$</span>, <span>$x_0 = x_n$</span>, <span>$x_{n+1} = x_1$</span>
+
+| Parameter               | Value                                              |
+| ----------------------- | -------------------------------------------------- |
+| State dimension <span>$n$</span>        | 40 (<span>$x_i$</span>: state variable at index <span>$i$</span>)           |
+| Forcing <span>$F$</span>               | 8 (chaotic regime, 13 positive Lyapunov exponents) |
+| Observations <span>$m$</span>          | 20 every-other component, <span>$\sigma_{\mathrm{obs}} = 1.5$</span>        |
+| Ensemble size <span>$N$</span>         | 10 (severe undersampling)                          |
+| Window length <span>$L$</span>         | 5 (spanning 0.83 Lyapunov times — time for errors to grow by factor <span>$e$</span>) |
+| Methods                 | Seq-EnKF, 4D-EnKF, QPCA-EnDCF (<span>$\kappa=1$</span>)        |
+| Trials                  | 5 independent Monte Carlo realizations             |
 
 <!-- .notes:
-All experiments use the Lorenz-96 system — the canonical testbed in the data assimilation literature, used by Evensen, Hunt, Anderson, Whitaker, and essentially every major ensemble filtering study. It's chosen because it combines sustained chaos — 13 positive Lyapunov exponents — with computational tractability for systematic studies. We observe 20 of 40 components with noise standard deviation 1.5, giving a signal-to-noise ratio of about 2.4 — an intermediate regime that demands effective regularization. Ensemble size is 10, which is severely undersampled: the covariance rank is at most 9 in a 40-dimensional space. Stochastic methods use multiplicative inflation of 1.05, which is near their optimum for this N. QPCA-EnDCF uses kappa equals 1 with no inflation — these are not tuned but follow from the spectral structure.
+All experiments use the Lorenz-96 system — the canonical testbed in the data assimilation literature, used by Evensen, Hunt, Anderson, Whitaker, and essentially every major ensemble filtering study. This is the forward model that generates the state dynamics: each variable is driven by nonlinear advection-like coupling to its neighbors, linear damping, and constant forcing F. At F equals 8, the system is fully chaotic with 13 positive Lyapunov exponents, making it a demanding test for ensemble filters. We observe 20 of 40 components with noise standard deviation 1.5, giving a signal-to-noise ratio of about 2.4 — an intermediate regime that demands effective regularization. Ensemble size is 10, which is severely undersampled: the covariance rank is at most 9 in a 40-dimensional space. Stochastic methods use multiplicative inflation of 1.05, which is near their optimum for this N. QPCA-EnDCF uses kappa equals 1 with no inflation — these are not tuned but follow from the spectral structure.
 -->
 
 ---
 
 ## Result 1: Probabilistic Calibration
 
-| Method         | Spread   | RMSE     | Ratio     | Correlation |
-| -------------- | -------- | -------- | --------- | ----------- |
-| Seq-EnKF       | 0.34     | 4.51     | 0.095     | 0.009       |
-| 4D-EnKF        | 0.45     | 4.42     | 0.120     | 0.219       |
-| **QPCA-EnDCF** | **2.84** | **3.55** | **0.811** | **0.820**   |
+**Spread-skill ratio** — per-window ratio of ensemble spread to estimation error:
 
-- QPCA-EnDCF: $\bar{\gamma} \approx 0.81$ (near-ideal), $\rho \approx 0.82$
-- Stochastic: $\bar{\gamma} \approx 0.1$ (15× overconfident), $\rho \approx 0$
-- **Simultaneous: 20% lower RMSE + calibrated uncertainty**
+<div>$$\gamma_w := \frac{\sigma_w}{\mathrm{RMSE}_w}, \qquad \bar{\gamma} := \frac{1}{W}\sum_{w=1}^{W}\gamma_w, \qquad \sigma_w := \left[\tfrac{1}{n}\,\mathrm{tr}(\hat{\mathbf{P}}^a_{k_w})\right]^{1/2}$$</div>
 
-<!-- .notes:
-Here are the calibration results — the central empirical finding. QPCA-EnDCF achieves a spread-skill ratio of 0.81 plus or minus 0.10 — close to the ideal of 1.0 — with a temporal correlation of 0.82 between spread and RMSE. These are averages over 5 independent trials, each with 50 assimilation windows. The correlation of 0.82 means the ensemble tracks the actual error dynamics: when RMSE spikes, spread increases; when RMSE drops, spread contracts. Sequential EnKF has a ratio of 0.095 — its spread is 15 times too small — with effectively zero temporal correlation. The 4D-EnKF is marginally better but still an order of magnitude off. Critically, QPCA-EnDCF achieves this while simultaneously reducing RMSE by 20 percent. This is not a tradeoff — it's a simultaneous improvement on both metrics. The theoretical framework explains why: variance reduction improves both the point estimate and the spread-skill correspondence.
--->
-
----
-
-## Result 1: Calibration Diagnostics
+Ideal calibration: <span>$\bar{\gamma} = 1$</span>. Temporal correlation <span>$\rho$</span> measures whether spread tracks RMSE across time.
 
 ![Combined Calibration Analysis](figures/combined_calibration_analysis.png)
 
-- **(A)** Spread-skill ratio: QPCA-EnDCF clusters near γ = 1
-- **(B)** Reliability: QPCA-EnDCF tracks the diagonal
+- **(A)** QPCA-EnDCF: <span>$\bar{\gamma} \approx 0.81$</span> (near-ideal); stochastic methods: <span>$\bar{\gamma} \approx 0.1$</span> (15× overconfident)
+- **(B)** QPCA-EnDCF clusters along the diagonal (<span>$\rho \approx 0.82$</span>); stochastic methods show no spread–error tracking (<span>$\rho \approx 0$</span>)
+- **Simultaneous:** 20% lower RMSE with calibrated uncertainty — not a tradeoff
+
+<!-- .element: class="fragment" -->
 
 <!-- .notes:
-The calibration diagnostics make this visually clear. Panel A shows the spread-skill ratio over time — QPCA-EnDCF fluctuates around the ideal dashed line at 1.0, while stochastic methods flatline near zero. Panel B is the reliability diagram — spread versus RMSE for individual windows. QPCA-EnDCF clusters along the diagonal, meaning when it reports high uncertainty, the error is indeed high. Stochastic methods show vertical clustering at very low spread regardless of actual error.
+This slide presents the central empirical finding. I first define the metric: the spread-skill ratio gamma-w is the per-window ratio of ensemble spread — the square root of the mean analysis variance — to RMSE. Ideal calibration means gamma-bar equals 1. The temporal correlation rho measures whether spread and RMSE co-vary across assimilation windows. Panel A shows gamma-w over time: QPCA-EnDCF fluctuates around the ideal line at 1.0 with a time-averaged ratio of 0.81 plus or minus 0.10, while stochastic methods flatline near 0.1 — their spread is 15 times too small. Panel B is the reliability diagram: spread versus RMSE for individual windows. QPCA-EnDCF clusters along the diagonal with rho of 0.82, meaning when it reports high uncertainty, the error is indeed high. Stochastic methods show vertical clustering at very low spread regardless of actual error, with effectively zero temporal correlation. Critically, this calibration improvement comes with a simultaneous 20 percent RMSE reduction — this is not a tradeoff between accuracy and reliability.
 -->
 
 ---

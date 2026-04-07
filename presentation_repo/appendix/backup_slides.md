@@ -165,28 +165,6 @@ The full non-Gaussian table. Nine distributions, three trials each. QPCA-EnDCF w
 The correlated error study tests three covariance structures with condition numbers from 1 to 370,000. We use Cholesky whitening — R equals L L-transpose, W equals L-inverse-transpose. QPCA-EnDCF stays within 7 percent of the uncorrelated baseline, while 4D-EnKF degrades by 15 percent under severe ill-conditioning. The advantage of QPCA-EnDCF actually increases with correlation strength because whitening effectively decorrelates the observation space, restoring the favorable spectral structure.
 -->
 
----
-
-<!-- ============================================================ -->
-<!-- BACKUP SLIDE 8: MUD/QPCA Correspondence -->
-<!-- ============================================================ -->
-
-## Backup 8: MUD/QPCA Algebraic Correspondence
-
-**MUD equation (10):**
-$$\lambda_{\mathrm{MUD}} = \lambda_{\mathrm{init}} + \Sigma_{\mathrm{init}}A^\top\Sigma_{\mathrm{pred}}^{-1}(-b - A\lambda_{\mathrm{init}})$$
-
-**QPCA-EnDCF update:**
-$$\mathbf{x}^{(j),a} = \mathbf{x}^{(j),f} + \mathbf{K}^{\mathrm{DC}}(\mathbf{R}^{(L)})^{1/2}\hat{\mathbf{V}}_\kappa\hat{\mathbf{V}}_\kappa^\top(\mathbf{R}^{(L)})^{-1/2}(\mathbf{z}^{(w)} - \mathbf{z}_f^{(j)})$$
-
-**Correspondence:**
-- $\lambda_{\mathrm{init}} \leftrightarrow \mathbf{x}^f$ (prior/forecast state)
-- $\Sigma_{\mathrm{init}} A^\top \Sigma_{\mathrm{pred}}^{-1} \leftrightarrow \mathbf{K}^{\mathrm{DC}}$ (covariance pullback)
-- $-b - A\lambda_{\mathrm{init}} \leftrightarrow$ projected innovation (truncated residual)
-
-<!-- .notes:
-The similarity document establishes a formal algebraic correspondence between the QPCA/MUD parameter estimation framework and QPCA-EnDCF. Both follow the same template: prior state plus covariance-weighted pullback of a low-dimensional projected innovation. The MUD paper works with population covariances for parameter estimation; QPCA-EnDCF works with empirical ensemble quantities for state filtering. This connection is important because it grounds the ensemble filtering method in the established MUD inverse problem theory.
--->
 
 ---
 

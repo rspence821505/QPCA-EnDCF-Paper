@@ -192,3 +192,21 @@ The detailed window length table shows the sharp transition. At L=1, QPCA-EnDCF 
 <!-- .notes:
 Computational cost comparison. The dominant cost for all methods is model propagation — identical. QPCA-EnDCF adds one d-by-d eigendecomposition per window, which is O(d-cubed). For d=100, this is negligible relative to model propagation. It saves on perturbation sampling — no random number generation needed — and eliminates inflation, removing both the computational cost and the tuning burden. The net overhead is minimal; the net benefit from smaller viable ensemble sizes is substantial.
 -->
+
+---
+
+<!-- ============================================================ -->
+<!-- BACKUP SLIDE: Ensemble Size Scaling -->
+<!-- ============================================================ -->
+
+## Backup: Ensemble Size Scaling
+
+![Performance Degradation](figures/performance_degradation.png)
+
+- QPCA-EnDCF viable down to N=5
+- At N=10: matches stochastic methods at N=20–30
+- **2–3× ensemble savings** for equivalent accuracy
+
+<!-- .notes:
+This figure shows how methods scale with ensemble size. QPCA-EnDCF degrades gracefully from N=100 down to N=5, with only 28 percent degradation — much less than stochastic methods. At N=10, QPCA-EnDCF matches the accuracy of stochastic methods at N=20 to 30. That's a 2 to 3 times savings in ensemble size, which translates directly to 50 to 67 percent reduction in forecast propagation cost. For operational centers where each ensemble member requires a full model integration, this is a substantial computational savings.
+-->

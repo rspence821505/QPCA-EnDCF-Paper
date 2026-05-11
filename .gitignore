@@ -176,6 +176,14 @@ proof_ideas*
 # Presentations
 # ---------------------------
 *.js
-*.json 
+*.json
 *.css
 *.ico
+presentation_repo/
+
+# ---------------------------
+# Thesis prompt & paper sources
+# ---------------------------
+master_thesis_prompt.md
+paper/
+*.tex

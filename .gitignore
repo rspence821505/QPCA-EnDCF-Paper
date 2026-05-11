@@ -185,5 +185,6 @@ presentation_repo/
 # Thesis prompt & paper sources
 # ---------------------------
 master_thesis_prompt.md
+thesis_defense_stress_test_prompt.md
 paper/
 *.tex
